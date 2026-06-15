@@ -671,38 +671,95 @@ tr:hover td{background:var(--amber-dim);}
 
 <!-- NUTRITION -->
 <div id="tab-nutrition" class="tab"><div class="wrap">
+
+  <!-- API KEY WARNING BANNER -->
+  <div id="no-api-banner" style="display:none;background:var(--red-dim);border:1px solid var(--red);border-left:3px solid var(--red);padding:12px 14px;margin-bottom:13px;font-family:'DM Mono',monospace;font-size:11px;color:var(--pale);letter-spacing:.03em;">
+    ⚠ AI features need an API key. Go to <strong style="color:var(--amber);cursor:pointer;" onclick="document.querySelectorAll('.nb').forEach(b=>{if(b.textContent.trim()==='Setup')b.click()})">Setup → AI Features</strong> to add yours. Saved meals and manual entry work without it.
+  </div>
+
+  <!-- UNIFIED LOG CARD -->
   <div class="card">
-    <div class="ct"><span class="d"></span>AI Meal Logger</div>
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:11px;">Describe your meal or speak it — AI calculates macros and logs to your daily total.</div>
-    <div style="position:relative;margin-bottom:10px;">
-      <textarea id="meal-description" placeholder="e.g. Grilled chicken breast, cup of white rice, handful of broccoli with olive oil..." style="background:var(--black);border:1px solid var(--amber-border);color:var(--cream);font-family:'Inter',sans-serif;font-size:14px;padding:11px 52px 11px 12px;outline:none;width:100%;min-height:78px;resize:vertical;transition:border-color .15s;"></textarea>
-      <button id="voice-btn" onclick="toggleVoice()" title="Speak your meal">🎙</button>
+    <div class="ct"><span class="d"></span>Log a Meal</div>
+
+    <!-- DATE ALWAYS FIRST AND PROMINENT -->
+    <div style="background:var(--black);border:1px solid var(--amber);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;">Logging for</div>
+      <input type="date" id="n-date" style="background:transparent;border:none;color:var(--cream);font-family:'DM Mono',monospace;font-size:15px;outline:none;flex:1;-webkit-appearance:none;">
+      <button onclick="document.getElementById('n-date').value=today();renderNutritionTab();" class="btn ghost" style="padding:4px 10px;font-size:10px;">Today</button>
     </div>
-    <div id="voice-status" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);margin-bottom:8px;display:none;letter-spacing:.04em;">🎙 Listening — speak your meal...</div>
-    <div id="ai-meal-result" style="display:none;background:var(--black);border:1px solid var(--amber-border);border-left:2px solid var(--amber);padding:13px;margin-bottom:11px;">
-      <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:9px;">Estimated Macros — Confirm?</div>
-      <div class="g3" style="margin-bottom:9px;">
-        <div class="sb"><div class="sl">Protein</div><div class="sv amber" id="ai-protein">—</div><div class="ss">grams</div></div>
-        <div class="sb"><div class="sl">Carbs</div><div class="sv" id="ai-carbs">—</div><div class="ss">grams</div></div>
-        <div class="sb"><div class="sl">Fat</div><div class="sv" id="ai-fat">—</div><div class="ss">grams</div></div>
-      </div>
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);margin-bottom:4px;letter-spacing:.04em;" id="ai-kcal-line"></div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5;font-style:italic;" id="ai-breakdown"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn" onclick="confirmAIMeal()">Log This Meal ✓</button>
-        <button class="btn ghost" onclick="clearAIMeal()">Clear</button>
+
+    <!-- TAB SWITCHER -->
+    <div style="display:flex;gap:0;margin-bottom:14px;border:1px solid var(--amber-border);">
+      <button id="ntab-saved" onclick="switchNTab('saved')" style="flex:1;background:var(--amber);border:none;color:var(--black);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:9px;cursor:pointer;">Saved Meals</button>
+      <button id="ntab-ai" onclick="switchNTab('ai')" style="flex:1;background:transparent;border:none;border-left:1px solid var(--amber-border);color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:9px;cursor:pointer;">AI Logger</button>
+      <button id="ntab-manual" onclick="switchNTab('manual')" style="flex:1;background:transparent;border:none;border-left:1px solid var(--amber-border);color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:9px;cursor:pointer;">Manual</button>
+    </div>
+
+    <!-- SAVED MEALS PANEL -->
+    <div id="npanel-saved">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:10px;">Tap any meal to log it to the selected date above.</div>
+      <div id="saved-meals-list"></div>
+      <div style="margin-top:13px;border-top:1px solid var(--amber-border);padding-top:13px;">
+        <div class="sh" style="margin-top:0;">Add a New Saved Meal</div>
+        <div class="fr"><div class="fi"><label>Meal Name</label><input type="text" id="sm-name" placeholder="e.g. Post-Workout Shake"></div><div class="fi" style="max-width:68px;"><label>Protein (g)</label><input type="number" id="sm-p" placeholder="40"></div><div class="fi" style="max-width:68px;"><label>Carbs (g)</label><input type="number" id="sm-c" placeholder="45"></div><div class="fi" style="max-width:68px;"><label>Fat (g)</label><input type="number" id="sm-f" placeholder="8"></div></div>
+        <div class="fr"><div class="fi"><label>Description (optional)</label><input type="text" id="sm-desc" placeholder="e.g. Whey + banana + 5g creatine"></div></div>
+        <button class="btn dark" onclick="addSavedMeal()">Save Meal</button>
       </div>
     </div>
-    <div id="ai-meal-status" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--amber);display:none;margin-bottom:8px;letter-spacing:.04em;"></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
-      <button class="btn" onclick="parseMealWithAI()" id="parse-btn">Calculate Macros ✨</button>
-      <div class="fi" style="max-width:115px;"><label>Training Day?</label><select id="n-training"><option>Yes</option><option>No</option></select></div>
-      <div class="fi" style="max-width:80px;"><label>Sleep (1–10)</label><input type="number" id="n-sleep" placeholder="8" min="1" max="10"></div>
-      <div class="fi"><label>Date</label><input type="date" id="n-date"></div>
+
+    <!-- AI LOGGER PANEL -->
+    <div id="npanel-ai" style="display:none;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:10px;">Describe what you ate — or tap the mic and speak it. AI estimates macros and logs to the date above.</div>
+      <div style="position:relative;margin-bottom:10px;">
+        <textarea id="meal-description" placeholder="e.g. Two scrambled eggs, two slices whole wheat toast, tablespoon of butter, black coffee&#10;&#10;Be specific about portions for better accuracy." style="background:var(--black);border:1px solid var(--amber-border);color:var(--cream);font-family:'Inter',sans-serif;font-size:14px;padding:11px 52px 11px 12px;outline:none;width:100%;min-height:90px;resize:vertical;transition:border-color .15s;"></textarea>
+        <button id="voice-btn" onclick="toggleVoice()" title="Speak your meal">🎙</button>
+      </div>
+      <div id="voice-status" style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);margin-bottom:8px;display:none;letter-spacing:.04em;"></div>
+      <div id="ai-meal-result" style="display:none;background:var(--black);border:1px solid var(--amber-border);border-left:2px solid var(--amber);padding:13px;margin-bottom:11px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:9px;">Estimated Macros — Confirm to Log</div>
+        <div class="g3" style="margin-bottom:9px;">
+          <div class="sb"><div class="sl">Protein</div><div class="sv amber" id="ai-protein">—</div><div class="ss">grams</div></div>
+          <div class="sb"><div class="sl">Carbs</div><div class="sv" id="ai-carbs">—</div><div class="ss">grams</div></div>
+          <div class="sb"><div class="sl">Fat</div><div class="sv" id="ai-fat">—</div><div class="ss">grams</div></div>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);margin-bottom:5px;letter-spacing:.04em;" id="ai-kcal-line"></div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:11px;line-height:1.6;font-style:italic;" id="ai-breakdown"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" onclick="confirmAIMeal()">Log to <span id="ai-confirm-date">Today</span> ✓</button>
+          <button class="btn ghost" onclick="clearAIMeal()">Clear</button>
+        </div>
+      </div>
+      <div id="ai-meal-status" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--amber);display:none;margin-bottom:8px;letter-spacing:.04em;"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <button class="btn" onclick="parseMealWithAI()" id="parse-btn">Calculate Macros ✨</button>
+        <div class="fi" style="max-width:120px;"><label>Training Day?</label><select id="n-training"><option>Yes</option><option>No</option></select></div>
+        <div class="fi" style="max-width:80px;"><label>Sleep (1–10)</label><input type="number" id="n-sleep" placeholder="8" min="1" max="10"></div>
+      </div>
+      <div style="background:var(--black4);border:1px solid rgba(200,134,10,.15);padding:11px;margin-top:12px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Tips for accurate estimates</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8;">Be specific about portions: <em style="color:var(--pale);">"8oz grilled chicken breast"</em> not just <em>"chicken"</em><br>Include cooking method: <em style="color:var(--pale);">"pan-fried in 1 tbsp olive oil"</em><br>Mention brands when relevant: <em style="color:var(--pale);">"Fairlife protein shake"</em></div>
+      </div>
+    </div>
+
+    <!-- MANUAL PANEL -->
+    <div id="npanel-manual" style="display:none;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:10px;">Enter macros directly. Logs to the date selected above.</div>
+      <div class="fr">
+        <div class="fi"><label>Meal Description</label><input type="text" id="m-desc" placeholder="e.g. Chicken rice bowl, protein shake"></div>
+      </div>
+      <div class="fr">
+        <div class="fi"><label>Protein (g)</label><input type="number" id="m-protein" placeholder="55"></div>
+        <div class="fi"><label>Carbs (g)</label><input type="number" id="m-carbs" placeholder="48"></div>
+        <div class="fi"><label>Fat (g)</label><input type="number" id="m-fat" placeholder="8"></div>
+        <div class="fi"><label>Kcal (optional)</label><input type="number" id="m-kcal" placeholder="Auto"></div>
+      </div>
+      <button class="btn" onclick="logManualMeal()">Log Meal</button>
     </div>
   </div>
+
+  <!-- DAILY TOTAL FOR SELECTED DATE -->
   <div class="card" id="todays-total-card" style="display:none;">
-    <div class="ct"><span class="d green"></span>Today's Running Total</div>
+    <div class="ct"><span class="d green"></span>Total for <span id="total-date-label" style="color:var(--amber);">Today</span></div>
     <div class="g3" style="margin-bottom:8px;">
       <div class="sb"><div class="sl">Protein</div><div class="sv amber" id="today-p-total">0g</div><div class="ss">target 220–270g</div></div>
       <div class="sb"><div class="sl">Carbs</div><div class="sv" id="today-c-total">0g</div><div class="ss">target 140–180g</div></div>
@@ -713,33 +770,29 @@ tr:hover td{background:var(--amber-dim);}
       <div class="mi"><div class="ml">Carbs</div><div class="pb-bar"><div class="pf blue" id="t-pc" style="width:0%"></div></div></div>
       <div class="mi"><div class="ml">Fat</div><div class="pb-bar"><div class="pf green" id="t-pf" style="width:0%"></div></div></div>
     </div>
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-align:right;" id="today-kcal-total"></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-align:right;margin-top:4px;" id="today-kcal-total"></div>
   </div>
-  <div class="card"><div class="ct"><span class="d"></span>Today's Meals</div><div id="todays-meals-log"><div class="empty" style="padding:14px;"><div class="ei">◈</div>No meals logged today.</div></div></div>
+
+  <!-- MEALS FOR SELECTED DATE -->
   <div class="card">
-    <div class="ct"><span class="d amber"></span>Saved Meals — One Tap Log</div>
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:12px;">Tap any saved meal to instantly add macros to today's total.</div>
-    <div id="saved-meals-list"></div>
-    <div style="margin-top:12px;border-top:1px solid var(--amber-border);padding-top:12px;">
-      <div class="sh">Save a New Meal</div>
-      <div class="fr"><div class="fi"><label>Meal Name</label><input type="text" id="sm-name" placeholder="e.g. Post-Workout Shake"></div><div class="fi" style="max-width:70px;"><label>Protein</label><input type="number" id="sm-p" placeholder="40"></div><div class="fi" style="max-width:70px;"><label>Carbs</label><input type="number" id="sm-c" placeholder="45"></div><div class="fi" style="max-width:70px;"><label>Fat</label><input type="number" id="sm-f" placeholder="8"></div></div>
-      <div class="fr"><div class="fi"><label>Description (optional)</label><input type="text" id="sm-desc" placeholder="e.g. Whey + banana + creatine"></div></div>
-      <button class="btn dark" onclick="addSavedMeal()">Save Meal</button>
-    </div>
+    <div class="ct"><span class="d"></span>Meals — <span id="meals-date-label" style="color:var(--amber);">Today</span></div>
+    <div id="todays-meals-log"><div class="empty" style="padding:14px;"><div class="ei">◈</div>No meals logged for this date.</div></div>
   </div>
-  <div class="card"><div class="ct"><span class="d"></span>Daily Protocol Templates</div>
+
+  <!-- PROTOCOL REFERENCE -->
+  <div class="card"><div class="ct"><span class="d"></span>Protocol Reference</div>
     <div class="sh">Training Day (5 AM Protocol)</div>
-    <div class="sr"><span><strong>3:00–4:00 AM</strong></span><span style="font-size:12px;color:var(--muted);">Cottage cheese + berries + almonds · 30–50g protein</span></div>
-    <div class="sr"><span><strong>Post-Workout</strong></span><span style="font-size:12px;color:var(--muted);">Whey shake + banana + 5g creatine · 30–40g protein</span></div>
-    <div class="sr"><span><strong>Dinner</strong></span><span style="font-size:12px;color:var(--muted);">8–10 oz protein + sweet potato + vegetables</span></div>
-    <div class="sh">Non-Training Day</div>
-    <div class="sr"><span>3 meals spaced 3–4 hrs</span><span style="font-size:12px;color:var(--muted);">Same targets — protein 220g+, kcal 2,200–2,400</span></div>
+    <div class="sr"><span><strong>3:00–4:00 AM</strong></span><span style="font-size:12px;color:var(--muted);">Cottage cheese + berries + almonds · ~35g protein</span></div>
+    <div class="sr"><span><strong>Post-Workout</strong></span><span style="font-size:12px;color:var(--muted);">Whey shake + banana + 5g creatine · ~40g protein</span></div>
+    <div class="sr"><span><strong>Dinner</strong></span><span style="font-size:12px;color:var(--muted);">8–10 oz protein + sweet potato + vegetables · ~50g protein</span></div>
     <div class="sh">Supplements</div>
     <div class="sr"><span><strong>Creatine Monohydrate</strong></span><span class="badge amber">5g daily · post-workout</span></div>
     <div class="sr"><span>Vitamin D</span><span class="badge amber">2,000–5,000 IU/day</span></div>
     <div class="sr"><span>Omega-3s</span><span class="badge amber">2–3g EPA+DHA</span></div>
-    <div class="sr"><span>Electrolytes</span><span class="badge amber">1 gallon water/day</span></div>
+    <div class="sr"><span>Water</span><span class="badge amber">1 gallon/day minimum</span></div>
   </div>
+
+  <!-- ALL DAYS LOG -->
   <div class="card"><div class="ct"><span class="d"></span>All Days Log</div>
     <div class="tw"><table><thead><tr><th>Date</th><th>Type</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Kcal</th><th>Meals</th><th></th></tr></thead>
     <tbody id="nutrition-log"><tr><td colspan="8"><div class="empty"><div class="ei">◈</div>No days logged yet.</div></td></tr></tbody></table></div>
@@ -859,7 +912,27 @@ tr:hover td{background:var(--amber-dim);}
 
 <!-- SETUP -->
 <div id="tab-setup" class="tab"><div class="wrap">
-  <div class="card"><div class="ct"><span class="d"></span>Install ACEPEAK on Your Phone</div>
+  <!-- API KEY - FIRST AND PROMINENT -->
+  <div class="card" style="border-color:var(--amber);border-left:3px solid var(--amber);">
+    <div class="ct"><span class="d green"></span>AI Features — API Key</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:13px;">Required for AI Meal Logger and AI Lab Parser. Stored only on your device — never in the code, never visible to anyone else.</div>
+    <div id="api-key-status" style="margin-bottom:11px;"></div>
+    <div class="fr">
+      <div class="fi"><label>Anthropic API Key (sk-ant-...)</label>
+        <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." autocomplete="off" style="font-family:'DM Mono',monospace;letter-spacing:.04em;">
+      </div>
+      <button class="btn" onclick="saveApiKey()" style="align-self:flex-end;">Save Key</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+      <button class="btn ghost" onclick="toggleShowKey()">Show / Hide</button>
+      <button class="btn ghost" onclick="testApiKey()">Test Connection</button>
+      <button class="btn ghost" style="color:var(--red);border-color:var(--red);" onclick="clearApiKey()">Remove Key</button>
+    </div>
+    <div style="background:var(--black4);border:1px solid rgba(200,134,10,.15);padding:11px;margin-top:12px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">How to get your key</div>
+      <div style="font-size:13px;color:var(--pale);line-height:2;">1. Go to <strong>console.anthropic.com</strong><br>2. Sign up (free) → API Keys → Create Key<br>3. Name it <strong>ACEPEAK</strong><br>4. Copy the key (starts with sk-ant-) → paste above<br>5. Set a spending limit under Billing → $5/month is more than enough</div>
+    </div>
+  </div>
     <div style="font-size:13px;color:var(--pale);margin-bottom:16px;font-style:italic;">Make ACEPEAK a permanent app — tap from your home screen, works offline.</div>
     <div class="sh">Step 1 — Host (free, permanent link)</div>
     <div class="pwa-step"><div class="pwa-num">1</div><div>Create a free account at <strong>github.com</strong></div></div>
@@ -915,8 +988,8 @@ const showQF=id=>{document.querySelectorAll('.quick-form').forEach(f=>f.classLis
 function qSession(){const d=load(K.workouts);d.unshift({date:today(),type:document.getElementById('qq-type').value||'Custom',rpe:document.getElementById('qq-rpe').value,energy:document.getElementById('qq-energy').value,notes:document.getElementById('qq-notes').value,duration:'',id:Date.now()});save(K.workouts,d);closeQuick();renderWorkouts();renderDashboard();setTimeout(checkMilestones,300);toast('Session logged ✓');['qq-rpe','qq-energy','qq-notes'].forEach(i=>document.getElementById(i).value='');}
 function qWeight(){const w=document.getElementById('qq-weight').value;if(!w){toast('Enter weight','var(--red)');return;}const d=load(K.body);d.push({date:today(),weight:w,waist:document.getElementById('qq-waist').value,sleep:document.getElementById('qq-sleep').value,bf:'',lean:'',fatm:'',notes:'Quick log',id:Date.now()});d.sort((a,b)=>a.date.localeCompare(b.date));save(K.body,d);closeQuick();renderBodyLog();renderDashboard();setTimeout(checkMilestones,300);toast('Weight logged ✓');['qq-weight','qq-waist','qq-sleep'].forEach(i=>document.getElementById(i).value='');}
 function qLift(){const w=document.getElementById('qq-lw').value;if(!w){toast('Enter weight','var(--red)');return;}const sr=document.getElementById('qq-sr').value.split(/[×x]/);const d=load(K.lifts);d.unshift({date:today(),lift:document.getElementById('qq-lift').value||'Custom',weight:w,sets:sr[0]||'',reps:sr[1]||'',rpe:'',notes:'Quick log',id:Date.now()});save(K.lifts,d);closeQuick();renderLifts();setTimeout(checkMilestones,300);toast('Lift logged ✓');['qq-lw','qq-sr','qq-lift'].forEach(i=>document.getElementById(i).value='');}
-async function qMealAI(){const desc=document.getElementById('qq-meal-desc').value.trim();if(!desc){toast('Describe a meal','var(--red)');return;}toast('Calculating...','var(--blue)');try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:300,messages:[{role:'user',content:`Return ONLY JSON, no markdown: {"protein":0,"carbs":0,"fat":0,"kcal":0} for: ${desc}`}]})});const data=await r.json();const p=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());logMealEntry(today(),desc,p.protein,p.carbs,p.fat,p.kcal);closeQuick();toast('Meal logged ✓');}catch{toast('AI error — log manually','var(--red)');}document.getElementById('qq-meal-desc').value='';}
-function qSavedMeal(id){const m=load(K.saved_meals).find(x=>x.id===id);if(!m)return;logMealEntry(today(),m.name,m.protein,m.carbs,m.fat,Math.round(m.protein*4+m.carbs*4+m.fat*9));closeQuick();renderNutritionTab();toast(m.name+' logged ✓');}
+async function qMealAI(){const key=getApiKey();const desc=document.getElementById('qq-meal-desc').value.trim();if(!key){toast('Add API key in Setup','var(--red)');return;}if(!desc){toast('Describe a meal','var(--red)');return;}toast('Calculating...','var(--blue)');try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:`Return ONLY JSON, no markdown: {"protein":0,"carbs":0,"fat":0,"kcal":0} for: ${desc}`}]})});const data=await r.json();if(data.error)throw new Error(data.error.message);const p=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());logMealEntry(today(),desc,p.protein,p.carbs,p.fat,p.kcal);closeQuick();toast('Meal logged → Today ✓');}catch(e){toast('Error: '+(e.message||'check API key'),'var(--red)');}document.getElementById('qq-meal-desc').value='';}
+function qSavedMeal(id){const m=load(K.saved_meals).find(x=>x.id===id);if(!m)return;logMealEntry(today(),m.name,m.protein,m.carbs,m.fat,Math.round(m.protein*4+m.carbs*4+m.fat*9));closeQuick();renderNutritionTab();toast(m.name+' → Today ✓');}
 function renderQuickMeals(){const meals=load(K.saved_meals);document.getElementById('qq-saved-meals').innerHTML=meals.map(m=>`<button class="btn dark" style="padding:5px 11px;font-size:11px;border-radius:20px;" onclick="qSavedMeal('${m.id}')">${m.name}</button>`).join('');}
 
 // WORKOUT BUILDER
@@ -967,27 +1040,48 @@ function renderBwChart(){const data=load(K.bloodwork).filter(x=>x[activeBwM]).so
 function logBloodwork(){const date=document.getElementById('bl-date').value;if(!date){toast('Enter date','var(--red)');return;}const e={date,lab:document.getElementById('bl-lab').value,glucose:document.getElementById('bl-glucose').value,insulin:document.getElementById('bl-insulin').value,hba1c:document.getElementById('bl-hba1c').value,chol:document.getElementById('bl-chol').value,ldl:document.getElementById('bl-ldl').value,hdl:document.getElementById('bl-hdl').value,trig:document.getElementById('bl-trig').value,test:document.getElementById('bl-test').value,ftest:document.getElementById('bl-ftest').value,vitd:document.getElementById('bl-vitd').value,crp:document.getElementById('bl-crp').value,tsh:document.getElementById('bl-tsh').value,notes:document.getElementById('bl-notes').value,id:Date.now()};if(e.glucose&&e.insulin)e.homa=((parseFloat(e.glucose)*parseFloat(e.insulin))/405).toFixed(2);const d=load(K.bloodwork);d.push(e);d.sort((a,b)=>a.date.localeCompare(b.date));save(K.bloodwork,d);renderBloodworkLog();renderDashboard();setTimeout(checkMilestones,300);toast('Panel saved ✓');['bl-date','bl-lab','bl-glucose','bl-insulin','bl-hba1c','bl-chol','bl-ldl','bl-hdl','bl-trig','bl-test','bl-ftest','bl-vitd','bl-crp','bl-tsh','bl-notes'].forEach(i=>document.getElementById(i).value='');}
 function renderBloodworkLog(){const d=load(K.bloodwork);const wH=d.filter(x=>x.homa);if(wH.length){const lat=wH[wH.length-1],h=parseFloat(lat.homa);const hc=h<1?'var(--green)':h<2?'var(--amber)':'var(--red)';const hs=h<1?'✓ Optimal — no IR':h<2?'⚠ Borderline IR':h<4?'✗ Insulin Resistant':'✗✗ Severe IR';document.getElementById('homa-display').style.display='block';document.getElementById('homa-val').style.color=hc;document.getElementById('homa-val').textContent=lat.homa;document.getElementById('homa-status').style.color=hc;document.getElementById('homa-status').textContent=hs;}renderBloodworkTrends();const el=document.getElementById('bloodwork-log');if(!d.length){el.innerHTML='<div class="empty"><div class="ei">🩸</div>No panels yet.</div>';return;}el.innerHTML=[...d].reverse().map(b=>`<div class="card" style="background:var(--black4);margin-bottom:9px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;"><span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;color:var(--amber);">${fmt(b.date)}${b.lab?' — '+b.lab:''}</span>${b.homa?`<span class="badge ${parseFloat(b.homa)<1?'green':parseFloat(b.homa)<2?'gold':'red'}">HOMA-IR: ${b.homa}</span>`:''}<button class="dx" onclick="del('${K.bloodwork}',${b.id},[renderBloodworkLog,renderDashboard])">✕</button></div><div class="g3" style="gap:7px;">${Object.entries(BW_MARKERS).map(([k,m])=>{if(!b[k])return`<div class="sb"><div class="sl">${m.label}</div><div class="sv" style="font-size:12px;">—</div></div>`;const v=parseFloat(b[k]),c=m.ok(v)?'var(--green)':m.warn(v)?'var(--amber)':'var(--red)';return`<div class="sb"><div class="sl">${m.label}</div><div class="sv" style="font-size:16px;color:${c}">${b[k]}</div><div class="ss">${m.unit}</div></div>`;}).join('')}</div></div>`).join('');}
 let parsedLab={};
-async function handleLabUpload(input){const file=input.files[0];if(!file)return;const st=document.getElementById('ai-lab-status'),stxt=document.getElementById('ai-lab-text');st.classList.add('show');stxt.textContent='Reading your lab results...';try{const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});stxt.textContent='Sending to AI...';const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:[{type:file.type==='application/pdf'?'document':'image',source:{type:'base64',media_type:file.type,data:b64}},{type:'text',text:'Extract lab values. Return ONLY JSON, no markdown:\n{"date":"YYYY-MM-DD or empty","lab":"","glucose":"","insulin":"","hba1c":"","chol":"","ldl":"","hdl":"","trig":"","test":"","ftest":"","vitd":"","crp":"","tsh":""}\nNumbers only, empty string if not found.'}]}]})});const data=await resp.json();parsedLab=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());stxt.textContent='✓ Values extracted';const labels={date:'Date',lab:'Lab',glucose:'Glucose',insulin:'Insulin',hba1c:'HbA1c',chol:'Cholesterol',ldl:'LDL',hdl:'HDL',trig:'Triglycerides',test:'Testosterone',ftest:'Free Test',vitd:'Vitamin D',crp:'hs-CRP',tsh:'TSH'};document.getElementById('lab-preview-fields').innerHTML=Object.entries(parsedLab).filter(([k,v])=>v).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(212,175,55,.1);font-size:12px;"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;">${labels[k]||k}</span><span style="color:var(--cream);">${v}</span></div>`).join('');document.getElementById('lab-preview').style.display='block';}catch(err){stxt.textContent='⚠ Could not parse — fill manually.';console.error(err);}}
+async function handleLabUpload(input){const key=getApiKey();if(!key){toast('Add API key in Setup first','var(--red)');return;}const file=input.files[0];if(!file)return;const st=document.getElementById('ai-lab-status'),stxt=document.getElementById('ai-lab-text');st.classList.add('show');stxt.textContent='Reading your lab results...';try{const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});stxt.textContent='Sending to AI...';const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:[{type:file.type==='application/pdf'?'document':'image',source:{type:'base64',media_type:file.type,data:b64}},{type:'text',text:'Extract lab values. Return ONLY JSON, no markdown:\n{"date":"YYYY-MM-DD or empty","lab":"","glucose":"","insulin":"","hba1c":"","chol":"","ldl":"","hdl":"","trig":"","test":"","ftest":"","vitd":"","crp":"","tsh":""}\nNumbers only, empty string if not found.'}]}]})});const data=await resp.json();parsedLab=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());stxt.textContent='✓ Values extracted';const labels={date:'Date',lab:'Lab',glucose:'Glucose',insulin:'Insulin',hba1c:'HbA1c',chol:'Cholesterol',ldl:'LDL',hdl:'HDL',trig:'Triglycerides',test:'Testosterone',ftest:'Free Test',vitd:'Vitamin D',crp:'hs-CRP',tsh:'TSH'};document.getElementById('lab-preview-fields').innerHTML=Object.entries(parsedLab).filter(([k,v])=>v).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(212,175,55,.1);font-size:12px;"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;">${labels[k]||k}</span><span style="color:var(--cream);">${v}</span></div>`).join('');document.getElementById('lab-preview').style.display='block';}catch(err){stxt.textContent='⚠ Could not parse — fill manually.';console.error(err);}}
 function applyParsedLabs(){const map={date:'bl-date',lab:'bl-lab',glucose:'bl-glucose',insulin:'bl-insulin',hba1c:'bl-hba1c',chol:'bl-chol',ldl:'bl-ldl',hdl:'bl-hdl',trig:'bl-trig',test:'bl-test',ftest:'bl-ftest',vitd:'bl-vitd',crp:'bl-crp',tsh:'bl-tsh'};Object.entries(map).forEach(([k,id])=>{if(parsedLab[k]){const el=document.getElementById(id);if(el)el.value=parsedLab[k];}});toast('Applied to form ✓');clearLabPreview();}
 const clearLabPreview=()=>{document.getElementById('lab-preview').style.display='none';document.getElementById('ai-lab-status').classList.remove('show');document.getElementById('lab-file-input').value='';parsedLab={};};
-// NUTRITION / AI MEAL LOGGER
+// ===== API KEY MANAGEMENT =====
+const AP_KEY='ap_anthropic_key';
+const getApiKey=()=>localStorage.getItem(AP_KEY)||'';
+function saveApiKey(){const k=document.getElementById('api-key-input').value.trim();if(!k.startsWith('sk-ant-')){toast('Key must start with sk-ant-','var(--red)');return;}localStorage.setItem(AP_KEY,k);document.getElementById('api-key-input').value='';renderApiKeyStatus();toast('API key saved ✓');}
+function clearApiKey(){localStorage.removeItem(AP_KEY);renderApiKeyStatus();toast('Key removed');}
+function toggleShowKey(){const el=document.getElementById('api-key-input');el.type=el.type==='password'?'text':'password';}
+async function testApiKey(){const key=getApiKey();if(!key){toast('No key saved yet','var(--red)');return;}toast('Testing...','var(--blue)');try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:10,messages:[{role:'user',content:'Hi'}]})});if(r.ok){toast('✓ Key works — AI features active','var(--green)');}else{const d=await r.json();toast('Error: '+(d.error?.message||r.status),'var(--red)');}}catch(e){toast('Connection error','var(--red)');}}
+function renderApiKeyStatus(){const el=document.getElementById('api-key-status');if(!el)return;const key=getApiKey();const banner=document.getElementById('no-api-banner');if(key){el.innerHTML=`<div style="background:var(--green-dim);border:1px solid var(--green2);border-left:2px solid var(--green2);padding:9px 12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--green2);letter-spacing:.04em;">✓ API key active (sk-ant-...${key.slice(-6)})</div>`;if(banner)banner.style.display='none';}else{el.innerHTML=`<div style="background:var(--red-dim);border:1px solid var(--red);border-left:2px solid var(--red);padding:9px 12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--pale);letter-spacing:.04em;">No API key — AI Meal Logger and Lab Parser unavailable</div>`;if(banner)banner.style.display='block';}}
+function apiHeaders(){return{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};}
+
+// ===== NUTRITION TAB SWITCHER =====
+let activeNTab='saved';
+function switchNTab(tab){activeNTab=tab;['saved','ai','manual'].forEach(t=>{const btn=document.getElementById('ntab-'+t);const panel=document.getElementById('npanel-'+t);if(btn&&panel){const active=t===tab;btn.style.background=active?'var(--amber)':'transparent';btn.style.color=active?'var(--black)':'var(--muted)';panel.style.display=active?'block':'none';}});}
+
+// ===== NUTRITION DATE HELPERS =====
+function getNDate(){return document.getElementById('n-date')?.value||today();}
+function fmtNDate(d){if(d===today())return'Today';const[y,m,day]=d.split('-');const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return`${months[parseInt(m)-1]} ${parseInt(day)}`;}
+function updateNDateLabels(){const d=getNDate();const label=fmtNDate(d);const tl=document.getElementById('total-date-label');const ml=document.getElementById('meals-date-label');const acd=document.getElementById('ai-confirm-date');if(tl)tl.textContent=label;if(ml)ml.textContent=label;if(acd)acd.textContent=label;}
+
+// ===== NUTRITION / AI MEAL LOGGER =====
 let aiParsedMeal=null,voiceRec=null,voiceActive=false;
 const DEFAULT_MEALS=[{id:'sm1',name:'Pre-Workout (3–4 AM)',desc:'Cottage cheese + berries + almonds',protein:35,carbs:30,fat:8},{id:'sm2',name:'Post-Workout Shake',desc:'Whey + banana + creatine',protein:40,carbs:35,fat:3},{id:'sm3',name:'Chicken + Rice + Broccoli',desc:'8oz chicken, cup rice, broccoli',protein:55,carbs:48,fat:8},{id:'sm4',name:'Steak + Sweet Potato',desc:'8oz sirloin + medium sweet potato',protein:52,carbs:32,fat:14},{id:'sm5',name:'Salmon + Greens',desc:'6oz salmon + salad + olive oil',protein:38,carbs:8,fat:22}];
 const initSavedMeals=()=>{if(!localStorage.getItem(K.saved_meals))save(K.saved_meals,DEFAULT_MEALS);};
 function toggleVoice(){if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){toast('Voice not supported — try Chrome','var(--amber)');return;}if(voiceActive){if(voiceRec)voiceRec.stop();return;}const SR=window.SpeechRecognition||window.webkitSpeechRecognition;voiceRec=new SR();voiceRec.lang='en-US';voiceRec.continuous=false;voiceRec.interimResults=true;const btn=document.getElementById('voice-btn'),vs=document.getElementById('voice-status');voiceRec.onstart=()=>{voiceActive=true;btn.classList.add('listening');btn.textContent='⏹';vs.style.display='block';vs.textContent='🎙 Listening — speak your meal...';};voiceRec.onresult=e=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;document.getElementById('meal-description').value=t;};voiceRec.onend=()=>{voiceActive=false;btn.classList.remove('listening');btn.textContent='🎙️';const v=document.getElementById('meal-description').value.trim();if(v){vs.textContent='✓ Got it — tap Calculate Macros';setTimeout(()=>vs.style.display='none',3000);}};voiceRec.onerror=e=>{voiceActive=false;btn.classList.remove('listening');btn.textContent='🎙️';vs.style.display='none';toast('Voice error: '+e.error,'var(--amber)');};voiceRec.start();}
-async function parseMealWithAI(){const desc=document.getElementById('meal-description').value.trim();if(!desc){toast('Describe your meal first','var(--red)');return;}const btn=document.getElementById('parse-btn'),st=document.getElementById('ai-meal-status');btn.textContent='Calculating...';btn.disabled=true;st.style.display='block';st.textContent='🧠 Estimating macros...';document.getElementById('ai-meal-result').style.display='none';try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:`Estimate macros. Return ONLY valid JSON:\n{"protein":0,"carbs":0,"fat":0,"kcal":0,"breakdown":"brief note"}\nMeal: ${desc}`}]})});const data=await r.json();aiParsedMeal=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());document.getElementById('ai-protein').textContent=aiParsedMeal.protein+'g';document.getElementById('ai-carbs').textContent=aiParsedMeal.carbs+'g';document.getElementById('ai-fat').textContent=aiParsedMeal.fat+'g';document.getElementById('ai-kcal-line').textContent=`Estimated ${aiParsedMeal.kcal} kcal`;document.getElementById('ai-breakdown').textContent=aiParsedMeal.breakdown||'';document.getElementById('ai-meal-result').style.display='block';st.style.display='none';}catch(err){st.textContent='⚠ Could not parse — try more specific portions.';console.error(err);}btn.textContent='Calculate Macros ✨';btn.disabled=false;}
-function confirmAIMeal(){if(!aiParsedMeal)return;const desc=document.getElementById('meal-description').value.trim();const date=document.getElementById('n-date').value||today();logMealEntry(date,desc,aiParsedMeal.protein,aiParsedMeal.carbs,aiParsedMeal.fat,aiParsedMeal.kcal);clearAIMeal();document.getElementById('meal-description').value='';toast('Meal logged ✓');renderNutritionTab();}
+async function parseMealWithAI(){const key=getApiKey();if(!key){toast('Add API key in Setup first','var(--red)');return;}const desc=document.getElementById('meal-description').value.trim();if(!desc){toast('Describe your meal first','var(--red)');return;}const btn=document.getElementById('parse-btn'),st=document.getElementById('ai-meal-status');btn.textContent='Calculating...';btn.disabled=true;st.style.display='block';st.textContent='Estimating macros...';document.getElementById('ai-meal-result').style.display='none';try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,messages:[{role:'user',content:`Estimate macros for this meal. Return ONLY valid JSON, no markdown:\n{"protein":0,"carbs":0,"fat":0,"kcal":0,"breakdown":"brief per-item note"}\nMeal: ${desc}\nBe specific — use portion sizes mentioned.`}]})});const data=await r.json();if(data.error)throw new Error(data.error.message);aiParsedMeal=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());document.getElementById('ai-protein').textContent=aiParsedMeal.protein+'g';document.getElementById('ai-carbs').textContent=aiParsedMeal.carbs+'g';document.getElementById('ai-fat').textContent=aiParsedMeal.fat+'g';document.getElementById('ai-kcal-line').textContent=`Estimated ${aiParsedMeal.kcal} kcal`;document.getElementById('ai-breakdown').textContent=aiParsedMeal.breakdown||'';document.getElementById('ai-meal-result').style.display='block';updateNDateLabels();st.style.display='none';}catch(err){st.textContent='Error: '+(err.message||'Check API key or try more specific portions.');console.error(err);}btn.textContent='Calculate Macros ✨';btn.disabled=false;}
+function confirmAIMeal(){if(!aiParsedMeal)return;const desc=document.getElementById('meal-description').value.trim();const date=getNDate();logMealEntry(date,desc,aiParsedMeal.protein,aiParsedMeal.carbs,aiParsedMeal.fat,aiParsedMeal.kcal);clearAIMeal();document.getElementById('meal-description').value='';toast('Meal logged → '+fmtNDate(date)+' ✓');renderNutritionTab();}
 const clearAIMeal=()=>{aiParsedMeal=null;document.getElementById('ai-meal-result').style.display='none';document.getElementById('ai-meal-status').style.display='none';};
-function logMealEntry(date,desc,p,c,f,kcal){const entries=load(K.meal_entries);entries.unshift({date,desc,protein:Math.round(p),carbs:Math.round(c),fat:Math.round(f),kcal:kcal||Math.round(p*4+c*4+f*9),id:Date.now()});save(K.meal_entries,entries);const d=load(K.nutrition);const existing=d.find(x=>x.date===date);if(existing){existing.protein=Math.round(existing.protein+p);existing.carbs=Math.round(existing.carbs+c);existing.fat=Math.round(existing.fat+f);existing.kcal=Math.round(existing.protein*4+existing.carbs*4+existing.fat*9);existing.mealCount=(existing.mealCount||1)+1;}else{d.unshift({date,training:'Yes',protein:Math.round(p),carbs:Math.round(c),fat:Math.round(f),kcal:Math.round(p*4+c*4+f*9),mealCount:1,notes:desc.slice(0,50),id:Date.now()});}save(K.nutrition,d);renderDashboard();}
+function logMealEntry(date,desc,p,c,f,kcal){const ts=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});const entries=load(K.meal_entries);entries.unshift({date,desc,protein:Math.round(p),carbs:Math.round(c),fat:Math.round(f),kcal:kcal||Math.round(p*4+c*4+f*9),time:ts,id:Date.now()});save(K.meal_entries,entries);rebuildDailyTotal(date);renderDashboard();}
+function rebuildDailyTotal(date){const entries=load(K.meal_entries).filter(x=>x.date===date);const d=load(K.nutrition);const idx=d.findIndex(x=>x.date===date);if(!entries.length){if(idx>=0){d.splice(idx,1);save(K.nutrition,d);}return;}const tp=Math.round(entries.reduce((s,x)=>s+x.protein,0));const tc=Math.round(entries.reduce((s,x)=>s+x.carbs,0));const tf=Math.round(entries.reduce((s,x)=>s+x.fat,0));const tk=Math.round(tp*4+tc*4+tf*9);const training=document.getElementById('n-training')?.value||'Yes';const sleep=document.getElementById('n-sleep')?.value||'';if(idx>=0){d[idx].protein=tp;d[idx].carbs=tc;d[idx].fat=tf;d[idx].kcal=tk;d[idx].mealCount=entries.length;}else{d.unshift({date,training,protein:tp,carbs:tc,fat:tf,kcal:tk,sleep,mealCount:entries.length,notes:entries.map(e=>e.desc.slice(0,20)).join(' | '),id:Date.now()});}save(K.nutrition,d);}
 function addSavedMeal(){const name=document.getElementById('sm-name').value.trim();if(!name){toast('Enter meal name','var(--red)');return;}const meals=load(K.saved_meals);meals.push({id:'sm'+Date.now(),name,desc:document.getElementById('sm-desc').value,protein:parseFloat(document.getElementById('sm-p').value)||0,carbs:parseFloat(document.getElementById('sm-c').value)||0,fat:parseFloat(document.getElementById('sm-f').value)||0});save(K.saved_meals,meals);['sm-name','sm-p','sm-c','sm-f','sm-desc'].forEach(i=>document.getElementById(i).value='');renderSavedMeals();toast('Meal saved ✓');}
-function renderSavedMeals(){const meals=load(K.saved_meals);const el=document.getElementById('saved-meals-list');if(!el)return;if(!meals.length){el.innerHTML='<div style="color:var(--muted);font-size:12px;">No saved meals yet — add below.</div>';return;}el.innerHTML=meals.map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(212,175,55,.1);"><div style="flex:1;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--amber);">${m.name}</div><div style="font-size:11px;color:var(--muted);">${m.desc||''} · ${m.protein}p / ${m.carbs}c / ${m.fat}f · ${Math.round(m.protein*4+m.carbs*4+m.fat*9)} kcal</div></div><button class="btn" style="padding:6px 14px;font-size:12px;" onclick="logSavedMeal('${m.id}')">+ Log</button><button class="dx" onclick="delSavedMeal('${m.id}')">✕</button></div>`).join('');}
-const logSavedMeal=id=>{const m=load(K.saved_meals).find(x=>x.id===id);if(!m)return;logMealEntry(document.getElementById('n-date')?.value||today(),m.name,m.protein,m.carbs,m.fat,Math.round(m.protein*4+m.carbs*4+m.fat*9));toast(m.name+' logged ✓');renderNutritionTab();};
+function renderSavedMeals(){const meals=load(K.saved_meals);const el=document.getElementById('saved-meals-list');if(!el)return;if(!meals.length){el.innerHTML='<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No saved meals yet — add one below.</div>';return;}el.innerHTML=meals.map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(200,134,10,.1);"><div style="flex:1;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:16px;font-weight:700;color:var(--amber);">${m.name}</div><div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted);margin-top:2px;">${m.desc||''} · ${m.protein}p / ${m.carbs}c / ${m.fat}f · ${Math.round(m.protein*4+m.carbs*4+m.fat*9)} kcal</div></div><button class="btn" style="padding:7px 14px;font-size:11px;" onclick="logSavedMeal('${m.id}')">Log</button><button class="dx" onclick="delSavedMeal('${m.id}')">✕</button></div>`).join('');}
+const logSavedMeal=id=>{const m=load(K.saved_meals).find(x=>x.id===id);if(!m)return;const date=getNDate();logMealEntry(date,m.name,m.protein,m.carbs,m.fat,Math.round(m.protein*4+m.carbs*4+m.fat*9));toast(m.name+' → '+fmtNDate(date)+' ✓');renderNutritionTab();};
 const delSavedMeal=id=>{save(K.saved_meals,load(K.saved_meals).filter(x=>x.id!==id));renderSavedMeals();};
-function renderTodaysMeals(){const entries=load(K.meal_entries).filter(x=>x.date===today());const el=document.getElementById('todays-meals-log');if(!el)return;if(!entries.length){el.innerHTML='<div class="empty" style="padding:14px;"><div class="ei">🥩</div>No meals logged today yet.</div>';return;}el.innerHTML=entries.map(e=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid rgba(212,175,55,.08);"><div style="flex:1;"><div style="font-size:13px;color:var(--pale);">${e.desc}</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">${e.protein}p · ${e.carbs}c · ${e.fat}f · ${e.kcal} kcal</div></div><button class="dx" onclick="delMealEntry(${e.id})">✕</button></div>`).join('');}
-function delMealEntry(id){const entries=load(K.meal_entries).filter(x=>x.id!==id);save(K.meal_entries,entries);const te=entries.filter(x=>x.date===today());const d=load(K.nutrition),idx=d.findIndex(x=>x.date===today());if(idx>=0){if(!te.length){d.splice(idx,1);}else{d[idx].protein=Math.round(te.reduce((s,x)=>s+x.protein,0));d[idx].carbs=Math.round(te.reduce((s,x)=>s+x.carbs,0));d[idx].fat=Math.round(te.reduce((s,x)=>s+x.fat,0));d[idx].kcal=Math.round(d[idx].protein*4+d[idx].carbs*4+d[idx].fat*9);d[idx].mealCount=te.length;}save(K.nutrition,d);}renderTodaysTotal();renderTodaysMeals();renderNutritionLog();renderDashboard();}
-function renderTodaysTotal(){const entries=load(K.meal_entries).filter(x=>x.date===today());const card=document.getElementById('todays-total-card');if(!card)return;if(!entries.length){card.style.display='none';return;}card.style.display='block';const tp=Math.round(entries.reduce((s,x)=>s+x.protein,0)),tc=Math.round(entries.reduce((s,x)=>s+x.carbs,0)),tf=Math.round(entries.reduce((s,x)=>s+x.fat,0)),tk=Math.round(tp*4+tc*4+tf*9);document.getElementById('today-p-total').textContent=tp+'g';document.getElementById('today-c-total').textContent=tc+'g';document.getElementById('today-f-total').textContent=tf+'g';document.getElementById('today-kcal-total').textContent=`${tk} kcal logged today`;document.getElementById('t-pp').style.width=Math.min(100,(tp/245)*100)+'%';document.getElementById('t-pc').style.width=Math.min(100,(tc/160)*100)+'%';document.getElementById('t-pf').style.width=Math.min(100,(tf/75)*100)+'%';}
+function renderTodaysMeals(){const date=getNDate();const entries=load(K.meal_entries).filter(x=>x.date===date);const el=document.getElementById('todays-meals-log');if(!el)return;updateNDateLabels();if(!entries.length){el.innerHTML=`<div class="empty" style="padding:14px;"><div class="ei">◈</div>No meals logged for ${fmtNDate(date)}.</div>`;return;}el.innerHTML=entries.map(e=>`<div class="meal-entry-row"><div style="flex:1;"><div style="font-size:13px;color:var(--pale);">${e.desc}</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;">${e.protein}p · ${e.carbs}c · ${e.fat}f · ${e.kcal} kcal${e.time?' · '+e.time:''}</div></div><button class="dx" onclick="delMealEntry(${e.id},'${date}')">✕</button></div>`).join('');}
+function delMealEntry(id,date){const entries=load(K.meal_entries).filter(x=>x.id!==id);save(K.meal_entries,entries);rebuildDailyTotal(date||getNDate());renderTodaysTotal();renderTodaysMeals();renderNutritionLog();renderDashboard();}
+function renderTodaysTotal(){const date=getNDate();const entries=load(K.meal_entries).filter(x=>x.date===date);const card=document.getElementById('todays-total-card');if(!card)return;updateNDateLabels();if(!entries.length){card.style.display='none';return;}card.style.display='block';const tp=Math.round(entries.reduce((s,x)=>s+x.protein,0)),tc=Math.round(entries.reduce((s,x)=>s+x.carbs,0)),tf=Math.round(entries.reduce((s,x)=>s+x.fat,0)),tk=Math.round(tp*4+tc*4+tf*9);document.getElementById('today-p-total').textContent=tp+'g';document.getElementById('today-c-total').textContent=tc+'g';document.getElementById('today-f-total').textContent=tf+'g';document.getElementById('today-kcal-total').textContent=`${tk} kcal total`;document.getElementById('t-pp').style.width=Math.min(100,(tp/245)*100)+'%';document.getElementById('t-pc').style.width=Math.min(100,(tc/160)*100)+'%';document.getElementById('t-pf').style.width=Math.min(100,(tf/75)*100)+'%';}
 function renderNutritionLog(){const d=load(K.nutrition),tb=document.getElementById('nutrition-log');if(!tb)return;if(!d.length){tb.innerHTML='<tr><td colspan="8"><div class="empty"><div class="ei">🥩</div>No days logged yet.</div></td></tr>';return;}tb.innerHTML=d.map(n=>`<tr><td>${fmt(n.date)}</td><td><span class="badge ${n.training==='Yes'?'gold':'blue'}">${n.training==='Yes'?'Train':'Rest'}</span></td><td>${n.protein}g</td><td>${n.carbs}g</td><td>${n.fat}g</td><td>${n.kcal}</td><td>${n.mealCount||1}</td><td><button class="dx" onclick="del('${K.nutrition}',${n.id},[renderNutritionLog,renderDashboard])">✕</button></td></tr>`).join('');}
-const renderNutritionTab=()=>{renderSavedMeals();renderTodaysMeals();renderTodaysTotal();renderNutritionLog();};
+const renderNutritionTab=()=>{renderApiKeyStatus();renderSavedMeals();renderTodaysMeals();renderTodaysTotal();renderNutritionLog();switchNTab(activeNTab);};
+function logManualMeal(){const desc=document.getElementById('m-desc').value.trim()||'Manual entry';const p=parseFloat(document.getElementById('m-protein').value)||0;const c=parseFloat(document.getElementById('m-carbs').value)||0;const f=parseFloat(document.getElementById('m-fat').value)||0;const k=parseFloat(document.getElementById('m-kcal').value)||Math.round(p*4+c*4+f*9);if(!p&&!c&&!f){toast('Enter at least one macro','var(--red)');return;}const date=getNDate();logMealEntry(date,desc,p,c,f,k);['m-desc','m-protein','m-carbs','m-fat','m-kcal'].forEach(i=>document.getElementById(i).value='');toast('Logged → '+fmtNDate(date)+' ✓');renderNutritionTab();}
 // SCHEDULE / REFEED
 function logRefeed(){const date=document.getElementById('rf-date').value;if(!date){toast('Enter date','var(--red)');return;}const e={date,carbs:document.getElementById('rf-carbs').value,notes:document.getElementById('rf-notes').value,id:Date.now()};const d=load(K.refeed);d.unshift(e);save(K.refeed,d);renderRefeedLog();toast('Refeed logged ✓');['rf-carbs','rf-notes'].forEach(i=>document.getElementById(i).value='');}
 function renderRefeedLog(){const d=load(K.refeed);const el=document.getElementById('refeed-log');if(!el)return;if(!d.length){el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px 0;">No refeeds logged yet.</div>';return;}el.innerHTML=d.map(r=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(212,175,55,.08);font-size:13px;"><span style="color:var(--pale);">${fmt(r.date)} — <span style="color:var(--amber);">${r.carbs?r.carbs+'g extra carbs':'—'}</span></span><span style="color:var(--muted);font-size:12px;flex:1;margin:0 10px;">${r.notes||''}</span><button class="dx" onclick="del('${K.refeed}',${r.id},[renderRefeedLog])">✕</button></div>`).join('');}
@@ -1063,6 +1157,7 @@ function importBackup(input){const file=input.files[0];if(!file)return;const rea
 document.addEventListener('DOMContentLoaded',async()=>{
   const t=today();['w-date','l-date','b-date','bl-date','n-date','photo-date','rf-date','wr-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t;});
   initSavedMeals();
+  renderApiKeyStatus();
   await openPhotoDB();
   populateTemplateSelects();
   renderDashboard();
