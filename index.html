@@ -425,7 +425,6 @@ tr:hover td{background:var(--amber-dim);}
 <header class="hdr">
   <div class="hdr-logo">ACE<span class="dot">·</span>PEAK</div>
   <div class="hdr-right">
-    <button class="hdr-btn" onclick="exportBackup()">Backup</button>
     <div class="streak-pill">🔥 <span id="streak-num">0</span></div>
   </div>
 </header>
@@ -782,7 +781,7 @@ tr:hover td{background:var(--amber-dim);}
   <!-- PROTOCOL REFERENCE -->
   <div class="card"><div class="ct"><span class="d"></span>Protocol Reference</div>
     <div class="sh">Training Day (5 AM Protocol)</div>
-    <div class="sr"><span><strong>3:00–4:00 AM</strong></span><span style="font-size:12px;color:var(--muted);">Cottage cheese + berries + almonds · ~35g protein</span></div>
+    <div class="sr"><span><strong>Pre-Workout</strong></span><span style="font-size:12px;color:var(--muted);">Cottage cheese + berries + almonds · ~35g protein · 3:00–4:00 AM</span></div>
     <div class="sr"><span><strong>Post-Workout</strong></span><span style="font-size:12px;color:var(--muted);">Whey shake + banana + 5g creatine · ~40g protein</span></div>
     <div class="sr"><span><strong>Dinner</strong></span><span style="font-size:12px;color:var(--muted);">8–10 oz protein + sweet potato + vegetables · ~50g protein</span></div>
     <div class="sh">Supplements</div>
@@ -818,12 +817,49 @@ tr:hover td{background:var(--amber-dim);}
 
 <!-- WEEKLY REVIEW -->
 <div id="tab-weekly" class="tab"><div class="wrap">
-  <div class="card"><div class="ct"><span class="d"></span>Sunday Check-In</div>
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:12px;">Two minutes every Sunday. Spot the patterns before they cost you progress.</div>
-    <div class="fr"><div class="fi"><label>Week ending</label><input type="date" id="wr-date"></div><div class="fi" style="max-width:70px;"><label>Sessions</label><input type="number" id="wr-sessions" placeholder="4"></div><div class="fi" style="max-width:70px;"><label>Avg sleep</label><input type="number" id="wr-sleep" placeholder="7" min="1" max="10"></div><div class="fi" style="max-width:70px;"><label>Avg energy</label><input type="number" id="wr-energy" placeholder="7" min="1" max="10"></div></div>
-    <div class="fr"><div class="fi" style="max-width:88px;"><label>End weight</label><input type="number" id="wr-weight" placeholder="267" step="0.1"></div><div class="fi" style="max-width:88px;"><label>Avg protein</label><input type="number" id="wr-protein" placeholder="245"></div><div class="fi" style="max-width:88px;"><label>Avg kcal</label><input type="number" id="wr-kcal" placeholder="2450"></div><div class="fi" style="max-width:75px;"><label>Refeed?</label><select id="wr-refeed"><option>No</option><option>Yes</option></select></div></div>
-    <div class="fr"><div class="fi"><label>Wins / PRs</label><input type="text" id="wr-wins" placeholder="e.g. Hit 225 squat, waist down 0.25 inches"></div></div>
-    <div class="fr"><div class="fi"><label>Issues / Adjustments needed</label><textarea id="wr-issues" placeholder="e.g. Energy low Wed–Thu — may need +200 kcal"></textarea></div></div>
+  <div class="card">
+    <div class="ct"><span class="d"></span>Sunday Check-In</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:14px;">Two minutes every Sunday. App pulls your numbers automatically — just review, reflect, and save.</div>
+
+    <!-- AUTO-CALCULATED STATS -->
+    <div style="background:var(--black4);border:1px solid rgba(200,134,10,.2);border-left:2px solid var(--amber);padding:13px;margin-bottom:14px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Auto-Calculated This Week</div>
+      <div class="g3" id="wr-auto-stats">
+        <div class="sb"><div class="sl">Sessions</div><div class="sv green" id="wr-auto-sessions">—</div><div class="ss">logged workouts</div></div>
+        <div class="sb"><div class="sl">Avg Sleep</div><div class="sv" id="wr-auto-sleep">—</div><div class="ss">/ 10 score</div></div>
+        <div class="sb"><div class="sl">End Weight</div><div class="sv amber" id="wr-auto-weight">—</div><div class="ss">lbs · last logged</div></div>
+        <div class="sb"><div class="sl">Avg Protein</div><div class="sv" id="wr-auto-protein">—</div><div class="ss">g/day</div></div>
+        <div class="sb"><div class="sl">Avg Kcal</div><div class="sv" id="wr-auto-kcal">—</div><div class="ss">kcal/day</div></div>
+        <div class="sb"><div class="sl">Avg Energy</div><div class="sv" id="wr-auto-energy">—</div><div class="ss">/ 10 RPE avg</div></div>
+      </div>
+      <button class="btn ghost" onclick="calcWeeklyStats()" style="margin-top:10px;width:100%;text-align:center;">↻ Recalculate from Logs</button>
+    </div>
+
+    <!-- AI INSIGHTS -->
+    <div style="background:var(--black4);border:1px solid rgba(200,134,10,.2);border-left:2px solid var(--green2);padding:13px;margin-bottom:14px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--green2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;">This Week's Insights</div>
+      <div id="wr-insights" style="font-size:13px;color:var(--pale);line-height:1.75;">Select a week ending date to see insights.</div>
+    </div>
+
+    <!-- MANUAL OVERRIDES -->
+    <div class="sh" style="margin-top:0;">Manual Overrides (optional — auto-calc fills these)</div>
+    <div class="fr">
+      <div class="fi"><label>Week ending</label><input type="date" id="wr-date"></div>
+      <div class="fi" style="max-width:75px;"><label>Sessions</label><input type="number" id="wr-sessions" placeholder="Auto"></div>
+      <div class="fi" style="max-width:75px;"><label>Avg sleep</label><input type="number" id="wr-sleep" placeholder="Auto" min="1" max="10"></div>
+      <div class="fi" style="max-width:75px;"><label>Avg energy</label><input type="number" id="wr-energy" placeholder="Auto" min="1" max="10"></div>
+    </div>
+    <div class="fr">
+      <div class="fi" style="max-width:88px;"><label>End weight</label><input type="number" id="wr-weight" placeholder="Auto" step="0.1"></div>
+      <div class="fi" style="max-width:88px;"><label>Avg protein</label><input type="number" id="wr-protein" placeholder="Auto"></div>
+      <div class="fi" style="max-width:88px;"><label>Avg kcal</label><input type="number" id="wr-kcal" placeholder="Auto"></div>
+      <div class="fi" style="max-width:75px;"><label>Refeed?</label><select id="wr-refeed"><option>No</option><option>Yes</option></select></div>
+    </div>
+
+    <!-- REFLECTION -->
+    <div class="sh">Your Reflection</div>
+    <div class="fr"><div class="fi"><label>Wins / PRs this week</label><input type="text" id="wr-wins" placeholder="e.g. Hit 225 squat, waist down 0.25 inches, energy felt great"></div></div>
+    <div class="fr"><div class="fi"><label>Notes / What to adjust next week</label><textarea id="wr-issues" placeholder="e.g. Energy low Wed–Thu. Sleep was inconsistent. Plan to go to bed 30 min earlier."></textarea></div></div>
     <button class="btn" onclick="logWeeklyReview()">Save Review</button>
   </div>
   <div id="weekly-log"></div>
@@ -975,7 +1011,7 @@ function showTab(id,btn){
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-  const r={dashboard:renderDashboard,insights:renderInsights,workouts:renderWorkouts,lifts:renderLifts,body:renderBodyLog,photos:renderPhotoGallery,bloodwork:renderBloodworkLog,nutrition:renderNutritionTab,schedule:renderRefeedLog,weekly:renderWeeklyLog,coupons:renderCoupons,achievements:renderAchievements,import:renderImportLog};
+  const r={dashboard:renderDashboard,insights:renderInsights,workouts:renderWorkouts,lifts:renderLifts,body:renderBodyLog,photos:renderPhotoGallery,bloodwork:renderBloodworkLog,nutrition:renderNutritionTab,schedule:renderRefeedLog,weekly:()=>{renderWeeklyLog();calcWeeklyStats();},coupons:renderCoupons,achievements:renderAchievements,import:renderImportLog};
   r[id]&&r[id]();
 }
 const toggleDay=h=>{const b=h.nextElementSibling,a=h.querySelector('span:last-child');b.classList.toggle('open');a.textContent=b.classList.contains('open')?'▾':'▸';};
@@ -1076,7 +1112,8 @@ function addSavedMeal(){const name=document.getElementById('sm-name').value.trim
 function renderSavedMeals(){const meals=load(K.saved_meals);const el=document.getElementById('saved-meals-list');if(!el)return;if(!meals.length){el.innerHTML='<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No saved meals yet — add one below.</div>';return;}el.innerHTML=meals.map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(200,134,10,.1);"><div style="flex:1;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:16px;font-weight:700;color:var(--amber);">${m.name}</div><div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted);margin-top:2px;">${m.desc||''} · ${m.protein}p / ${m.carbs}c / ${m.fat}f · ${Math.round(m.protein*4+m.carbs*4+m.fat*9)} kcal</div></div><button class="btn" style="padding:7px 14px;font-size:11px;" onclick="logSavedMeal('${m.id}')">Log</button><button class="dx" onclick="delSavedMeal('${m.id}')">✕</button></div>`).join('');}
 const logSavedMeal=id=>{const m=load(K.saved_meals).find(x=>x.id===id);if(!m)return;const date=getNDate();logMealEntry(date,m.name,m.protein,m.carbs,m.fat,Math.round(m.protein*4+m.carbs*4+m.fat*9));toast(m.name+' → '+fmtNDate(date)+' ✓');renderNutritionTab();};
 const delSavedMeal=id=>{save(K.saved_meals,load(K.saved_meals).filter(x=>x.id!==id));renderSavedMeals();};
-function renderTodaysMeals(){const date=getNDate();const entries=load(K.meal_entries).filter(x=>x.date===date);const el=document.getElementById('todays-meals-log');if(!el)return;updateNDateLabels();if(!entries.length){el.innerHTML=`<div class="empty" style="padding:14px;"><div class="ei">◈</div>No meals logged for ${fmtNDate(date)}.</div>`;return;}el.innerHTML=entries.map(e=>`<div class="meal-entry-row"><div style="flex:1;"><div style="font-size:13px;color:var(--pale);">${e.desc}</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;">${e.protein}p · ${e.carbs}c · ${e.fat}f · ${e.kcal} kcal${e.time?' · '+e.time:''}</div></div><button class="dx" onclick="delMealEntry(${e.id},'${date}')">✕</button></div>`).join('');}
+function renderTodaysMeals(){const date=getNDate();const entries=load(K.meal_entries).filter(x=>x.date===date);const el=document.getElementById('todays-meals-log');if(!el)return;updateNDateLabels();if(!entries.length){el.innerHTML=`<div class="empty" style="padding:14px;"><div class="ei">◈</div>No meals logged for ${fmtNDate(date)}.</div>`;return;}el.innerHTML=entries.map(e=>`<div class="meal-entry-row"><div style="flex:1;"><div style="font-size:13px;color:var(--pale);">${e.desc}</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;">${e.protein}p · ${e.carbs}c · ${e.fat}f · ${e.kcal} kcal${e.time?' · '+e.time:''}</div></div><button class="btn ghost" style="padding:3px 8px;font-size:9px;margin-right:4px;" onclick="moveMealEntry(${e.id},'${date}')">Move Date</button><button class="dx" onclick="delMealEntry(${e.id},'${date}')">✕</button></div>`).join('');}
+function moveMealEntry(id,currentDate){const newDate=prompt('Move this meal to date (YYYY-MM-DD):',currentDate);if(!newDate||newDate===currentDate)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(newDate)){toast('Invalid date format','var(--red)');return;}const entries=load(K.meal_entries);const idx=entries.findIndex(x=>x.id===id);if(idx<0)return;entries[idx].date=newDate;save(K.meal_entries,entries);rebuildDailyTotal(currentDate);rebuildDailyTotal(newDate);renderTodaysTotal();renderTodaysMeals();renderNutritionLog();renderDashboard();toast(`Moved to ${fmtNDate(newDate)} ✓`);}
 function delMealEntry(id,date){const entries=load(K.meal_entries).filter(x=>x.id!==id);save(K.meal_entries,entries);rebuildDailyTotal(date||getNDate());renderTodaysTotal();renderTodaysMeals();renderNutritionLog();renderDashboard();}
 function renderTodaysTotal(){const date=getNDate();const entries=load(K.meal_entries).filter(x=>x.date===date);const card=document.getElementById('todays-total-card');if(!card)return;updateNDateLabels();if(!entries.length){card.style.display='none';return;}card.style.display='block';const tp=Math.round(entries.reduce((s,x)=>s+x.protein,0)),tc=Math.round(entries.reduce((s,x)=>s+x.carbs,0)),tf=Math.round(entries.reduce((s,x)=>s+x.fat,0)),tk=Math.round(tp*4+tc*4+tf*9);document.getElementById('today-p-total').textContent=tp+'g';document.getElementById('today-c-total').textContent=tc+'g';document.getElementById('today-f-total').textContent=tf+'g';document.getElementById('today-kcal-total').textContent=`${tk} kcal total`;document.getElementById('t-pp').style.width=Math.min(100,(tp/245)*100)+'%';document.getElementById('t-pc').style.width=Math.min(100,(tc/160)*100)+'%';document.getElementById('t-pf').style.width=Math.min(100,(tf/75)*100)+'%';}
 function renderNutritionLog(){const d=load(K.nutrition),tb=document.getElementById('nutrition-log');if(!tb)return;if(!d.length){tb.innerHTML='<tr><td colspan="8"><div class="empty"><div class="ei">🥩</div>No days logged yet.</div></td></tr>';return;}tb.innerHTML=d.map(n=>`<tr><td>${fmt(n.date)}</td><td><span class="badge ${n.training==='Yes'?'gold':'blue'}">${n.training==='Yes'?'Train':'Rest'}</span></td><td>${n.protein}g</td><td>${n.carbs}g</td><td>${n.fat}g</td><td>${n.kcal}</td><td>${n.mealCount||1}</td><td><button class="dx" onclick="del('${K.nutrition}',${n.id},[renderNutritionLog,renderDashboard])">✕</button></td></tr>`).join('');}
@@ -1091,8 +1128,46 @@ function checkRefeedNudge(){const dismissed=localStorage.getItem('ap_rn_dismiss'
 function dismissRefeedNudge(snooze){document.getElementById('refeed-nudge').classList.remove('show');if(snooze){localStorage.setItem('ap_rn_dismiss',today());}else{document.querySelectorAll('.nb').forEach(b=>{if(b.textContent.trim()==='Schedule')b.click();});}}
 
 // WEEKLY REVIEW
-function logWeeklyReview(){const date=document.getElementById('wr-date').value;if(!date){toast('Enter week-end date','var(--red)');return;}const e={date,sessions:document.getElementById('wr-sessions').value,sleep:document.getElementById('wr-sleep').value,energy:document.getElementById('wr-energy').value,weight:document.getElementById('wr-weight').value,protein:document.getElementById('wr-protein').value,kcal:document.getElementById('wr-kcal').value,refeed:document.getElementById('wr-refeed').value,wins:document.getElementById('wr-wins').value,issues:document.getElementById('wr-issues').value,id:Date.now()};const d=load(K.weekly);d.unshift(e);save(K.weekly,d);renderWeeklyLog();renderDashboard();setTimeout(()=>{checkMilestones();checkWeeklyEarnings();},300);toast('Review saved ✓');['wr-sessions','wr-sleep','wr-energy','wr-weight','wr-protein','wr-kcal','wr-wins','wr-issues'].forEach(i=>document.getElementById(i).value='');}
-function renderWeeklyLog(){const d=load(K.weekly),el=document.getElementById('weekly-log');if(!d.length){el.innerHTML='<div class="empty"><div class="ei">📋</div>No weekly reviews yet.</div>';return;}el.innerHTML=d.map(w=>`<div class="card" style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);">Week ending ${fmt(w.date)}</div><button class="dx" onclick="del('${K.weekly}',${w.id},[renderWeeklyLog])">✕</button></div><div class="g3" style="margin-bottom:9px;"><div class="sb"><div class="sl">Sessions</div><div class="sv green">${w.sessions||'—'}</div></div><div class="sb"><div class="sl">Sleep</div><div class="sv">${w.sleep||'—'}</div></div><div class="sb"><div class="sl">Energy</div><div class="sv">${w.energy||'—'}</div></div><div class="sb"><div class="sl">Weight</div><div class="sv gold">${w.weight?w.weight+' lbs':'—'}</div></div><div class="sb"><div class="sl">Protein</div><div class="sv">${w.protein?w.protein+'g':'—'}</div></div><div class="sb"><div class="sl">Kcal</div><div class="sv">${w.kcal||'—'}</div></div></div>${w.wins?`<div style="margin-bottom:5px;"><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--green);text-transform:uppercase;letter-spacing:.06em;">WINS</div><div style="font-size:13px;color:var(--pale);margin-top:2px;">${w.wins}</div></div>`:''} ${w.issues?`<div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;">ADJUSTMENTS</div><div style="font-size:13px;color:var(--muted);margin-top:2px;">${w.issues}</div></div>`:''} ${w.refeed==='Yes'?'<div style="margin-top:5px;"><span class="badge gold">Refeed week</span></div>':''}</div>`).join('');}
+function calcWeeklyStats(){const dateEl=document.getElementById('wr-date');const endDate=dateEl.value||today();if(!dateEl.value)dateEl.value=endDate;const startDate=new Date(endDate+'T00:00:00');startDate.setDate(startDate.getDate()-6);const startStr=startDate.toISOString().split('T')[0];const workouts=load(K.workouts).filter(x=>x.date>=startStr&&x.date<=endDate);const nutr=load(K.nutrition).filter(x=>x.date>=startStr&&x.date<=endDate);const body=load(K.body).filter(x=>x.weight&&x.date>=startStr&&x.date<=endDate);const allBody=load(K.body).filter(x=>x.weight).sort((a,b)=>b.date.localeCompare(a.date));
+  // Sessions
+  const sessions=workouts.length;
+  document.getElementById('wr-auto-sessions').textContent=sessions;document.getElementById('wr-auto-sessions').className='sv '+(sessions>=4?'green':sessions>=2?'amber':'red');
+  // Avg sleep from body log
+  const sleepData=load(K.body).filter(x=>x.sleep&&x.date>=startStr&&x.date<=endDate);
+  const avgSleep=sleepData.length?Math.round(sleepData.reduce((s,x)=>s+parseFloat(x.sleep),0)/sleepData.length*10)/10:null;
+  document.getElementById('wr-auto-sleep').textContent=avgSleep||'—';
+  // End weight - most recent logged
+  const latestWeight=allBody[0];document.getElementById('wr-auto-weight').textContent=latestWeight?latestWeight.weight+' lbs':'—';
+  // Avg protein + kcal
+  const avgProtein=nutr.length?Math.round(nutr.reduce((s,x)=>s+x.protein,0)/nutr.length):null;
+  const avgKcal=nutr.length?Math.round(nutr.reduce((s,x)=>s+x.kcal,0)/nutr.length):null;
+  document.getElementById('wr-auto-protein').textContent=avgProtein?avgProtein+'g':'—';document.getElementById('wr-auto-protein').className='sv '+(avgProtein>=220?'green':avgProtein>=190?'amber':'red');
+  document.getElementById('wr-auto-kcal').textContent=avgKcal||'—';
+  // Avg energy from workouts RPE
+  const rpeData=workouts.filter(x=>x.rpe||x.energy);
+  const avgEnergy=rpeData.length?Math.round(rpeData.reduce((s,x)=>s+parseFloat(x.energy||x.rpe||7),0)/rpeData.length*10)/10:null;
+  document.getElementById('wr-auto-energy').textContent=avgEnergy||'—';
+  // Auto-fill form fields if empty
+  if(!document.getElementById('wr-sessions').value&&sessions)document.getElementById('wr-sessions').value=sessions;
+  if(!document.getElementById('wr-sleep').value&&avgSleep)document.getElementById('wr-sleep').value=avgSleep;
+  if(!document.getElementById('wr-weight').value&&latestWeight)document.getElementById('wr-weight').value=latestWeight.weight;
+  if(!document.getElementById('wr-protein').value&&avgProtein)document.getElementById('wr-protein').value=avgProtein;
+  if(!document.getElementById('wr-kcal').value&&avgKcal)document.getElementById('wr-kcal').value=avgKcal;
+  if(!document.getElementById('wr-energy').value&&avgEnergy)document.getElementById('wr-energy').value=avgEnergy;
+  // Generate insights
+  const insights=[];
+  if(sessions<4)insights.push(`Sessions: ${sessions}/4 target. ${sessions===0?'No sessions logged this week — what happened?':sessions===1?'Only 1 session. One more than zero but the target is 4.':'Getting there but short of 4. Can you move anything to make up the gap?'}`);
+  else insights.push(`Sessions: ${sessions} this week. On target — progressive overload is compounding.`);
+  if(avgProtein){if(avgProtein<200)insights.push(`Protein: ${avgProtein}g avg — below the 220g minimum. This is the single most important number to fix. Every gram under 220 is muscle you're not protecting.`);else if(avgProtein<220)insights.push(`Protein: ${avgProtein}g avg — close but just under 220g. One extra shake or handful of cottage cheese closes that gap.`);else insights.push(`Protein: ${avgProtein}g avg — target hit. Muscle is protected.`);}
+  if(avgSleep){if(avgSleep<7)insights.push(`Sleep: ${avgSleep}/10 avg — low. Poor sleep costs you at the gym (harder sessions, worse recovery) and raises cortisol which stalls fat loss. Non-negotiable: bed by 9:30 PM.`);else if(avgSleep<8)insights.push(`Sleep: ${avgSleep}/10 — decent. Room to improve. Each point you add here shows up in your PRs.`);else insights.push(`Sleep: ${avgSleep}/10 — solid recovery. Keep protecting your sleep window.`);}
+  if(latestWeight&&body.length>=2){const prevWeight=body.length>=2?parseFloat(body[0].weight):null;const currWeight=parseFloat(latestWeight.weight);if(prevWeight){const diff=(prevWeight-currWeight).toFixed(1);const rate=diff/1;if(rate>1.2)insights.push(`Weight: down ${diff} lbs — rate above 1 lb/week. Watch your strength numbers. If any lift drops >10%, add 200–300 kcal immediately.`);else if(rate>=0.3)insights.push(`Weight: down ${diff} lbs — ideal 0.5–1 lb/week range. You're losing fat and protecting muscle.`);else if(Math.abs(rate)<0.2)insights.push(`Weight: flat this week. Check deficit, sleep, and refeed timing. Sometimes a refeed actually breaks a stall.`);else insights.push(`Weight: up ${Math.abs(diff)} lbs. Normal fluctuation? Or a trend? Watch the next 3 weigh-ins.`);}}
+  const weeksSinceRefeed=load(K.refeed).length?Math.round((new Date()-new Date(load(K.refeed)[0].date+'T00:00:00'))/604800000):99;
+  if(weeksSinceRefeed>=5)insights.push(`Refeed: ${weeksSinceRefeed} weeks since your last one. Your protocol calls for one every 4–6 weeks. Schedule one this week or next.`);
+  document.getElementById('wr-insights').innerHTML=insights.map(i=>`<div style="padding:5px 0;border-bottom:1px solid rgba(200,134,10,.1);">${i}</div>`).join('')||'Everything looks on track — good week.';
+  toast('Stats calculated ✓');}
+
+function logWeeklyReview(){const date=document.getElementById('wr-date').value||today();document.getElementById('wr-date').value=date;calcWeeklyStats();const e={date,sessions:document.getElementById('wr-sessions').value,sleep:document.getElementById('wr-sleep').value,energy:document.getElementById('wr-energy').value,weight:document.getElementById('wr-weight').value,protein:document.getElementById('wr-protein').value,kcal:document.getElementById('wr-kcal').value,refeed:document.getElementById('wr-refeed').value,wins:document.getElementById('wr-wins').value,issues:document.getElementById('wr-issues').value,id:Date.now()};const d=load(K.weekly);d.unshift(e);save(K.weekly,d);renderWeeklyLog();renderDashboard();setTimeout(()=>{checkMilestones();checkWeeklyEarnings();},300);toast('Review saved ✓');['wr-sessions','wr-sleep','wr-energy','wr-weight','wr-protein','wr-kcal','wr-wins','wr-issues'].forEach(i=>document.getElementById(i).value='');}
+function renderWeeklyLog(){const d=load(K.weekly),el=document.getElementById('weekly-log');if(!d.length){el.innerHTML='<div class="empty"><div class="ei">📋</div>No weekly reviews yet.</div>';return;}el.innerHTML=d.map(w=>`<div class="card" style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;"><div style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:var(--amber);">Week ending ${fmt(w.date)}</div><button class="dx" onclick="del('${K.weekly}',${w.id},[renderWeeklyLog])">✕</button></div><div class="g3" style="margin-bottom:10px;"><div class="sb"><div class="sl">Sessions</div><div class="sv ${parseInt(w.sessions)>=4?'green':'amber'}">${w.sessions||'—'}</div></div><div class="sb"><div class="sl">Sleep</div><div class="sv">${w.sleep||'—'}</div></div><div class="sb"><div class="sl">Energy</div><div class="sv">${w.energy||'—'}</div></div><div class="sb"><div class="sl">Weight</div><div class="sv amber">${w.weight?w.weight+' lbs':'—'}</div></div><div class="sb"><div class="sl">Protein</div><div class="sv ${parseInt(w.protein)>=220?'green':'amber'}">${w.protein?w.protein+'g':'—'}</div></div><div class="sb"><div class="sl">Kcal</div><div class="sv">${w.kcal||'—'}</div></div></div>${w.wins?`<div style="margin-bottom:7px;"><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--green2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Wins</div><div style="font-size:13px;color:var(--pale);">${w.wins}</div></div>`:''} ${w.issues?`<div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;">Notes / Adjustments</div><div style="font-size:13px;color:var(--muted);">${w.issues}</div></div>`:''} ${w.refeed==='Yes'?'<div style="margin-top:6px;"><span class="badge amber">Refeed week</span></div>':''}</div>`).join('');}
 
 // INSIGHTS
 function renderInsights(){const workouts=load(K.workouts),body=load(K.body),nutr=load(K.nutrition),lifts=load(K.lifts);const cs=new Date();cs.setDate(cs.getDate()-7);const csStr=cs.toISOString().split('T')[0];const rW=workouts.filter(x=>x.date>=csStr),rN=nutr.filter(x=>x.date>=csStr);const insights=[];
