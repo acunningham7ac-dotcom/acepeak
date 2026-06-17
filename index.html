@@ -513,12 +513,27 @@ tr:hover td{background:var(--amber-dim);}
     <div class="ct"><span class="d"></span>Log a Session</div>
     <div class="fr">
       <div class="fi"><label>Date</label><input type="date" id="w-date"></div>
-      <div class="fi"><label>Workout Template</label><select id="w-template"><option value="">— Select or Custom —</option></select></div>
+      <div class="fi"><label>Workout Template</label><select id="w-template" onchange="loadTemplateExercises()"><option value="">— Select or Custom —</option></select></div>
       <div class="fi" style="max-width:72px;"><label>Duration (min)</label><input type="number" id="w-dur" placeholder="55"></div>
       <div class="fi" style="max-width:63px;"><label>RPE</label><input type="number" id="w-rpe" placeholder="7" min="1" max="10"></div>
       <div class="fi" style="max-width:68px;"><label>Energy</label><input type="number" id="w-energy" placeholder="8" min="1" max="10"></div>
     </div>
-    <div class="fr"><div class="fi"><label>Notes / PRs</label><textarea id="w-notes" placeholder="e.g. Squat 225×5 new PR, felt strong on bench"></textarea></div></div>
+
+    <!-- EXERCISE SET LOGGER -->
+    <div id="exercise-logger" style="margin-bottom:13px;">
+      <div class="sh" style="margin-top:4px;">Exercises — Sets / Reps / Weight</div>
+      <div id="exercise-rows"></div>
+      <div class="fr" style="margin-top:9px;">
+        <div class="fi"><label>Exercise</label><input type="text" id="new-ex-name" placeholder="e.g. Squat, Bench Press" list="lift-suggestions-w"><datalist id="lift-suggestions-w"></datalist></div>
+        <div class="fi" style="max-width:68px;"><label>Sets</label><input type="number" id="new-ex-sets" placeholder="4" min="1"></div>
+        <div class="fi" style="max-width:68px;"><label>Reps</label><input type="number" id="new-ex-reps" placeholder="5" min="1"></div>
+        <div class="fi" style="max-width:80px;"><label>Weight (lbs)</label><input type="number" id="new-ex-weight" placeholder="225" step="2.5"></div>
+        <div class="fi" style="max-width:68px;"><label>RPE</label><input type="number" id="new-ex-rpe" placeholder="7" min="1" max="10"></div>
+        <button class="btn dark" onclick="addExerciseRow()" style="align-self:flex-end;padding:9px 14px;">+ Add</button>
+      </div>
+    </div>
+
+    <div class="fr"><div class="fi"><label>Session Notes</label><textarea id="w-notes" placeholder="e.g. Felt strong, new squat PR, tired on last set"></textarea></div></div>
     <button class="btn" onclick="logWorkout()">Log Session</button>
   </div>
   <div class="card">
@@ -540,7 +555,7 @@ tr:hover td{background:var(--amber-dim);}
     </div>
   </div>
   <div class="card"><div class="ct"><span class="d"></span>Session History</div>
-    <div class="tw"><table><thead><tr><th>Date</th><th>Workout</th><th>Min</th><th>RPE</th><th>Energy</th><th>Notes</th><th></th></tr></thead>
+    <div class="tw"><table><thead><tr><th>Date</th><th>Workout</th><th>Min</th><th>RPE</th><th>Exercises</th><th>Notes</th><th></th></tr></thead>
     <tbody id="workout-log"><tr><td colspan="7"><div class="empty"><div class="ei">◈</div>No sessions yet.</div></td></tr></tbody></table></div>
   </div>
 </div></div>
@@ -954,8 +969,8 @@ tr:hover td{background:var(--amber-dim);}
     <div id="score-breakdown-rows"></div>
   </div>
   <div class="card" id="priorities-card" style="display:none;">
-    <div class="ct"><span class="d green"></span>Top 5 Priorities — Next 7 Days</div>
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:13px;">Ranked by health impact. The top item moves the needle most right now.</div>
+    <div class="ct"><span class="d green"></span>This Week's Action Plan</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:13px;">Based on your actual data from the last 7 days. Specific, measurable, this week only.</div>
     <div id="priorities-list"></div>
   </div>
   <div class="card" id="full-report-card" style="display:none;">
@@ -1064,7 +1079,7 @@ const del=(key,id,cbs)=>{save(key,load(key).filter(x=>x.id!==id));cbs&&cbs.forEa
 const openQuick=()=>{document.getElementById('quick-modal').classList.add('show');document.querySelectorAll('.quick-form').forEach(f=>f.classList.remove('show'));populateTemplateSelects();renderQuickMeals();};
 const closeQuick=()=>document.getElementById('quick-modal').classList.remove('show');
 const showQF=id=>{document.querySelectorAll('.quick-form').forEach(f=>f.classList.remove('show'));document.getElementById('qf-'+id).classList.add('show');};
-function qSession(){const d=load(K.workouts);d.unshift({date:today(),type:document.getElementById('qq-type').value||'Custom',rpe:document.getElementById('qq-rpe').value,energy:document.getElementById('qq-energy').value,notes:document.getElementById('qq-notes').value,duration:'',id:Date.now()});save(K.workouts,d);closeQuick();renderWorkouts();renderDashboard();setTimeout(checkMilestones,300);toast('Session logged ✓');['qq-rpe','qq-energy','qq-notes'].forEach(i=>document.getElementById(i).value='');}
+function qSession(){const d=load(K.workouts);d.unshift({date:today(),type:document.getElementById('qq-type').value||'Custom',rpe:document.getElementById('qq-rpe').value,energy:document.getElementById('qq-energy').value,notes:document.getElementById('qq-notes').value,exercises:[],duration:'',id:Date.now()});save(K.workouts,d);closeQuick();renderWorkouts();renderDashboard();setTimeout(checkMilestones,300);toast('Session logged ✓');['qq-rpe','qq-energy','qq-notes'].forEach(i=>document.getElementById(i).value='');}
 function qWeight(){const w=document.getElementById('qq-weight').value;if(!w){toast('Enter weight','var(--red)');return;}const d=load(K.body);d.push({date:today(),weight:w,waist:document.getElementById('qq-waist').value,sleep:document.getElementById('qq-sleep').value,bf:'',lean:'',fatm:'',notes:'Quick log',id:Date.now()});d.sort((a,b)=>a.date.localeCompare(b.date));save(K.body,d);closeQuick();renderBodyLog();renderDashboard();setTimeout(checkMilestones,300);toast('Weight logged ✓');['qq-weight','qq-waist','qq-sleep'].forEach(i=>document.getElementById(i).value='');}
 function qLift(){const w=document.getElementById('qq-lw').value;if(!w){toast('Enter weight','var(--red)');return;}const sr=document.getElementById('qq-sr').value.split(/[×x]/);const d=load(K.lifts);d.unshift({date:today(),lift:document.getElementById('qq-lift').value||'Custom',weight:w,sets:sr[0]||'',reps:sr[1]||'',rpe:'',notes:'Quick log',id:Date.now()});save(K.lifts,d);closeQuick();renderLifts();setTimeout(checkMilestones,300);toast('Lift logged ✓');['qq-lw','qq-sr','qq-lift'].forEach(i=>document.getElementById(i).value='');}
 async function qMealAI(){const key=getApiKey();const desc=document.getElementById('qq-meal-desc').value.trim();if(!key){toast('Add API key in Setup','var(--red)');return;}if(!desc){toast('Describe a meal','var(--red)');return;}toast('Calculating...','var(--blue)');try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:`Return ONLY JSON, no markdown: {"protein":0,"carbs":0,"fat":0,"kcal":0} for: ${desc}`}]})});const data=await r.json();if(data.error)throw new Error(data.error.message);const p=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());logMealEntry(today(),desc,p.protein,p.carbs,p.fat,p.kcal);closeQuick();toast('Meal logged → Today ✓');}catch(e){toast('Error: '+(e.message||'check API key'),'var(--red)');}document.getElementById('qq-meal-desc').value='';}
@@ -1082,8 +1097,76 @@ function renderTemplateList(){const t=load(K.templates);const el=document.getEle
 function populateTemplateSelects(){const t=load(K.templates);const opts='<option value="">— Select or Custom —</option>'+t.map(x=>`<option value="${x.name}">${x.name}</option>`).join('');['w-template','qq-type'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});}
 
 // WORKOUTS
-function logWorkout(){const date=document.getElementById('w-date').value;if(!date){toast('Enter date','var(--red)');return;}const e={date,type:document.getElementById('w-template').value||'Custom',duration:document.getElementById('w-dur').value,rpe:document.getElementById('w-rpe').value,energy:document.getElementById('w-energy').value,notes:document.getElementById('w-notes').value,id:Date.now()};const d=load(K.workouts);d.unshift(e);save(K.workouts,d);renderWorkouts();renderDashboard();setTimeout(checkMilestones,300);toast('Session logged ✓');['w-dur','w-rpe','w-energy','w-notes'].forEach(i=>document.getElementById(i).value='');}
-function renderWorkouts(){renderTemplateList();populateTemplateSelects();const d=load(K.workouts),tb=document.getElementById('workout-log');if(!d.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><div class="ei">🏋️</div>No sessions yet.</div></td></tr>';return;}tb.innerHTML=d.map(w=>`<tr><td>${fmt(w.date)}</td><td style="font-size:12px;">${w.type}</td><td>${w.duration?w.duration+'m':'—'}</td><td>${w.rpe?rpeCol(w.rpe):'—'}</td><td>${w.energy?w.energy+'/10':'—'}</td><td style="color:var(--pale);font-size:12px;max-width:160px;">${w.notes||'—'}</td><td><button class="dx" onclick="del('${K.workouts}',${w.id},[renderWorkouts,renderDashboard])">✕</button></td></tr>`).join('');}
+// ── EXERCISE ROW MANAGEMENT ────────────────────────────────────────────────
+let sessionExercises=[];
+function loadTemplateExercises(){
+  const name=document.getElementById('w-template').value;
+  sessionExercises=[];
+  if(name){const tmpl=load(K.templates).find(t=>t.name===name);
+    if(tmpl&&tmpl.exercises){
+      sessionExercises=tmpl.exercises.map(e=>{const sr=(e.sets||'').split(/[×x]/);return{name:e.name,sets:sr[0]||'',reps:sr[1]||'',weight:'',rpe:'',note:e.note||'',id:Date.now()+Math.random()};});
+    }
+  }
+  renderExerciseRows();
+}
+function renderExerciseRows(){
+  // Populate lift suggestions
+  const names=[...new Set(load(K.lifts).map(x=>x.lift))];
+  const dl=document.getElementById('lift-suggestions-w');
+  if(dl)dl.innerHTML=names.map(n=>`<option value="${n}">`).join('');
+  const el=document.getElementById('exercise-rows');
+  if(!el)return;
+  if(!sessionExercises.length){el.innerHTML='<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted);padding:6px 0;">No exercises added yet. Select a template or add below.</div>';return;}
+  el.innerHTML=sessionExercises.map((ex,i)=>`
+    <div style="display:flex;gap:7px;align-items:flex-end;padding:8px 0;border-bottom:1px solid rgba(200,134,10,.1);flex-wrap:wrap;" id="ex-row-${ex.id}">
+      <div class="fi" style="min-width:130px;flex:2;"><label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">${i+1}. Exercise</label>
+        <input type="text" value="${ex.name}" onchange="updateEx(${ex.id},'name',this.value)" style="background:var(--black);border:1px solid var(--amber-border);color:var(--cream);font-family:'Inter',sans-serif;font-size:13px;padding:8px 10px;width:100%;outline:none;" list="lift-suggestions-w"></div>
+      <div class="fi" style="max-width:62px;"><label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Sets</label>
+        <input type="number" value="${ex.sets}" onchange="updateEx(${ex.id},'sets',this.value)" placeholder="4" min="1" style="background:var(--black);border:1px solid var(--amber-border);color:var(--cream);font-family:'DM Mono',monospace;font-size:14px;padding:8px 10px;width:100%;outline:none;text-align:center;"></div>
+      <div class="fi" style="max-width:62px;"><label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Reps</label>
+        <input type="number" value="${ex.reps}" onchange="updateEx(${ex.id},'reps',this.value)" placeholder="5" min="1" style="background:var(--black);border:1px solid var(--amber-border);color:var(--cream);font-family:'DM Mono',monospace;font-size:14px;padding:8px 10px;width:100%;outline:none;text-align:center;"></div>
+      <div class="fi" style="max-width:80px;"><label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">Weight (lbs)</label>
+        <input type="number" value="${ex.weight}" onchange="updateEx(${ex.id},'weight',this.value)" placeholder="0" step="2.5" style="background:var(--black);border:1px solid var(--amber-border);color:var(--amber);font-family:'DM Mono',monospace;font-size:14px;font-weight:500;padding:8px 10px;width:100%;outline:none;text-align:center;"></div>
+      <div class="fi" style="max-width:62px;"><label style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;">RPE</label>
+        <input type="number" value="${ex.rpe}" onchange="updateEx(${ex.id},'rpe',this.value)" placeholder="7" min="1" max="10" style="background:var(--black);border:1px solid var(--amber-border);color:var(--cream);font-family:'DM Mono',monospace;font-size:14px;padding:8px 10px;width:100%;outline:none;text-align:center;"></div>
+      <button onclick="removeEx2(${ex.id})" style="background:none;border:none;color:rgba(200,134,10,.25);cursor:pointer;font-size:16px;padding:3px 6px;align-self:flex-end;transition:color .15s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='rgba(200,134,10,.25)'">✕</button>
+    </div>`).join('');
+}
+const updateEx=(id,field,val)=>{const ex=sessionExercises.find(e=>e.id===id);if(ex)ex[field]=val;};
+const removeEx2=id=>{sessionExercises=sessionExercises.filter(e=>e.id!==id);renderExerciseRows();};
+function addExerciseRow(){
+  const name=document.getElementById('new-ex-name').value.trim();
+  if(!name){toast('Enter exercise name','var(--red)');return;}
+  sessionExercises.push({name,sets:document.getElementById('new-ex-sets').value,reps:document.getElementById('new-ex-reps').value,weight:document.getElementById('new-ex-weight').value,rpe:document.getElementById('new-ex-rpe').value,note:'',id:Date.now()+Math.random()});
+  ['new-ex-name','new-ex-sets','new-ex-reps','new-ex-weight','new-ex-rpe'].forEach(i=>document.getElementById(i).value='');
+  renderExerciseRows();
+}
+
+function logWorkout(){const date=document.getElementById('w-date').value;if(!date){toast('Enter date','var(--red)');return;}
+  // Auto-log lifts to PR tracker for any exercise with weight filled in
+  const exercisesToLog=sessionExercises.filter(ex=>ex.name&&ex.weight);
+  exercisesToLog.forEach(ex=>{
+    const prev=load(K.lifts).filter(x=>x.lift===ex.name&&x.weight);
+    const isNewPR=prev.length&&parseFloat(ex.weight)>Math.max(...prev.map(x=>parseFloat(x.weight)));
+    const lifts=load(K.lifts);
+    lifts.unshift({date,lift:ex.name,weight:ex.weight,sets:ex.sets,reps:ex.reps,rpe:ex.rpe,notes:isNewPR?'PR — auto from session':'Auto from session',id:Date.now()+Math.random()});
+    save(K.lifts,lifts);
+    if(isNewPR)toast(`🏆 New PR: ${ex.name} ${ex.weight} lbs`,'var(--green)');
+  });
+  const e={date,type:document.getElementById('w-template').value||'Custom',duration:document.getElementById('w-dur').value,rpe:document.getElementById('w-rpe').value,energy:document.getElementById('w-energy').value,notes:document.getElementById('w-notes').value,exercises:[...sessionExercises],id:Date.now()};
+  const d=load(K.workouts);d.unshift(e);save(K.workouts,d);
+  sessionExercises=[];renderExerciseRows();
+  renderWorkouts();renderLifts();renderDashboard();setTimeout(checkMilestones,300);
+  toast('Session logged ✓');['w-dur','w-rpe','w-energy','w-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('w-template').value='';populateTemplateSelects();}
+function renderWorkouts(){renderTemplateList();populateTemplateSelects();renderExerciseRows();const d=load(K.workouts),tb=document.getElementById('workout-log');if(!d.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><div class="ei">🏋️</div>No sessions yet.</div></td></tr>';return;}
+tb.innerHTML=d.map(w=>{
+  const exHtml=w.exercises&&w.exercises.length?w.exercises.filter(ex=>ex.name).map(ex=>{
+    const parts=[];if(ex.sets)parts.push(ex.sets+'×');if(ex.reps)parts.push(ex.reps);if(ex.weight)parts.push(ex.weight+'lbs');if(ex.rpe)parts.push('RPE'+ex.rpe);
+    return`<span style="font-family:'DM Mono',monospace;font-size:10px;background:var(--black);border:1px solid rgba(200,134,10,.2);padding:2px 6px;margin:1px;display:inline-block;color:${ex.weight?'var(--amber)':'var(--pale)'};">${ex.name}${parts.length?' · '+parts.join(' '):''}</span>`;
+  }).join(''):'<span style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted);">'+( w.notes||'—')+'</span>';
+  return`<tr><td style="font-family:'DM Mono',monospace;font-size:11px;">${fmt(w.date)}</td><td style="font-size:12px;">${w.type}</td><td style="font-family:'DM Mono',monospace;font-size:11px;">${w.duration?w.duration+'m':'—'}</td><td>${w.rpe?rpeCol(w.rpe):'—'}</td><td style="max-width:240px;">${exHtml}</td><td style="color:var(--pale);font-size:12px;max-width:120px;">${w.exercises&&w.exercises.length?w.notes||'':w.notes||''}</td><td><button class="dx" onclick="del('${K.workouts}',${w.id},[renderWorkouts,renderDashboard])">✕</button></td></tr>`;
+}).join('');}
 const rpeCol=v=>{const n=parseInt(v),c=n<=5?'var(--green)':n<=7?'var(--amber)':'var(--red)';return`<span style="color:${c};font-weight:700;">${v}</span>`;};
 
 // LIFTS
@@ -1167,7 +1250,7 @@ function logRefeed(){const date=document.getElementById('rf-date').value;if(!dat
 function renderRefeedLog(){const d=load(K.refeed);const el=document.getElementById('refeed-log');if(!el)return;if(!d.length){el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px 0;">No refeeds logged yet.</div>';return;}el.innerHTML=d.map(r=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(212,175,55,.08);font-size:13px;"><span style="color:var(--pale);">${fmt(r.date)} — <span style="color:var(--amber);">${r.carbs?r.carbs+'g extra carbs':'—'}</span></span><span style="color:var(--muted);font-size:12px;flex:1;margin:0 10px;">${r.notes||''}</span><button class="dx" onclick="del('${K.refeed}',${r.id},[renderRefeedLog])">✕</button></div>`).join('');}
 
 // REFEED NUDGE
-function checkRefeedNudge(){const dismissed=localStorage.getItem('ap_rn_dismiss');if(dismissed&&Math.round((new Date()-new Date(dismissed))/86400000)<1)return;const refeeds=load(K.refeed);const workouts=load(K.workouts);if(workouts.length<10)return;let daysSinceLast=999;if(refeeds.length)daysSinceLast=Math.round((new Date()-new Date(refeeds[0].date+'T00:00:00'))/86400000);const sessionsSinceLast=refeeds.length?workouts.filter(w=>w.date>refeeds[0].date).length:workouts.length;if(daysSinceLast>=28||sessionsSinceLast>=16){const el=document.getElementById('refeed-nudge');document.getElementById('rn-body').textContent=refeeds.length?`It's been ${daysSinceLast} days and ${sessionsSinceLast} sessions since your last refeed. Your protocol calls for one every 4–6 weeks.`:`You've logged ${sessionsSinceLast} sessions with no refeed on record. Per your protocol, one is due.`;el.classList.add('show');}}
+function checkRefeedNudge(){const dismissed=localStorage.getItem('ap_rn_dismiss');if(dismissed&&Math.round((new Date()-new Date(dismissed))/86400000)<1)return;const refeeds=load(K.refeed);const workouts=load(K.workouts);if(workouts.length<10)return;let daysSinceLast=999;if(refeeds.length)daysSinceLast=Math.round((new Date()-new Date(refeeds[0].date+'T00:00:00'))/86400000);const sessionsSinceLast=refeeds.length?workouts.filter(w=>w.date>refeeds[0].date).length:workouts.length;if(daysSinceLast>=28||sessionsSinceLast>=16){const el=document.getElementById('refeed-nudge');document.getElementById('rn-body').textContent=refeeds.length?`It's been ${daysSinceLast} days and ${sessionsSinceLast} sessions since your last refeed. Your protocol calls for one every 4–6 weeks.`:`You\'ve logged ${sessionsSinceLast} sessions with no refeed on record. Per your protocol, one is due.`;el.classList.add('show');}}
 function dismissRefeedNudge(snooze){document.getElementById('refeed-nudge').classList.remove('show');if(snooze){localStorage.setItem('ap_rn_dismiss',today());}else{document.querySelectorAll('.nb').forEach(b=>{if(b.textContent.trim()==='Schedule')b.click();});}}
 
 // WEEKLY REVIEW
@@ -1203,7 +1286,7 @@ function calcWeeklyStats(){const dateEl=document.getElementById('wr-date');const
   else insights.push(`Sessions: ${sessions} this week. On target — progressive overload is compounding.`);
   if(avgProtein){if(avgProtein<200)insights.push(`Protein: ${avgProtein}g avg — below the 220g minimum. This is the single most important number to fix. Every gram under 220 is muscle you're not protecting.`);else if(avgProtein<220)insights.push(`Protein: ${avgProtein}g avg — close but just under 220g. One extra shake or handful of cottage cheese closes that gap.`);else insights.push(`Protein: ${avgProtein}g avg — target hit. Muscle is protected.`);}
   if(avgSleep){if(avgSleep<7)insights.push(`Sleep: ${avgSleep}/10 avg — low. Poor sleep costs you at the gym (harder sessions, worse recovery) and raises cortisol which stalls fat loss. Non-negotiable: bed by 9:30 PM.`);else if(avgSleep<8)insights.push(`Sleep: ${avgSleep}/10 — decent. Room to improve. Each point you add here shows up in your PRs.`);else insights.push(`Sleep: ${avgSleep}/10 — solid recovery. Keep protecting your sleep window.`);}
-  if(latestWeight&&body.length>=2){const prevWeight=body.length>=2?parseFloat(body[0].weight):null;const currWeight=parseFloat(latestWeight.weight);if(prevWeight){const diff=(prevWeight-currWeight).toFixed(1);const rate=diff/1;if(rate>1.2)insights.push(`Weight: down ${diff} lbs — rate above 1 lb/week. Watch your strength numbers. If any lift drops >10%, add 200–300 kcal immediately.`);else if(rate>=0.3)insights.push(`Weight: down ${diff} lbs — ideal 0.5–1 lb/week range. You're losing fat and protecting muscle.`);else if(Math.abs(rate)<0.2)insights.push(`Weight: flat this week. Check deficit, sleep, and refeed timing. Sometimes a refeed actually breaks a stall.`);else insights.push(`Weight: up ${Math.abs(diff)} lbs. Normal fluctuation? Or a trend? Watch the next 3 weigh-ins.`);}}
+  if(latestWeight&&body.length>=2){const prevWeight=body.length>=2?parseFloat(body[0].weight):null;const currWeight=parseFloat(latestWeight.weight);if(prevWeight){const diff=(prevWeight-currWeight).toFixed(1);const rate=diff/1;if(rate>1.2)insights.push(`Weight: down ${diff} lbs — rate above 1 lb/week. Watch your strength numbers. If any lift drops >10%, add 200–300 kcal immediately.`);else if(rate>=0.3)insights.push(`Weight: down ${diff} lbs — ideal 0.5–1 lb/week range. You\'re losing fat and protecting muscle.`);else if(Math.abs(rate)<0.2)insights.push(`Weight: flat this week. Check deficit, sleep, and refeed timing. Sometimes a refeed actually breaks a stall.`);else insights.push(`Weight: up ${Math.abs(diff)} lbs. Normal fluctuation? Or a trend? Watch the next 3 weigh-ins.`);}}
   const weeksSinceRefeed=load(K.refeed).length?Math.round((new Date()-new Date(load(K.refeed)[0].date+'T00:00:00'))/604800000):99;
   if(weeksSinceRefeed>=5)insights.push(`Refeed: ${weeksSinceRefeed} weeks since your last one. Your protocol calls for one every 4–6 weeks. Schedule one this week or next.`);
   document.getElementById('wr-insights').innerHTML=insights.map(i=>`<div style="padding:5px 0;border-bottom:1px solid rgba(200,134,10,.1);">${i}</div>`).join('')||'Everything looks on track — good week.';
@@ -1440,6 +1523,249 @@ function runAnalyzer(){
   if(sleepD.length){const avgS=sleepD.reduce((s,x)=>s+parseFloat(x.sleep),0)/sleepD.length;if(avgS>=8.5)bioAgeAdj-=2;else if(avgS<6.5)bioAgeAdj+=4;}
   const bioAge=Math.max(25,Math.min(75,chronoAge+bioAgeAdj));
 
+  // ── WEEKLY ACTION PLAN (replaces long-term priorities) ─────────────────
+  // Analyze ONLY the last 7 days for specific, actionable this-week items
+  const weeklyActions=[];
+  const w7=new Date();w7.setDate(w7.getDate()-7);const w7Str=w7.toISOString().split('T')[0];
+  const thisWeekWorkouts=workouts.filter(x=>x.date>=w7Str);
+  const thisWeekNutr=nutr.filter(x=>x.date>=w7Str);
+  const thisWeekBody=body.filter(x=>x.weight&&x.date>=w7Str).sort((a,b)=>a.date.localeCompare(b.date));
+  const thisWeekLifts=lifts.filter(x=>x.date>=w7Str);
+  const refeeds=load(K.refeed);
+  const daysSinceRefeed=refeeds.length?Math.round((new Date()-new Date(refeeds[0].date+'T00:00:00'))/86400000):999;
+
+  // ── 1. SESSION COUNT ────────────────────────────────────────────────────
+  const sessionsThisWeek=thisWeekWorkouts.length;
+  if(sessionsThisWeek<4){
+    const remaining=4-sessionsThisWeek;
+    const daysLeft=7-Math.floor((new Date()-w7)/86400000);
+    weeklyActions.push({
+      icon:'🏋️',
+      urgency:sessionsThisWeek<=1?'URGENT':'THIS WEEK',
+      urgencyColor:sessionsThisWeek<=1?'var(--red)':'var(--amber)',
+      title:`Log ${remaining} More Session${remaining>1?'s':''} This Week`,
+      what:`You\'ve logged ${sessionsThisWeek} of your 4-session target. ${daysLeft} days remaining this week.`,
+      how:sessionsThisWeek===3?'One session away from target. Any workout counts — even 35 minutes hits the goal.':sessionsThisWeek===2?'Two sessions left. Look at tomorrow and one other day this week and block them now.':'Training volume is the primary driver of metabolic improvement. Get into the gym.',
+      measure:'Target: 4 sessions logged before Sunday'
+    });
+  } else {
+    weeklyActions.push({
+      icon:'✓',
+      urgency:'ON TRACK',
+      urgencyColor:'var(--green2)',
+      title:`${sessionsThisWeek} Sessions Logged — Target Hit`,
+      what:'Training volume for the week is on target.',
+      how:'Focus on quality over the remaining sessions. Watch RPE — if sessions feel harder at same weights, check sleep and protein.',
+      measure:'Maintain: log RPE on each session so trends are visible'
+    });
+  }
+
+  // ── 2. PROTEIN DAY BY DAY ───────────────────────────────────────────────
+  if(thisWeekNutr.length>=3){
+    const underDays=thisWeekNutr.filter(x=>x.protein<220);
+    const avgP=Math.round(thisWeekNutr.reduce((s,x)=>s+x.protein,0)/thisWeekNutr.length);
+    if(underDays.length>0){
+      const worst=underDays.sort((a,b)=>a.protein-b.protein)[0];
+      const gap=220-avgP;
+      weeklyActions.push({
+        icon:'🥩',
+        urgency:avgP<190?'URGENT':'THIS WEEK',
+        urgencyColor:avgP<190?'var(--red)':'var(--amber)',
+        title:`Protein Averaging ${avgP}g — ${gap}g Short of Target`,
+        what:`${underDays.length} of ${thisWeekNutr.length} logged days came in under 220g. Lowest day: ${worst.protein}g on ${fmt(worst.date)}.`,
+        how:gap<=20?`You\'re close. One extra scoop of whey or 4oz of chicken closes that ${gap}g gap daily.`:gap<=40?`Add a dedicated protein snack: cottage cheese (25g) + whey shake (30g) = ${gap}g covered.`:`Protein is significantly under target. Pre-workout meal + post-workout shake + dinner needs to total 220g. Use the saved meals for exact tracking.`,
+        measure:`Hit 220g+ every remaining day this week · use the AI logger to confirm`
+      });
+    } else {
+      weeklyActions.push({
+        icon:'✓',
+        urgency:'ON TRACK',
+        urgencyColor:'var(--green2)',
+        title:`Protein On Target — ${avgP}g Daily Average`,
+        what:'All logged days this week hit the 220g minimum.',
+        how:'Muscle is protected. Keep the consistency through the weekend — that\'s where most people slip.',
+        measure:'Maintain: log every day including weekend'
+      });
+    }
+  } else if(thisWeekNutr.length>0){
+    const loggedDays=thisWeekNutr.length;
+    weeklyActions.push({
+      icon:'📊',
+      urgency:'THIS WEEK',
+      urgencyColor:'var(--amber)',
+      title:`Only ${loggedDays} Day${loggedDays>1?'s':''} of Nutrition Logged This Week`,
+      what:`${7-loggedDays} days are blind spots. You may be hitting protein targets on those days — or not. You don\'t know.`,
+      how:'Use the AI meal logger — speak your meals. It takes 15 seconds per meal and removes all guesswork.',
+      measure:'Log every day this week — even rough estimates beat zero data'
+    });
+  } else {
+    weeklyActions.push({
+      icon:'📊',
+      urgency:'URGENT',
+      urgencyColor:'var(--red)',
+      title:'No Nutrition Data This Week',
+      what:'Without meal logging, protein compliance is unknown. At 47 in a deficit, untracked low protein weeks cost muscle.',
+      how:'Open Nutrition tab → speak your last meal into the AI logger right now. Start today.',
+      measure:'Log at least 5 days this week'
+    });
+  }
+
+  // ── 3. WEIGHT TREND THIS WEEK ───────────────────────────────────────────
+  if(thisWeekBody.length>=2){
+    const startW=parseFloat(thisWeekBody[0].weight);
+    const endW=parseFloat(thisWeekBody[thisWeekBody.length-1].weight);
+    const change=startW-endW;
+    const daysSpanned=Math.max(1,Math.round((new Date(thisWeekBody[thisWeekBody.length-1].date)-new Date(thisWeekBody[0].date))/86400000));
+    const weeklyRate=(change/daysSpanned)*7;
+    if(weeklyRate>1.3){
+      weeklyActions.push({
+        icon:'⚖️',
+        urgency:'WATCH',
+        urgencyColor:'var(--amber)',
+        title:`Scale Moving Fast — ${Math.abs(change).toFixed(1)} lbs This Week`,
+        what:`Down ${Math.abs(change).toFixed(1)} lbs over ${daysSpanned} days. Projected weekly rate: ${weeklyRate.toFixed(1)} lbs/week — above the 1 lb ceiling.`,
+        how:'This pace risks muscle loss. Add 200 kcal on training days — carbs and protein only, not fat. Check if any lifts felt harder than usual this week.',
+        measure:'Add 200 kcal on Mon/Tue/Thu/Fri · log RPE on sessions'
+      });
+    } else if(weeklyRate<0&&Math.abs(weeklyRate)>0.3){
+      weeklyActions.push({
+        icon:'⚖️',
+        urgency:'WATCH',
+        urgencyColor:'var(--amber)',
+        title:`Weight Trending Up ${Math.abs(change).toFixed(1)} lbs This Week`,
+        what:`Up ${Math.abs(change).toFixed(1)} lbs over ${daysSpanned} days. Could be water, could be dietary.`,
+        how:'Check: did you have a refeed, high-sodium day, or miss training? If this continues next week, tighten carbs on non-training days by 30–40g.',
+        measure:'3+ weigh-ins next week to confirm trend direction'
+      });
+    } else if(weeklyRate>=0.3&&weeklyRate<=1.3){
+      weeklyActions.push({
+        icon:'✓',
+        urgency:'ON TRACK',
+        urgencyColor:'var(--green2)',
+        title:`Weight Trending Down at Ideal Rate`,
+        what:`Down ${Math.abs(change).toFixed(1)} lbs this week. Projected ${weeklyRate.toFixed(1)} lbs/week — in the target 0.5–1 lb range.`,
+        how:'Protocol is working. Don\'t change anything. The temptation to cut more when things are working is real — resist it.',
+        measure:'Maintain current approach · weigh daily fasted'
+      });
+    } else {
+      weeklyActions.push({
+        icon:'⚖️',
+        urgency:'WATCH',
+        urgencyColor:'var(--amber)',
+        title:'Weight Flat This Week',
+        what:`Only ${Math.abs(change).toFixed(1)} lbs movement across ${daysSpanned} days. May be a plateau.`,
+        how:daysSinceRefeed>=20?'A refeed is likely due — this can break a stall. Plan one in the next 3–5 days.':'Check protein logging — undereported protein often masks the real issue. Confirm 220g+ for 7 days.',
+        measure:daysSinceRefeed>=20?'Schedule refeed this week':'Log every meal this week and confirm protein'
+      });
+    }
+  } else {
+    weeklyActions.push({
+      icon:'⚖️',
+      urgency:'THIS WEEK',
+      urgencyColor:'var(--amber)',
+      title:'Weigh In Daily This Week',
+      what:`Only ${thisWeekBody.length} weigh-in${thisWeekBody.length===1?'':''} logged this week. Can\'t calculate your weekly rate.`,
+      how:'Weigh every morning fasted, after bathroom, before eating. Takes 10 seconds. Log it in Body Comp or Quick Log.',
+      measure:'7 consecutive fasted weigh-ins this week'
+    });
+  }
+
+  // ── 4. SLEEP PATTERN THIS WEEK ──────────────────────────────────────────
+  const thisWeekSleep=body.filter(x=>x.sleep&&x.date>=w7Str);
+  if(thisWeekSleep.length>=3){
+    const avgSleepW=thisWeekSleep.reduce((s,x)=>s+parseFloat(x.sleep),0)/thisWeekSleep.length;
+    const lowSleepDays=thisWeekSleep.filter(x=>parseFloat(x.sleep)<=6);
+    if(lowSleepDays.length>=2){
+      const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const lowDayNames=lowSleepDays.map(d=>{const dt=new Date(d.date+'T00:00:00');return dayNames[dt.getDay()];}).join(', ');
+      weeklyActions.push({
+        icon:'😴',
+        urgency:'URGENT',
+        urgencyColor:'var(--red)',
+        title:`Poor Sleep on ${lowSleepDays.length} Days This Week (${lowDayNames})`,
+        what:`Avg sleep score ${avgSleepW.toFixed(1)}/10. ${lowSleepDays.length} days scored ≤6 this week. Each low-sleep night increases cortisol, stalls fat loss, and makes the next session feel 1–2 RPE harder.`,
+        how:'Look at what those days had in common — late night? Stress? Training too late? Identify the pattern and block it.',
+        measure:'Bed by 9:30 PM tonight and for the rest of this week — no exceptions'
+      });
+    } else if(avgSleepW>=8){
+      weeklyActions.push({
+        icon:'✓',
+        urgency:'ON TRACK',
+        urgencyColor:'var(--green2)',
+        title:`Sleep Averaging ${avgSleepW.toFixed(1)}/10 This Week`,
+        what:'Recovery is solid. Growth hormone and cortisol are being well-managed.',
+        how:'Protect this. If anything is threatening the sleep window this week, defend it.',
+        measure:'Maintain 9:30 PM bedtime through the weekend'
+      });
+    } else {
+      weeklyActions.push({
+        icon:'😴',
+        urgency:'THIS WEEK',
+        urgencyColor:'var(--amber)',
+        title:`Sleep Averaging ${avgSleepW.toFixed(1)}/10 — Room to Improve`,
+        what:'Below the 8/10 target. Each point of sleep quality improvement shows up as better session performance and faster fat loss.',
+        how:'Move bedtime 30 minutes earlier this week. That\'s the single most effective sleep intervention.',
+        measure:'In bed by 9:30 PM every night this week · log sleep score daily'
+      });
+    }
+  }
+
+  // ── 5. REFEED TIMING ────────────────────────────────────────────────────
+  if(daysSinceRefeed>=25&&daysSinceRefeed<50){
+    weeklyActions.push({
+      icon:'🔄',
+      urgency:'THIS WEEK',
+      urgencyColor:'var(--amber)',
+      title:`Refeed Due — ${daysSinceRefeed} Days Since Last One`,
+      what:`Your protocol calls for a refeed every 4–6 weeks. You\'re at ${daysSinceRefeed} days. Waiting too long lets leptin drop too far, stalling fat loss and suppressing testosterone.`,
+      how:'Pick a training day this week — ideally a high-volume leg day. Add 300–500g extra carbs (rice, potato, fruit). Keep protein at 220g+. Enjoy it.',
+      measure:'Log the refeed in Schedule tab · note energy and strength in next session'
+    });
+  } else if(daysSinceRefeed>=50){
+    weeklyActions.push({
+      icon:'🔄',
+      urgency:'URGENT',
+      urgencyColor:'var(--red)',
+      title:`Refeed Overdue — ${daysSinceRefeed} Days Without One`,
+      what:`${daysSinceRefeed} days is too long. Leptin is suppressed, which is likely contributing to weight stalls, lower energy, and cravings. This needs to happen this week.`,
+      how:'Schedule it for tomorrow or the next training day. 300–500g extra carbs. Keep protein high. This is part of the protocol, not a cheat — it\'s required.',
+      measure:'Log refeed in Schedule tab this week'
+    });
+  }
+
+  // ── 6. RPE TREND — EARLY WARNING ────────────────────────────────────────
+  if(thisWeekLifts.length>=2){
+    const prevWeekLifts=lifts.filter(x=>{const d=new Date(x.date+'T00:00:00');const w14=new Date();w14.setDate(w14.getDate()-14);return d>=w14&&x.date<w7Str;});
+    const rpeUp=[];
+    [...new Set(thisWeekLifts.filter(x=>x.rpe).map(x=>x.lift))].forEach(name=>{
+      const thisW=thisWeekLifts.filter(x=>x.lift===name&&x.rpe&&x.weight);
+      const prevW=prevWeekLifts.filter(x=>x.lift===name&&x.rpe&&x.weight);
+      if(thisW.length&&prevW.length){
+        const thisRPE=thisW.reduce((s,x)=>s+parseFloat(x.rpe),0)/thisW.length;
+        const prevRPE=prevW.reduce((s,x)=>s+parseFloat(x.rpe),0)/prevW.length;
+        const thisWeight=Math.max(...thisW.map(x=>parseFloat(x.weight)));
+        const prevWeight=Math.max(...prevW.map(x=>parseFloat(x.weight)));
+        if(thisRPE>prevRPE+1&&thisWeight<=prevWeight)rpeUp.push({name,thisRPE:thisRPE.toFixed(1),prevRPE:prevRPE.toFixed(1)});
+      }
+    });
+    if(rpeUp.length>0){
+      weeklyActions.push({
+        icon:'⚠️',
+        urgency:'WATCH',
+        urgencyColor:'var(--amber)',
+        title:`RPE Rising on ${rpeUp.map(x=>x.name).join(', ')}`,
+        what:`Same weight feeling harder than last week on ${rpeUp.map(x=>`${x.name} (${x.prevRPE}→${x.thisRPE} RPE)`).join(', ')}. This is an early warning sign — not a crisis yet.`,
+        how:'Check the usual suspects in order: (1) protein at 220g+? (2) sleep 7h+? (3) refeed due? Address the first one that\'s off.',
+        measure:'Log next session RPE · if it continues rising, add 200 kcal and schedule refeed'
+      });
+    }
+  }
+
+  // Trim to top 5, filter out "on track" items first to prioritize problems
+  const problems=weeklyActions.filter(x=>x.urgency!=='ON TRACK');
+  const onTrack=weeklyActions.filter(x=>x.urgency==='ON TRACK');
+  const finalActions=[...problems,...onTrack].slice(0,5);
+
   // ── RENDER RESULTS ───────────────────────────────────────────────────────
   // Score ring
   const arc=document.getElementById('health-score-arc');
@@ -1475,15 +1801,12 @@ function runAnalyzer(){
     return`<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(200,134,10,.1);"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--cream);">${catNames[cat]}</div><div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:${c};">${s.score}/${s.max}</div></div><div class="pb-bar" style="margin-bottom:8px;"><div class="pf" style="width:${pct}%;background:${c};"></div></div>${detailHtml}</div>`;
   }).join('');
 
-  // Priorities
+
+  // Weekly action plan render
   const priCard=document.getElementById('priorities-card');
   priCard.style.display='block';
-  // Add generic priorities if we don't have 5 specific ones
-  if(priorities.length<5&&rW7.length<4)priorities.push({rank:5,impact:'MEDIUM',title:'Hit 4 Sessions This Week',body:'Training frequency is the most controllable variable. 4 sessions this week compounds into 200+ sessions per year. This is what drives the metabolic change.',action:'Schedule 4 specific training windows before the week starts'});
-  if(priorities.length<5){const refeeds=load(K.refeed);const weeksSinceRefeed=refeeds.length?Math.round((new Date()-new Date(refeeds[0].date+'T00:00:00'))/604800000):99;if(weeksSinceRefeed>=4)priorities.push({rank:4,impact:'MEDIUM',title:'Schedule This Week\'s Refeed',body:`${weeksSinceRefeed} weeks since your last refeed. Your protocol calls for one every 4–6 weeks. A properly timed refeed resets leptin, protects testosterone, and often breaks a weight loss stall.`,action:'Pick a day this week — 300–500g extra carbs, keep protein high'});}
-  priorities.sort((a,b)=>a.rank-b.rank).splice(5);
-  const impColors={'CRITICAL':'var(--red)','HIGH':'var(--amber)','MEDIUM':'var(--green2)','LOW':'var(--muted)'};
-  document.getElementById('priorities-list').innerHTML=priorities.slice(0,5).map((p,i)=>`<div style="display:flex;gap:12px;padding:13px 0;border-bottom:1px solid rgba(200,134,10,.1);">${i===priorities.length-1?'':''}<div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--amber);flex-shrink:0;width:24px;line-height:1.2;">${i+1}</div><div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--cream);">${p.title}</div><span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:500;padding:2px 7px;border:1px solid ${impColors[p.impact]||'var(--muted)'};color:${impColors[p.impact]||'var(--muted)'};">${p.impact}</span></div><div style="font-size:13px;color:var(--pale);line-height:1.65;margin-bottom:6px;">${p.body}</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);letter-spacing:.03em;">→ ${p.action}</div></div></div>`).join('');
+  if(!finalActions.length){document.getElementById('priorities-list').innerHTML='<div style="font-size:13px;color:var(--green2);padding:10px 0;font-style:italic;">Everything looks on track this week. Keep the consistency going.</div>';}
+  else{document.getElementById('priorities-list').innerHTML=finalActions.map((a,i)=>`<div style="display:flex;gap:13px;padding:14px 0;border-bottom:1px solid rgba(200,134,10,.1);"><div style="font-family:'DM Mono',monospace;font-size:24px;font-weight:500;color:var(--amber);flex-shrink:0;width:26px;line-height:1.1;">${i+1}</div><div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;"><span style="font-size:17px;">${a.icon}</span><div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--cream);">${a.title}</div><span style="font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border:1px solid ${a.urgencyColor};color:${a.urgencyColor};">${a.urgency}</span></div><div style="font-size:13px;color:var(--pale);line-height:1.65;margin-bottom:5px;">${a.what}</div><div style="font-size:13px;color:var(--cream2);line-height:1.65;margin-bottom:7px;">${a.how}</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);letter-spacing:.03em;background:var(--black);padding:6px 9px;">→ ${a.measure}</div></div></div>`).join('');}
 
   // Full report card
   const frCard=document.getElementById('full-report-card');
