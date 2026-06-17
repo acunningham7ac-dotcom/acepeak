@@ -960,7 +960,7 @@ tr:hover td{background:var(--amber-dim);}
     <div class="card" style="text-align:center;padding:22px 14px;">
       <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;">Biological Age</div>
       <div style="font-family:'DM Mono',monospace;font-size:52px;font-weight:500;line-height:1;margin:14px 0 10px;" id="bio-age-num">—</div>
-      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;" id="bio-age-vs">vs chronological age 47</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;" id="bio-age-vs">vs chronological age</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;margin-top:8px;" id="bio-age-label">—</div>
     </div>
   </div>
@@ -1041,6 +1041,15 @@ tr:hover td{background:var(--amber-dim);}
     <div class="pwa-step"><div class="pwa-num">1</div><div>Open URL in <strong>Safari</strong></div></div>
     <div class="pwa-step" style="border:none;"><div class="pwa-num">2</div><div>Share button → <strong>Add to Home Screen</strong> → Add</div></div>
     <div style="background:var(--amber-dim);border:1px solid var(--amber-border);border-left:2px solid var(--amber);padding:12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--pale);margin-top:14px;letter-spacing:.03em;">Always export a backup before uploading a new version. Your data lives in the browser — restoring from backup takes one tap.</div>
+  </div>
+  <div class="card"><div class="ct"><span class="d"></span>Profile</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:13px;">Used to calculate your exact chronological age for the Health Analyzer. Stored only on your device.</div>
+    <div id="profile-status" style="margin-bottom:11px;"></div>
+    <div class="fr">
+      <div class="fi"><label>Date of Birth</label><input type="date" id="profile-dob" style="font-family:'DM Mono',monospace;"></div>
+      <button class="btn" onclick="saveProfile()" style="align-self:flex-end;">Save</button>
+    </div>
+    <div id="profile-age-display" style="margin-top:10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);"></div>
   </div>
   <div class="card"><div class="ct"><span class="d"></span>About ACEPEAK</div>
     <div style="font-size:13px;color:var(--pale);line-height:2;"><strong style="color:var(--amber);font-family:'Cormorant Garamond',serif;font-size:18px;">ACE · PEAK</strong> &nbsp;—&nbsp; v7 · Old Money Edition<br><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);">Know your numbers. Own your body.</span><br>5 AM Protocol · IR Reversal · Goal: 10% BF @ 215–230 lbs</div>
@@ -1205,6 +1214,53 @@ let parsedLab={};
 async function handleLabUpload(input){const key=getApiKey();if(!key){toast('Add API key in Setup first','var(--red)');return;}const file=input.files[0];if(!file)return;const st=document.getElementById('ai-lab-status'),stxt=document.getElementById('ai-lab-text');st.classList.add('show');stxt.textContent='Reading your lab results...';try{const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});stxt.textContent='Sending to AI...';const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:[{type:file.type==='application/pdf'?'document':'image',source:{type:'base64',media_type:file.type,data:b64}},{type:'text',text:'Extract lab values. Return ONLY JSON, no markdown:\n{"date":"YYYY-MM-DD or empty","lab":"","glucose":"","insulin":"","hba1c":"","chol":"","ldl":"","hdl":"","trig":"","test":"","ftest":"","vitd":"","crp":"","tsh":""}\nNumbers only, empty string if not found.'}]}]})});const data=await resp.json();parsedLab=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());stxt.textContent='✓ Values extracted';const labels={date:'Date',lab:'Lab',glucose:'Glucose',insulin:'Insulin',hba1c:'HbA1c',chol:'Cholesterol',ldl:'LDL',hdl:'HDL',trig:'Triglycerides',test:'Testosterone',ftest:'Free Test',vitd:'Vitamin D',crp:'hs-CRP',tsh:'TSH'};document.getElementById('lab-preview-fields').innerHTML=Object.entries(parsedLab).filter(([k,v])=>v).map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(212,175,55,.1);font-size:12px;"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;">${labels[k]||k}</span><span style="color:var(--cream);">${v}</span></div>`).join('');document.getElementById('lab-preview').style.display='block';}catch(err){stxt.textContent='⚠ Could not parse — fill manually.';console.error(err);}}
 function applyParsedLabs(){const map={date:'bl-date',lab:'bl-lab',glucose:'bl-glucose',insulin:'bl-insulin',hba1c:'bl-hba1c',chol:'bl-chol',ldl:'bl-ldl',hdl:'bl-hdl',trig:'bl-trig',test:'bl-test',ftest:'bl-ftest',vitd:'bl-vitd',crp:'bl-crp',tsh:'bl-tsh'};Object.entries(map).forEach(([k,id])=>{if(parsedLab[k]){const el=document.getElementById(id);if(el)el.value=parsedLab[k];}});toast('Applied to form ✓');clearLabPreview();}
 const clearLabPreview=()=>{document.getElementById('lab-preview').style.display='none';document.getElementById('ai-lab-status').classList.remove('show');document.getElementById('lab-file-input').value='';parsedLab={};};
+// ===== PROFILE / DOB =====
+const AP_DOB='ap_dob';
+function getChronoAge(){
+  const dob=localStorage.getItem(AP_DOB);
+  if(!dob)return 47; // fallback until DOB is set
+  const birth=new Date(dob+'T00:00:00');
+  const now=new Date();
+  let age=now.getFullYear()-birth.getFullYear();
+  const m=now.getMonth()-birth.getMonth();
+  if(m<0||(m===0&&now.getDate()<birth.getDate()))age--;
+  return age;
+}
+function getNextBirthday(){
+  const dob=localStorage.getItem(AP_DOB);
+  if(!dob)return null;
+  const birth=new Date(dob+'T00:00:00');
+  const now=new Date();
+  let next=new Date(now.getFullYear(),birth.getMonth(),birth.getDate());
+  if(next<=now)next=new Date(now.getFullYear()+1,birth.getMonth(),birth.getDate());
+  return Math.ceil((next-now)/86400000);
+}
+function saveProfile(){
+  const dob=document.getElementById('profile-dob').value;
+  if(!dob){toast('Enter your date of birth','var(--red)');return;}
+  localStorage.setItem(AP_DOB,dob);
+  renderProfileStatus();
+  toast('Profile saved ✓');
+}
+function renderProfileStatus(){
+  const dob=localStorage.getItem(AP_DOB);
+  const el=document.getElementById('profile-status');
+  const dispEl=document.getElementById('profile-age-display');
+  const dobInput=document.getElementById('profile-dob');
+  if(!el)return;
+  if(dob){
+    if(dobInput)dobInput.value=dob;
+    const age=getChronoAge();
+    const daysToNext=getNextBirthday();
+    const born=new Date(dob+'T00:00:00');
+    const formatted=born.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    el.innerHTML=`<div style="background:var(--green-dim);border:1px solid var(--green2);border-left:2px solid var(--green2);padding:9px 12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--green2);letter-spacing:.04em;">✓ DOB: ${formatted} · Age: ${age}${daysToNext?` · Next birthday in ${daysToNext} days`:''}</div>`;
+    if(dispEl)dispEl.textContent=`Chronological age ${age} is used in the Health Analyzer for bio age and all age-specific targets.`;
+  } else {
+    el.innerHTML=`<div style="background:var(--amber-dim);border:1px solid var(--amber-border);border-left:2px solid var(--amber);padding:9px 12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--pale);letter-spacing:.04em;">No DOB saved — Analyzer using default age 47</div>`;
+  }
+}
+
 // ===== API KEY MANAGEMENT =====
 const AP_KEY='ap_anthropic_key';
 const getApiKey=()=>localStorage.getItem(AP_KEY)||'';
@@ -1301,7 +1357,7 @@ const sN=nutr.filter(x=>x.sleep).slice(0,14),rW2=workouts.filter(x=>x.rpe).slice
 if(sN.length>=4&&rW2.length>=4){const poor=rW2.filter(w=>{const n=sN.find(x=>x.date===w.date);return n&&parseInt(n.sleep)<=6;});const good=rW2.filter(w=>{const n=sN.find(x=>x.date===w.date);return n&&parseInt(n.sleep)>=8;});if(poor.length>=2&&good.length>=2){const pR=poor.reduce((s,x)=>s+parseFloat(x.rpe),0)/poor.length,gR=good.reduce((s,x)=>s+parseFloat(x.rpe),0)/good.length;if(pR>gR+0.5)insights.push({icon:'🔗',title:'Sleep Is Costing You Reps',body:`Poor sleep nights = sessions feeling ${(pR-gR).toFixed(1)} RPE points harder. Every set closer to failure with no extra benefit.`,type:'info',action:'Fix: bed by 9:30 PM. Non-negotiable.'});}}
 if(rN.length>=3&&body.length>=4){const avgP=rN.reduce((s,x)=>s+x.protein,0)/rN.length;const wts=body.filter(x=>x.weight).slice(-4).map(x=>parseFloat(x.weight));const wC=wts.length>=2?wts[0]-wts[wts.length-1]:null;if(avgP<210&&wC!==null&&Math.abs(wC)<0.5)insights.push({icon:'🔗',title:'Protein + Stall = Muscle Loss Risk',body:`7-day protein avg: ${avgP.toFixed(0)}g and weight is flat. You may be losing muscle while fat stays.`,type:'danger',action:'Immediate: hit 220g+ protein for 7 straight days.'});else if(avgP>=220)insights.push({icon:'✅',title:`Protein On Target (${avgP.toFixed(0)}g avg)`,body:`Averaging ${avgP.toFixed(0)}g over ${rN.length} logged days. Muscle protected during deficit.`,type:'good'});}
 if(rW.length>0){const avgR=rW.filter(x=>x.rpe).length?rW.filter(x=>x.rpe).reduce((s,x)=>s+parseFloat(x.rpe),0)/rW.filter(x=>x.rpe).length:null;insights.push({icon:'🏋️',title:`${rW.length} Sessions This Week`,body:`${avgR?`Avg RPE ${avgR.toFixed(1)}/10. `:''}${rW.length>=4?'On target.':rW.length>=2?'Push for 4+ sessions.':'Low count. What got in the way?'}`,type:rW.length>=4?'good':rW.length>=2?'info':'warn'});}else insights.push({icon:'🏋️',title:'No Sessions This Week',body:'5 AM is calling.',type:'warn'});
-const wB=body.filter(x=>x.weight);if(wB.length>=2){const lost=(parseFloat(wB[0].weight)-parseFloat(wB[wB.length-1].weight)).toFixed(1);const wks=Math.max(1,Math.ceil((new Date(wB[wB.length-1].date)-new Date(wB[0].date))/604800000));const rate=(lost/wks).toFixed(2);const rn=parseFloat(rate);insights.push({icon:'📉',title:`${lost} lbs lost · ${rate} lbs/week`,body:rn>1.2?'Rate above 1 lb/week. Lifts drop → add 200–300 kcal.':rn>=0.5?'Perfect rate — 0.5–1 lb/week preserves muscle at 47.':'Slowing. Check deficit, sleep, refeed.',type:rn>1.2?'warn':rn>=0.5?'good':'info'});}
+const wB=body.filter(x=>x.weight);if(wB.length>=2){const lost=(parseFloat(wB[0].weight)-parseFloat(wB[wB.length-1].weight)).toFixed(1);const wks=Math.max(1,Math.ceil((new Date(wB[wB.length-1].date)-new Date(wB[0].date))/604800000));const rate=(lost/wks).toFixed(2);const rn=parseFloat(rate);insights.push({icon:'📉',title:`${lost} lbs lost · ${rate} lbs/week`,body:rn>1.2?'Rate above 1 lb/week. Lifts drop → add 200–300 kcal.':rn>=0.5?'Perfect rate — 0.5–1 lb/week preserves muscle at your age.':'Slowing. Check deficit, sleep, refeed.',type:rn>1.2?'warn':rn>=0.5?'good':'info'});}
 if(lifts.length>=4){const imp=[],dec=[];[...new Set(lifts.map(x=>x.lift))].forEach(n=>{const e=lifts.filter(x=>x.lift===n&&x.weight).sort((a,b)=>a.date.localeCompare(b.date));if(e.length>=3){const f=parseFloat(e[0].weight),l=parseFloat(e[e.length-1].weight);if(l>f)imp.push(`${n} +${(l-f).toFixed(0)}`);else if(l<f*0.95)dec.push(n);}});if(imp.length)insights.push({icon:'📈',title:'Lifts Moving Up',body:`${imp.join(' · ')} lbs. Progressive overload is working.`,type:'good'});if(dec.length)insights.push({icon:'📉',title:`Declining: ${dec.join(', ')}`,body:'Check sleep, protein, refeed timing.',type:'danger'});}
 document.getElementById('insights-output').innerHTML=insights.length?insights.map(ins=>{const c={good:'var(--green)',warn:'var(--amber)',info:'var(--blue)',danger:'var(--red)'}[ins.type];return`<div class="insight-card"><div class="insight-header"><span class="insight-icon">${ins.icon}</span><span class="insight-title" style="color:${c};">${ins.title}</span></div><div class="insight-body">${ins.body}</div>${ins.action?`<div class="insight-action">→ ${ins.action}</div>`:''}</div>`;}).join(''):'<div class="empty"><div class="ei">🧠</div>Log sessions, meals, and weigh-ins to generate your first report.</div>';
 const l7=nutr.slice(0,7);if(l7.length){document.getElementById('avg-protein').textContent=Math.round(l7.reduce((s,x)=>s+x.protein,0)/l7.length)+'g';document.getElementById('avg-carbs').textContent=Math.round(l7.reduce((s,x)=>s+x.carbs,0)/l7.length)+'g';document.getElementById('avg-kcal').textContent=Math.round(l7.reduce((s,x)=>s+x.kcal,0)/l7.length);}
@@ -1345,7 +1401,7 @@ function renderAchievements(){const unlocked=load(K.achievements),uMap={};unlock
 // ===== HEALTH ANALYZER ENGINE =====
 function runAnalyzer(){
   const body=load(K.body),bw=load(K.bloodwork),workouts=load(K.workouts),nutr=load(K.nutrition),lifts=load(K.lifts);
-  const chronoAge=47;
+  const chronoAge=getChronoAge();
   const scores={};const details={};const priorities=[];
 
   // ── METABOLIC HEALTH (25 pts) ────────────────────────────────────────────
@@ -1462,8 +1518,8 @@ function runAnalyzer(){
     const avgP=Math.round(l7Nutr.reduce((s,x)=>s+x.protein,0)/l7Nutr.length);
     const avgK=Math.round(l7Nutr.reduce((s,x)=>s+x.kcal,0)/l7Nutr.length);
     if(avgP>=220){nutScore+=9;nutDetails.push({label:'Avg Protein (7d)',val:avgP+'g',status:'optimal',note:'220g+ target hit — muscle protected'});}
-    else if(avgP>=190){nutScore+=5;nutDetails.push({label:'Avg Protein (7d)',val:avgP+'g',status:'warn',note:`${220-avgP}g below target — close but meaningful`});priorities.push({rank:2,impact:'HIGH',title:`Close the ${220-avgP}g Protein Gap`,body:`Averaging ${avgP}g/day against a 220g target. At 47 in a deficit, this gap costs muscle. One additional 30–40g source per day closes it: cottage cheese before bed, extra shake, larger protein at dinner.`,action:'Add one more protein source daily · target 220g minimum'});}
-    else{nutScore+=1;nutDetails.push({label:'Avg Protein (7d)',val:avgP+'g',status:'bad',note:'Significantly below target'});priorities.push({rank:1,impact:'CRITICAL',title:'Fix Protein Intake Immediately',body:`${avgP}g/day average is too low for your goals. At 47, in a deficit, training 4x/week, you need 220g minimum to prevent muscle loss. This is non-negotiable.`,action:'220g protein is the daily floor — no exceptions'});}
+    else if(avgP>=190){nutScore+=5;nutDetails.push({label:'Avg Protein (7d)',val:avgP+'g',status:'warn',note:`${220-avgP}g below target — close but meaningful`});priorities.push({rank:2,impact:'HIGH',title:`Close the ${220-avgP}g Protein Gap`,body:`Averaging ${avgP}g/day against a 220g target. At your age in a deficit, this gap costs muscle. One additional 30–40g source per day closes it: cottage cheese before bed, extra shake, larger protein at dinner.`,action:'Add one more protein source daily · target 220g minimum'});}
+    else{nutScore+=1;nutDetails.push({label:'Avg Protein (7d)',val:avgP+'g',status:'bad',note:'Significantly below target'});priorities.push({rank:1,impact:'CRITICAL',title:'Fix Protein Intake Immediately',body:`${avgP}g/day average is too low for your goals. At your age, in a deficit, training 4x/week, you need 220g minimum to prevent muscle loss. This is non-negotiable.`,action:'220g protein is the daily floor — no exceptions'});}
     if(avgK>=2200&&avgK<=2700){nutScore+=6;nutDetails.push({label:'Avg Kcal (7d)',val:avgK,status:'optimal',note:'In target range'});}
     else if(avgK<2200){nutScore+=3;nutDetails.push({label:'Avg Kcal (7d)',val:avgK,status:'warn',note:'May be too aggressive a deficit'});}
     else{nutScore+=3;nutDetails.push({label:'Avg Kcal (7d)',val:avgK,status:'warn',note:'Slight surplus — adjust portions'});}
@@ -1480,7 +1536,7 @@ function runAnalyzer(){
     const avgSleep=sleepData.reduce((s,x)=>s+parseFloat(x.sleep),0)/sleepData.length;
     if(avgSleep>=8){recScore+=10;recDetails.push({label:'Avg Sleep Score (14d)',val:avgSleep.toFixed(1)+'/10',status:'optimal',note:'Excellent recovery — growth hormone and cortisol well-managed'});}
     else if(avgSleep>=7){recScore+=7;recDetails.push({label:'Avg Sleep Score (14d)',val:avgSleep.toFixed(1)+'/10',status:'good',note:'Good but not optimal — 30 min earlier bedtime would help'});}
-    else if(avgSleep>=6){recScore+=4;recDetails.push({label:'Avg Sleep Score (14d)',val:avgSleep.toFixed(1)+'/10',status:'warn',note:'Below optimal — cortisol elevated, recovery impaired'});priorities.push({rank:2,impact:'HIGH',title:'Improve Sleep Quality',body:`Average sleep score ${avgSleep.toFixed(1)}/10. Poor sleep elevates cortisol (stalls fat loss), lowers testosterone, impairs muscle repair, and makes every training session harder. At 47, sleep is as anabolic as training.`,action:'Bed by 9:30 PM · no screens 30 min before · keep room cold and dark'});}
+    else if(avgSleep>=6){recScore+=4;recDetails.push({label:'Avg Sleep Score (14d)',val:avgSleep.toFixed(1)+'/10',status:'warn',note:'Below optimal — cortisol elevated, recovery impaired'});priorities.push({rank:2,impact:'HIGH',title:'Improve Sleep Quality',body:`Average sleep score ${avgSleep.toFixed(1)}/10. Poor sleep elevates cortisol (stalls fat loss), lowers testosterone, impairs muscle repair, and makes every training session harder. At your age, sleep is as anabolic as training.`,action:'Bed by 9:30 PM · no screens 30 min before · keep room cold and dark'});}
     else{recScore+=1;recDetails.push({label:'Avg Sleep Score',val:avgSleep.toFixed(1)+'/10',status:'bad',note:'Critically low — this is limiting all other adaptations'});priorities.push({rank:1,impact:'CRITICAL',title:'Fix Sleep — Everything Else Depends On It',body:`Sleep score ${avgSleep.toFixed(1)}/10 is significantly impacting every other metric. Fat loss stalls. Testosterone drops. Muscle repair stops. Training feels 2–3 RPE points harder. Fix sleep and every other number improves.`,action:'Treat 9:30 PM bedtime as non-negotiable for 2 weeks — track the difference'});}
   } else {
     recDetails.push({label:'Sleep',val:null,status:'missing',note:'Log sleep scores in Body Comp tab'});
@@ -1492,8 +1548,8 @@ function runAnalyzer(){
   if(latestBw){
     if(latestBw.test){
       const t=parseFloat(latestBw.test);
-      if(t>=600){hormScore+=5;hormDetails.push({label:'Testosterone',val:t+' ng/dL',status:'optimal',note:'600+ is excellent for 47'});}
-      else if(t>=400){hormScore+=3;hormDetails.push({label:'Testosterone',val:t+' ng/dL',status:'warn',note:'Below optimal — sleep and zinc are the first levers'});priorities.push({rank:3,impact:'MEDIUM',title:'Optimize Testosterone Levels',body:`${t} ng/dL is below the 600 optimal floor. At 47, testosterone drives muscle retention, fat loss, and energy. Sleep is the biggest natural lever — every hour of sleep deprivation measurably drops testosterone.`,action:'Prioritize sleep 8h · check zinc and vitamin D levels · retest in 90 days'});}
+      if(t>=600){hormScore+=5;hormDetails.push({label:'Testosterone',val:t+' ng/dL',status:'optimal',note:'600+ is excellent for your age'});}
+      else if(t>=400){hormScore+=3;hormDetails.push({label:'Testosterone',val:t+' ng/dL',status:'warn',note:'Below optimal — sleep and zinc are the first levers'});priorities.push({rank:3,impact:'MEDIUM',title:'Optimize Testosterone Levels',body:`${t} ng/dL is below the 600 optimal floor. At your age, testosterone drives muscle retention, fat loss, and energy. Sleep is the biggest natural lever — every hour of sleep deprivation measurably drops testosterone.`,action:'Prioritize sleep 8h · check zinc and vitamin D levels · retest in 90 days'});}
       else{hormScore+=1;hormDetails.push({label:'Testosterone',val:t+' ng/dL',status:'bad',note:'Low — discuss with doctor'});priorities.push({rank:2,impact:'HIGH',title:'Address Low Testosterone',body:`${t} ng/dL is clinically low. This needs a conversation with your doctor. Low testosterone at this level makes fat loss, muscle retention, and energy management significantly harder.`,action:'Schedule appointment with doctor or endocrinologist'});}
     }
     if(latestBw.vitd){
@@ -1546,7 +1602,7 @@ function runAnalyzer(){
   const thisWeekBody=body.filter(x=>x.weight&&x.date>=w7Str).sort((a,b)=>a.date.localeCompare(b.date));
   const thisWeekLifts=lifts.filter(x=>x.date>=w7Str);
   const refeeds=load(K.refeed);
-  const daysSinceRefeed=refeeds.length?Math.round((new Date()-new Date(refeeds[0].date+'T00:00:00'))/86400000):999;
+  const daysSinceRefeed=refeeds.length?Math.round((new Date()-new Date(refeeds[0].date+'T00:00:00'))/86400000):null;
 
   // ── 1. SESSION COUNT ────────────────────────────────────────────────────
   const sessionsThisWeek=thisWeekWorkouts.length;
@@ -1618,7 +1674,7 @@ function runAnalyzer(){
       urgency:'URGENT',
       urgencyColor:'var(--red)',
       title:'No Nutrition Data This Week',
-      what:'Without meal logging, protein compliance is unknown. At 47 in a deficit, untracked low protein weeks cost muscle.',
+      what:'Without meal logging, protein compliance is unknown. At your age in a deficit, untracked low protein weeks cost muscle.',
       how:'Open Nutrition tab → speak your last meal into the AI logger right now. Start today.',
       measure:'Log at least 5 days this week'
     });
@@ -1668,8 +1724,8 @@ function runAnalyzer(){
         urgencyColor:'var(--amber)',
         title:'Weight Flat This Week',
         what:`Only ${Math.abs(change).toFixed(1)} lbs movement across ${daysSpanned} days. May be a plateau.`,
-        how:daysSinceRefeed>=20?'A refeed is likely due — this can break a stall. Plan one in the next 3–5 days.':'Check protein logging — undereported protein often masks the real issue. Confirm 220g+ for 7 days.',
-        measure:daysSinceRefeed>=20?'Schedule refeed this week':'Log every meal this week and confirm protein'
+        how:daysSinceRefeed!==null&&daysSinceRefeed>=20?'A refeed is likely due — this can break a stall. Plan one in the next 3–5 days.':'Check protein logging — undereported protein often masks the real issue. Confirm 220g+ for 7 days.',
+        measure:daysSinceRefeed!==null&&daysSinceRefeed>=20?'Schedule refeed this week':'Log every meal this week and confirm protein'
       });
     }
   } else {
@@ -1725,26 +1781,42 @@ function runAnalyzer(){
   }
 
   // ── 5. REFEED TIMING ────────────────────────────────────────────────────
-  if(daysSinceRefeed>=25&&daysSinceRefeed<50){
-    weeklyActions.push({
-      icon:'🔄',
-      urgency:'THIS WEEK',
-      urgencyColor:'var(--amber)',
-      title:`Refeed Due — ${daysSinceRefeed} Days Since Last One`,
-      what:`Your protocol calls for a refeed every 4–6 weeks. You\'re at ${daysSinceRefeed} days. Waiting too long lets leptin drop too far, stalling fat loss and suppressing testosterone.`,
-      how:'Pick a training day this week — ideally a high-volume leg day. Add 300–500g extra carbs (rice, potato, fruit). Keep protein at 220g+. Enjoy it.',
-      measure:'Log the refeed in Schedule tab · note energy and strength in next session'
-    });
-  } else if(daysSinceRefeed>=50){
-    weeklyActions.push({
-      icon:'🔄',
-      urgency:'URGENT',
-      urgencyColor:'var(--red)',
-      title:`Refeed Overdue — ${daysSinceRefeed} Days Without One`,
-      what:`${daysSinceRefeed} days is too long. Leptin is suppressed, which is likely contributing to weight stalls, lower energy, and cravings. This needs to happen this week.`,
-      how:'Schedule it for tomorrow or the next training day. 300–500g extra carbs. Keep protein high. This is part of the protocol, not a cheat — it\'s required.',
-      measure:'Log refeed in Schedule tab this week'
-    });
+  // Refeed timing — only fire if at least 10 sessions logged (enough data to matter)
+  if(workouts.length>=10){
+    if(daysSinceRefeed===null){
+      // No refeed ever logged — only nudge after meaningful training volume
+      if(workouts.length>=16){
+        weeklyActions.push({
+          icon:'🔄',
+          urgency:'THIS WEEK',
+          urgencyColor:'var(--amber)',
+          title:'First Refeed Not Yet Logged',
+          what:`You\'ve logged ${workouts.length} sessions with no refeed on record. Your protocol calls for one every 4–6 weeks to protect hormones and keep strength trending up.`,
+          how:'Pick a training day this week — add 300–500g extra carbs (rice, potato, fruit). Keep protein at 220g+. Log it in the Schedule tab.',
+          measure:'Log your first refeed in Schedule tab this week'
+        });
+      }
+    } else if(daysSinceRefeed>=25&&daysSinceRefeed<50){
+      weeklyActions.push({
+        icon:'🔄',
+        urgency:'THIS WEEK',
+        urgencyColor:'var(--amber)',
+        title:`Refeed Due — ${daysSinceRefeed} Days Since Last One`,
+        what:`Your protocol calls for a refeed every 4–6 weeks. You\'re at ${daysSinceRefeed} days. Waiting too long lets leptin drop, stalling fat loss and suppressing testosterone.`,
+        how:'Pick a training day this week — ideally a high-volume leg day. Add 300–500g extra carbs (rice, potato, fruit). Keep protein at 220g+.',
+        measure:'Log the refeed in Schedule tab · note energy and strength in next session'
+      });
+    } else if(daysSinceRefeed>=50){
+      weeklyActions.push({
+        icon:'🔄',
+        urgency:'URGENT',
+        urgencyColor:'var(--red)',
+        title:`Refeed Overdue — ${daysSinceRefeed} Days Since Last One`,
+        what:`${daysSinceRefeed} days without a refeed. Leptin is suppressed — contributing to weight stalls, lower energy, and cravings. This needs to happen this week.`,
+        how:'Schedule it for the next training day. 300–500g extra carbs. Keep protein high. This is part of the protocol, not a cheat.',
+        measure:'Log refeed in Schedule tab this week'
+      });
+    }
   }
 
   // ── 6. RPE TREND — EARLY WARNING ────────────────────────────────────────
@@ -1867,6 +1939,8 @@ function importBackup(input){const file=input.files[0];if(!file)return;const rea
 // INIT
 document.addEventListener('DOMContentLoaded',async()=>{
   const t=today();['w-date','l-date','b-date','bl-date','n-date','photo-date','rf-date','wr-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=t;});
+  // Pre-load birthday if not already set
+  if(!localStorage.getItem(AP_DOB))localStorage.setItem(AP_DOB,'1978-05-23');
   initSavedMeals();
   renderApiKeyStatus();
   await openPhotoDB();
@@ -1883,6 +1957,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   renderAchievements();
   renderImportLog();
   stopFlipbook();
+  renderProfileStatus();
   setTimeout(checkRefeedNudge,2000);
   function setupDrop(zoneId,inputId,handler){const zone=document.getElementById(zoneId);if(!zone)return;zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag');});zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');const f=e.dataTransfer.files[0];if(f){const inp=document.getElementById(inputId);const dt=new DataTransfer();dt.items.add(f);inp.files=dt.files;handler({files:dt.files});}});}
   setupDrop('lab-drop-zone','lab-file-input',handleLabUpload);
