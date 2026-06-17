@@ -1420,24 +1420,35 @@ function runAnalyzer(){
   const rW90=workouts.filter(x=>x.date>=cs90Str);
   const rW7=workouts.filter(x=>x.date>=cs7Str);
   if(rW90.length){
-    const weeksOf90=Math.max(1,Math.ceil((new Date()-cs90)/604800000));
-    const avgPerWeek=rW90.length/weeksOf90;
-    if(avgPerWeek>=4){trainScore+=12;trainDetails.push({label:'Sessions/Week (90d avg)',val:avgPerWeek.toFixed(1),status:'optimal',note:'4+ per week — progressive overload is compounding'});}
-    else if(avgPerWeek>=3){trainScore+=8;trainDetails.push({label:'Sessions/Week (90d avg)',val:avgPerWeek.toFixed(1),status:'good',note:'Close to target — push for consistent 4'});}
-    else if(avgPerWeek>=2){trainScore+=4;trainDetails.push({label:'Sessions/Week (90d avg)',val:avgPerWeek.toFixed(1),status:'warn',note:'Below target — training age and results slow down'});priorities.push({rank:2,impact:'HIGH',title:'Increase Training Frequency to 4x/Week',body:`Averaging ${avgPerWeek.toFixed(1)} sessions/week over 90 days. At 47, training frequency drives both metabolic health and muscle preservation. The difference between 2x and 4x/week is dramatic for IR reversal.`,action:'Block 4 specific training days on your calendar this week'});}
-    else{trainScore+=1;trainDetails.push({label:'Sessions/Week',val:avgPerWeek.toFixed(1),status:'bad',note:'Low — major results gap'});}
+    // Use actual logging span (first session to today), capped at 90 days
+    // This prevents inflated denominator when app is newly started
+    const allSorted=workouts.slice().sort((a,b)=>a.date.localeCompare(b.date));
+    const firstSessionDate=new Date(allSorted[0].date+'T00:00:00');
+    const daysSinceFirst=Math.max(1,Math.round((new Date()-firstSessionDate)/86400000));
+    const weeksActual=Math.max(1,Math.min(13,daysSinceFirst/7));
+    const avgPerWeek=rW90.length/weeksActual;
+    const spanLabel=daysSinceFirst<=14?`${daysSinceFirst}d`:weeksActual<4?`${weeksActual.toFixed(1)}wk avg`:'90d avg';
+    if(avgPerWeek>=4){trainScore+=12;trainDetails.push({label:`Sessions/Week (${spanLabel})`,val:avgPerWeek.toFixed(1),status:'optimal',note:'4+ per week — progressive overload is compounding'});}
+    else if(avgPerWeek>=3){trainScore+=8;trainDetails.push({label:`Sessions/Week (${spanLabel})`,val:avgPerWeek.toFixed(1),status:'good',note:'Close to target — push for consistent 4'});}
+    else if(avgPerWeek>=2){trainScore+=4;trainDetails.push({label:`Sessions/Week (${spanLabel})`,val:avgPerWeek.toFixed(1),status:'warn',note:'Below target — training age and results slow down'});}
+    else{trainScore+=1;trainDetails.push({label:`Sessions/Week (${spanLabel})`,val:avgPerWeek.toFixed(1),status:'bad',note:'Low — major results gap'});}
     const streak=calcStreak();
     if(streak>=21){trainScore+=5;trainDetails.push({label:'Current Streak',val:streak+' days',status:'optimal',note:'Elite consistency'});}
     else if(streak>=7){trainScore+=3;trainDetails.push({label:'Current Streak',val:streak+' days',status:'good',note:'Solid week — keep the chain going'});}
     else{trainScore+=1;trainDetails.push({label:'Current Streak',val:streak+' days',status:'warn',note:'Build the streak — consistency is everything'});}
-    // Strength progression
-    const liftNames=[...new Set(lifts.map(x=>x.lift))];let improving=0;
-    liftNames.forEach(n=>{const e=lifts.filter(x=>x.lift===n&&x.weight).sort((a,b)=>a.date.localeCompare(b.date));if(e.length>=3&&parseFloat(e[e.length-1].weight)>parseFloat(e[0].weight))improving++;});
-    if(liftNames.length>0){
-      const impPct=Math.round((improving/liftNames.length)*100);
-      if(impPct>=70){trainScore+=3;trainDetails.push({label:'Strength Progress',val:impPct+'% of lifts improving',status:'optimal',note:'Progressive overload is working'});}
-      else if(impPct>=40){trainScore+=2;trainDetails.push({label:'Strength Progress',val:impPct+'% of lifts improving',status:'warn',note:'Some lifts stalling — check nutrition and recovery'});}
-      else{trainScore+=0;trainDetails.push({label:'Strength Progress',val:impPct+'% improving',status:'bad',note:'Lifts declining — increase calories, check sleep'});priorities.push({rank:1,impact:'HIGH',title:'Address Declining Strength',body:'When lifts decline more than 10%, the body is in a catabolic state. The causes are almost always: undereating protein, sleep debt, or overly aggressive deficit. Address in that order.',action:'Hit 220g protein for 7 days straight · check sleep score · consider refeed'});}
+    // Strength progression — requires 3+ entries per lift to be meaningful
+    const liftNames=[...new Set(lifts.map(x=>x.lift))];
+    const liftsWithData=liftNames.filter(n=>lifts.filter(x=>x.lift===n&&x.weight).length>=3);
+    let improving=0;
+    liftsWithData.forEach(n=>{const e=lifts.filter(x=>x.lift===n&&x.weight).sort((a,b)=>a.date.localeCompare(b.date));if(parseFloat(e[e.length-1].weight)>parseFloat(e[0].weight))improving++;});
+    if(liftsWithData.length>=2){
+      const impPct=Math.round((improving/liftsWithData.length)*100);
+      if(impPct>=70){trainScore+=3;trainDetails.push({label:'Strength Progress',val:`${improving}/${liftsWithData.length} lifts improving`,status:'optimal',note:'Progressive overload confirmed — keep adding weight when top sets feel clean'});}
+      else if(impPct>=40){trainScore+=2;trainDetails.push({label:'Strength Progress',val:`${improving}/${liftsWithData.length} lifts improving`,status:'warn',note:'Some lifts plateaued — check protein and sleep first'});}
+      else{trainScore+=0;trainDetails.push({label:'Strength Progress',val:`${improving}/${liftsWithData.length} lifts declining`,status:'bad',note:'Lifts going backwards — undereating protein or sleep debt'});priorities.push({rank:1,impact:'HIGH',title:'Address Declining Strength',body:'When lifts decline more than 10%, the body is in a catabolic state. The causes are almost always: undereating protein, sleep debt, or overly aggressive deficit. Address in that order.',action:'Hit 220g protein for 7 days straight · check sleep score · consider refeed'});}
+    } else if(liftNames.length>0){
+      const totalEntries=lifts.filter(x=>x.weight).length;
+      trainDetails.push({label:'Strength Progress',val:`${totalEntries} entries logged`,status:'warn',note:`Need 3+ entries per lift to detect trends. ${liftsWithData.length}/${liftNames.length} lifts have enough data — keep logging and this fills in automatically.`});
     }
   } else {
     trainDetails.push({label:'Sessions',val:0,status:'missing',note:'No sessions logged yet'});
@@ -1516,8 +1527,11 @@ function runAnalyzer(){
   if(latestBw?.crp){const c=parseFloat(latestBw.crp);if(c<1)bioAgeAdj-=2;else if(c>3)bioAgeAdj+=3;}
   const wBComp=body.filter(x=>x.bf);
   if(wBComp.length){const bf=parseFloat(wBComp[wBComp.length-1].bf);if(bf<15)bioAgeAdj-=3;else if(bf>25)bioAgeAdj+=3;}
-  const weeksOf90t=Math.max(1,Math.ceil((new Date()-cs90)/604800000));
-  const avgPerWeekT=rW90.length?rW90.length/weeksOf90t:0;
+  const allSortedBio=workouts.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const firstBioDate=allSortedBio.length?new Date(allSortedBio[0].date+'T00:00:00'):cs90;
+  const daysSinceFirstBio=Math.max(1,Math.round((new Date()-firstBioDate)/86400000));
+  const weeksActualBio=Math.max(1,Math.min(13,daysSinceFirstBio/7));
+  const avgPerWeekT=rW90.length?rW90.length/weeksActualBio:0;
   if(avgPerWeekT>=4)bioAgeAdj-=3;else if(avgPerWeekT<2)bioAgeAdj+=3;
   const sleepD=body.filter(x=>x.sleep).slice(0,14);
   if(sleepD.length){const avgS=sleepD.reduce((s,x)=>s+parseFloat(x.sleep),0)/sleepD.length;if(avgS>=8.5)bioAgeAdj-=2;else if(avgS<6.5)bioAgeAdj+=4;}
