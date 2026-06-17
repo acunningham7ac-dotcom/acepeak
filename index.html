@@ -442,6 +442,7 @@ tr:hover td{background:var(--amber-dim);}
   <button class="nb" onclick="showTab('weekly',this)">Weekly</button>
   <button class="nb" onclick="showTab('coupons',this)">Coupons</button>
   <button class="nb" onclick="showTab('achievements',this)">Wins</button>
+  <button class="nb" onclick="showTab('analyzer',this)">⬡ Analyzer</button>
   <button class="nb" onclick="showTab('import',this)">Import</button>
   <button class="nb" onclick="showTab('setup',this)">Setup</button>
 </nav>
@@ -926,6 +927,48 @@ tr:hover td{background:var(--amber-dim);}
   <div class="card"><div class="ct"><span class="d"></span>Unlocked History</div><div id="ach-history"><div class="empty"><div class="ei">◈</div>No achievements yet.</div></div></div>
 </div></div>
 
+<!-- ANALYZER -->
+<div id="tab-analyzer" class="tab"><div class="wrap">
+  <div class="card amber" style="position:relative;overflow:hidden;padding:22px 18px;">
+    <div style="position:absolute;right:-10px;top:-14px;font-size:90px;opacity:.1;pointer-events:none;">⬡</div>
+    <div class="ct"><span class="d white"></span>Health Analyzer</div>
+    <div style="font-size:13px;color:rgba(13,11,9,.65);margin-bottom:14px;font-style:italic;line-height:1.6;">Reads all your logged data — bloodwork, body comp, training, nutrition, sleep, and strength — and synthesizes a composite health score, estimated biological age, and your highest-leverage priorities for the next 7 days.</div>
+    <button class="btn" style="background:var(--black);color:var(--amber);" onclick="runAnalyzer()">Run Full Analysis</button>
+  </div>
+  <div class="g2" style="margin-bottom:13px;">
+    <div class="card" style="text-align:center;padding:22px 14px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;">Health Score</div>
+      <div style="position:relative;width:110px;height:110px;margin:0 auto 10px;"><svg width="110" height="110" viewBox="0 0 110 110" style="transform:rotate(-90deg);"><circle cx="55" cy="55" r="46" fill="none" stroke="rgba(200,134,10,.15)" stroke-width="9"/><circle cx="55" cy="55" r="46" fill="none" stroke="var(--amber)" stroke-width="9" stroke-linecap="square" stroke-dasharray="289" id="health-score-arc" stroke-dashoffset="289"/></svg><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-family:'DM Mono',monospace;font-size:32px;font-weight:500;line-height:1;color:var(--amber);" id="health-score-num">—</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">/ 100</div></div></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--amber);" id="health-score-label">—</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;" id="health-score-sub">Run analysis to see your score</div>
+    </div>
+    <div class="card" style="text-align:center;padding:22px 14px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;">Biological Age</div>
+      <div style="font-family:'DM Mono',monospace;font-size:52px;font-weight:500;line-height:1;margin:14px 0 10px;" id="bio-age-num">—</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;" id="bio-age-vs">vs chronological age 47</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;margin-top:8px;" id="bio-age-label">—</div>
+    </div>
+  </div>
+  <div class="card" id="score-breakdown-card" style="display:none;">
+    <div class="ct"><span class="d"></span>Score Breakdown</div>
+    <div id="score-breakdown-rows"></div>
+  </div>
+  <div class="card" id="priorities-card" style="display:none;">
+    <div class="ct"><span class="d green"></span>Top 5 Priorities — Next 7 Days</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:13px;">Ranked by health impact. The top item moves the needle most right now.</div>
+    <div id="priorities-list"></div>
+  </div>
+  <div class="card" id="full-report-card" style="display:none;">
+    <div class="ct"><span class="d"></span>Full Report</div>
+    <div id="full-report-body"></div>
+  </div>
+  <div class="card dark" id="data-coverage-card">
+    <div class="ct"><span class="d"></span>Data Coverage</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:11px;">More data = more accurate analysis. Log what's missing to improve fidelity.</div>
+    <div id="data-coverage-rows"></div>
+  </div>
+</div></div>
+
 <!-- IMPORT -->
 <div id="tab-import" class="tab"><div class="wrap">
   <div class="backup-row">
@@ -1011,7 +1054,7 @@ function showTab(id,btn){
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-  const r={dashboard:renderDashboard,insights:renderInsights,workouts:renderWorkouts,lifts:renderLifts,body:renderBodyLog,photos:renderPhotoGallery,bloodwork:renderBloodworkLog,nutrition:renderNutritionTab,schedule:renderRefeedLog,weekly:()=>{renderWeeklyLog();calcWeeklyStats();},coupons:renderCoupons,achievements:renderAchievements,import:renderImportLog};
+  const r={dashboard:renderDashboard,insights:renderInsights,workouts:renderWorkouts,lifts:renderLifts,body:renderBodyLog,photos:renderPhotoGallery,bloodwork:renderBloodworkLog,nutrition:renderNutritionTab,schedule:renderRefeedLog,weekly:()=>{renderWeeklyLog();calcWeeklyStats();},coupons:renderCoupons,achievements:renderAchievements,analyzer:()=>{renderDataCoverage();},import:renderImportLog};
   r[id]&&r[id]();
 }
 const toggleDay=h=>{const b=h.nextElementSibling,a=h.querySelector('span:last-child');b.classList.toggle('open');a.textContent=b.classList.contains('open')?'▾':'▸';};
@@ -1215,6 +1258,262 @@ const showMs=m=>{currentMs=m;document.getElementById('ms-icon').textContent=m.ic
 const closeMilestone=()=>{document.getElementById('ms-overlay').classList.remove('show');currentMs=null;};
 function copyMilestone(){if(!currentMs)return;navigator.clipboard.writeText(`🏆 ${currentMs.title}\n\n${currentMs.shareBody}\n\n"${currentMs.line}"\n\n— ACEPEAK · ${new Date().toLocaleDateString()}\nKnow your numbers. Own your body.`).then(()=>toast('Copied ✓')).catch(()=>toast('Copy manually','var(--amber)'));}
 function renderAchievements(){const unlocked=load(K.achievements),uMap={};unlocked.forEach(a=>uMap[a.id]=a.date);document.getElementById('ach-grid').innerHTML=MILESTONES.map(m=>{const u=!!uMap[m.id];return`<div class="ach-item ${u?'unlocked':''}" ${u?`onclick="showMs(MILESTONES.find(x=>x.id==='${m.id}'))"`:''} style="${u?'cursor:pointer;':''}"><div class="ach-icon">${m.icon}</div><div class="ach-name">${m.title}</div>${u?`<div class="ach-date">${fmt(uMap[m.id])}</div>`:'<div class="ach-date" style="opacity:.08;">locked</div>'}</div>`;}).join('');const history=document.getElementById('ach-history');const earned=unlocked.map(a=>{const m=MILESTONES.find(x=>x.id===a.id);return m?{...m,date:a.date}:null;}).filter(Boolean).sort((a,b)=>b.date.localeCompare(a.date));if(!earned.length){history.innerHTML='<div class="empty"><div class="ei">🏅</div>No achievements yet.</div>';return;}history.innerHTML=earned.map(a=>`<div style="display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid rgba(212,175,55,.08);cursor:pointer;" onclick="showMs(MILESTONES.find(x=>x.id==='${a.id}'))"><span style="font-size:22px;">${a.icon}</span><div style="flex:1;"><div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;color:var(--amber);">${a.title}</div><div style="font-size:12px;color:var(--muted);">${a.line}</div></div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">${fmt(a.date)}</div></div>`).join('');}
+
+// ===== HEALTH ANALYZER ENGINE =====
+function runAnalyzer(){
+  const body=load(K.body),bw=load(K.bloodwork),workouts=load(K.workouts),nutr=load(K.nutrition),lifts=load(K.lifts);
+  const chronoAge=47;
+  const scores={};const details={};const priorities=[];
+
+  // ── METABOLIC HEALTH (25 pts) ────────────────────────────────────────────
+  let metScore=0,metDetails=[];
+  const latestBw=bw.length?bw[bw.length-1]:null;
+  if(latestBw){
+    // HOMA-IR (most important single marker for your goals)
+    if(latestBw.homa){
+      const h=parseFloat(latestBw.homa);
+      if(h<1){metScore+=12;metDetails.push({label:'HOMA-IR',val:h,status:'optimal',note:'Below 1.0 — insulin sensitivity is excellent'});}
+      else if(h<1.5){metScore+=9;metDetails.push({label:'HOMA-IR',val:h,status:'good',note:'Borderline but trending well'});}
+      else if(h<2){metScore+=5;metDetails.push({label:'HOMA-IR',val:h,status:'warn',note:'Borderline IR — the protocol is the right intervention'});}
+      else{metScore+=1;metDetails.push({label:'HOMA-IR',val:h,status:'bad',note:'Insulin resistant — this is the #1 priority to reverse'});priorities.push({rank:1,impact:'CRITICAL',title:'Reverse Insulin Resistance',body:`HOMA-IR ${h} — above the 2.0 threshold. Every intervention you're doing is aimed here. Protein targets, training consistency, sleep, and refeeds all work together. Log bloodwork quarterly to track progress.`,action:'Stay on protocol: 220g+ protein, 4x/week training, 9:30 PM bed, refeed every 4–6 weeks'});}
+    }
+    // Fasting glucose
+    if(latestBw.glucose){
+      const g=parseFloat(latestBw.glucose);
+      if(g<90){metScore+=8;metDetails.push({label:'Fasting Glucose',val:g,status:'optimal',note:'Below 90 mg/dL — excellent'});}
+      else if(g<100){metScore+=5;metDetails.push({label:'Fasting Glucose',val:g,status:'warn',note:'Slightly elevated — watch trend'});}
+      else{metScore+=1;metDetails.push({label:'Fasting Glucose',val:g,status:'bad',note:'Prediabetic range — urgent'});priorities.push({rank:1,impact:'HIGH',title:'Address Elevated Fasting Glucose',body:`${g} mg/dL puts you in the prediabetic range. Prioritize morning movement (even 10 min walk after waking), limit refined carbs, and consider checking your post-meal glucose if possible.`,action:'Add 10-min fasted walk after waking · limit carbs before blood draw'});}
+    }
+    // Triglycerides
+    if(latestBw.trig){
+      const t=parseFloat(latestBw.trig);
+      if(t<100){metScore+=5;metDetails.push({label:'Triglycerides',val:t,status:'optimal',note:'Excellent — below 100'});}
+      else if(t<150){metScore+=3;metDetails.push({label:'Triglycerides',val:t,status:'warn',note:'Watch — cut refined carbs'});}
+      else{metScore+=0;metDetails.push({label:'Triglycerides',val:t,status:'bad',note:'Elevated — omega-3s + carb reduction needed'});priorities.push({rank:2,impact:'HIGH',title:'Lower Triglycerides',body:`${t} mg/dL is above the 150 watch threshold. High triglycerides signal carbohydrate sensitivity and correlate directly with insulin resistance. Omega-3 supplementation (2–3g EPA+DHA daily) and reducing refined carbs are the two most evidence-backed levers.`,action:'Add 2–3g omega-3s daily · track carb sources · retest in 8 weeks'});}
+    }
+  } else {
+    metDetails.push({label:'Metabolic Panel',val:null,status:'missing',note:'No bloodwork logged — metabolic score unavailable'});
+    priorities.push({rank:2,impact:'HIGH',title:'Get Baseline Bloodwork',body:'Without a fasting metabolic panel (glucose, insulin, HbA1c, lipids), you cannot track the IR reversal that is the primary goal of this protocol. HOMA-IR is the single most important number for your goals.',action:'Quest or LabCorp fasting panel · upload results to ACEPEAK Bloodwork tab'});
+  }
+  scores.metabolic={score:metScore,max:25,details:metDetails};
+
+  // ── BODY COMPOSITION (20 pts) ────────────────────────────────────────────
+  let compScore=0,compDetails=[];
+  const wB=body.filter(x=>x.weight);
+  if(wB.length>=2){
+    const first=parseFloat(wB[0].weight),last=parseFloat(wB[wB.length-1].weight),lost=first-last;
+    const weeks=Math.max(1,Math.ceil((new Date(wB[wB.length-1].date)-new Date(wB[0].date))/604800000));
+    const rate=lost/weeks;
+    if(rate>=0.5&&rate<=1.2){compScore+=10;compDetails.push({label:'Weight Loss Rate',val:rate.toFixed(2),status:'optimal',note:`${rate.toFixed(2)} lbs/week — ideal range`});}
+    else if(rate>0&&rate<0.5){compScore+=5;compDetails.push({label:'Weight Loss Rate',val:rate.toFixed(2),status:'warn',note:'Too slow — check deficit and protein'});priorities.push({rank:3,impact:'MEDIUM',title:'Accelerate Fat Loss Rate',body:`Current rate: ${rate.toFixed(2)} lbs/week. Target is 0.5–1.0 lbs/week. Reduce carbs on non-training days by 30–50g, or increase step count. Do not cut protein.`,action:'Cut 30–50g carbs on rest days · confirm protein 220g+ · add steps'});}
+    else if(rate>1.2){compScore+=6;compDetails.push({label:'Weight Loss Rate',val:rate.toFixed(2),status:'warn',note:'Too fast — risk muscle loss'});priorities.push({rank:2,impact:'HIGH',title:'Slow Fat Loss Rate to Protect Muscle',body:`Losing ${rate.toFixed(2)} lbs/week — above the 1 lb ceiling at your training level and age. Add 200–300 kcal, primarily protein and complex carbs. Check if any lifts are declining.`,action:'Add 200–300 kcal · monitor lift numbers weekly'});}
+    else{compScore+=2;compDetails.push({label:'Weight Loss Rate',val:'—',status:'warn',note:'Weight not trending down'});}
+    if(lost>0)compDetails.push({label:'Total Lost',val:lost.toFixed(1)+' lbs',status:'good',note:`${lost.toFixed(1)} lbs down from starting weight`});
+  } else {
+    compDetails.push({label:'Weight',val:null,status:'missing',note:'Log at least 2 weigh-ins'});
+    priorities.push({rank:3,impact:'MEDIUM',title:'Establish Weigh-In Routine',body:'Consistent morning weigh-ins (fasted, same time) are the single cheapest and most informative data point for tracking progress. Without them the Analyzer cannot calculate your loss rate.',action:'Weigh every morning fasted · log in Body Comp tab'});
+  }
+  const wBF=body.filter(x=>x.bf);
+  if(wBF.length){
+    const bf=parseFloat(wBF[wBF.length-1].bf);
+    const targetBF=10;const gap=bf-targetBF;
+    if(bf<15){compScore+=6;compDetails.push({label:'Body Fat %',val:bf,status:'good',note:`${bf}% — closing in on the 10% target`});}
+    else if(bf<20){compScore+=4;compDetails.push({label:'Body Fat %',val:bf,status:'warn',note:`${bf}% — ${gap.toFixed(1)}% above goal`});}
+    else{compScore+=2;compDetails.push({label:'Body Fat %',val:bf,status:'bad',note:`${bf}% — significant work ahead, protocol is correct`});}
+    if(bf>15&&gap>0)compScore+=0; else compScore+=4;
+  }
+  const wW=body.filter(x=>x.waist);
+  if(wW.length>=2){
+    const waistLost=parseFloat(wW[0].waist)-parseFloat(wW[wW.length-1].waist);
+    if(waistLost>0){compScore+=4;compDetails.push({label:'Waist Trend',val:'-'+waistLost.toFixed(2)+'"',status:'optimal',note:'Waist shrinking — visceral fat reducing'});}
+    else{compDetails.push({label:'Waist Trend',val:'flat/up',status:'warn',note:'Waist not improving — check insulin and carb sources'});}
+  }
+  scores.composition={score:Math.min(20,compScore),max:20,details:compDetails};
+
+  // ── TRAINING CONSISTENCY (20 pts) ────────────────────────────────────────
+  let trainScore=0,trainDetails=[];
+  const cs90=new Date();cs90.setDate(cs90.getDate()-90);const cs90Str=cs90.toISOString().split('T')[0];
+  const cs7=new Date();cs7.setDate(cs7.getDate()-7);const cs7Str=cs7.toISOString().split('T')[0];
+  const rW90=workouts.filter(x=>x.date>=cs90Str);
+  const rW7=workouts.filter(x=>x.date>=cs7Str);
+  if(rW90.length){
+    const weeksOf90=Math.max(1,Math.ceil((new Date()-cs90)/604800000));
+    const avgPerWeek=rW90.length/weeksOf90;
+    if(avgPerWeek>=4){trainScore+=12;trainDetails.push({label:'Sessions/Week (90d avg)',val:avgPerWeek.toFixed(1),status:'optimal',note:'4+ per week — progressive overload is compounding'});}
+    else if(avgPerWeek>=3){trainScore+=8;trainDetails.push({label:'Sessions/Week (90d avg)',val:avgPerWeek.toFixed(1),status:'good',note:'Close to target — push for consistent 4'});}
+    else if(avgPerWeek>=2){trainScore+=4;trainDetails.push({label:'Sessions/Week (90d avg)',val:avgPerWeek.toFixed(1),status:'warn',note:'Below target — training age and results slow down'});priorities.push({rank:2,impact:'HIGH',title:'Increase Training Frequency to 4x/Week',body:`Averaging ${avgPerWeek.toFixed(1)} sessions/week over 90 days. At 47, training frequency drives both metabolic health and muscle preservation. The difference between 2x and 4x/week is dramatic for IR reversal.`,action:'Block 4 specific training days on your calendar this week'});}
+    else{trainScore+=1;trainDetails.push({label:'Sessions/Week',val:avgPerWeek.toFixed(1),status:'bad',note:'Low — major results gap'});}
+    const streak=calcStreak();
+    if(streak>=21){trainScore+=5;trainDetails.push({label:'Current Streak',val:streak+' days',status:'optimal',note:'Elite consistency'});}
+    else if(streak>=7){trainScore+=3;trainDetails.push({label:'Current Streak',val:streak+' days',status:'good',note:'Solid week — keep the chain going'});}
+    else{trainScore+=1;trainDetails.push({label:'Current Streak',val:streak+' days',status:'warn',note:'Build the streak — consistency is everything'});}
+    // Strength progression
+    const liftNames=[...new Set(lifts.map(x=>x.lift))];let improving=0;
+    liftNames.forEach(n=>{const e=lifts.filter(x=>x.lift===n&&x.weight).sort((a,b)=>a.date.localeCompare(b.date));if(e.length>=3&&parseFloat(e[e.length-1].weight)>parseFloat(e[0].weight))improving++;});
+    if(liftNames.length>0){
+      const impPct=Math.round((improving/liftNames.length)*100);
+      if(impPct>=70){trainScore+=3;trainDetails.push({label:'Strength Progress',val:impPct+'% of lifts improving',status:'optimal',note:'Progressive overload is working'});}
+      else if(impPct>=40){trainScore+=2;trainDetails.push({label:'Strength Progress',val:impPct+'% of lifts improving',status:'warn',note:'Some lifts stalling — check nutrition and recovery'});}
+      else{trainScore+=0;trainDetails.push({label:'Strength Progress',val:impPct+'% improving',status:'bad',note:'Lifts declining — increase calories, check sleep'});priorities.push({rank:1,impact:'HIGH',title:'Address Declining Strength',body:'When lifts decline more than 10%, the body is in a catabolic state. The causes are almost always: undereating protein, sleep debt, or overly aggressive deficit. Address in that order.',action:'Hit 220g protein for 7 days straight · check sleep score · consider refeed'});}
+    }
+  } else {
+    trainDetails.push({label:'Sessions',val:0,status:'missing',note:'No sessions logged yet'});
+  }
+  scores.training={score:Math.min(20,trainScore),max:20,details:trainDetails};
+
+  // ── NUTRITION (15 pts) ───────────────────────────────────────────────────
+  let nutScore=0,nutDetails=[];
+  const l7Nutr=nutr.slice(0,7);
+  if(l7Nutr.length>=3){
+    const avgP=Math.round(l7Nutr.reduce((s,x)=>s+x.protein,0)/l7Nutr.length);
+    const avgK=Math.round(l7Nutr.reduce((s,x)=>s+x.kcal,0)/l7Nutr.length);
+    if(avgP>=220){nutScore+=9;nutDetails.push({label:'Avg Protein (7d)',val:avgP+'g',status:'optimal',note:'220g+ target hit — muscle protected'});}
+    else if(avgP>=190){nutScore+=5;nutDetails.push({label:'Avg Protein (7d)',val:avgP+'g',status:'warn',note:`${220-avgP}g below target — close but meaningful`});priorities.push({rank:2,impact:'HIGH',title:`Close the ${220-avgP}g Protein Gap`,body:`Averaging ${avgP}g/day against a 220g target. At 47 in a deficit, this gap costs muscle. One additional 30–40g source per day closes it: cottage cheese before bed, extra shake, larger protein at dinner.`,action:'Add one more protein source daily · target 220g minimum'});}
+    else{nutScore+=1;nutDetails.push({label:'Avg Protein (7d)',val:avgP+'g',status:'bad',note:'Significantly below target'});priorities.push({rank:1,impact:'CRITICAL',title:'Fix Protein Intake Immediately',body:`${avgP}g/day average is too low for your goals. At 47, in a deficit, training 4x/week, you need 220g minimum to prevent muscle loss. This is non-negotiable.`,action:'220g protein is the daily floor — no exceptions'});}
+    if(avgK>=2200&&avgK<=2700){nutScore+=6;nutDetails.push({label:'Avg Kcal (7d)',val:avgK,status:'optimal',note:'In target range'});}
+    else if(avgK<2200){nutScore+=3;nutDetails.push({label:'Avg Kcal (7d)',val:avgK,status:'warn',note:'May be too aggressive a deficit'});}
+    else{nutScore+=3;nutDetails.push({label:'Avg Kcal (7d)',val:avgK,status:'warn',note:'Slight surplus — adjust portions'});}
+  } else {
+    nutDetails.push({label:'Nutrition',val:null,status:'missing',note:'Log meals to enable nutrition scoring'});
+    if(l7Nutr.length===0)priorities.push({rank:3,impact:'MEDIUM',title:'Start Logging Meals',body:'Nutrition data is unavailable. Even rough AI meal logging (speak your meal) gives enough data to identify protein gaps before they cost you muscle.',action:'Log at least 5 days of meals this week using the AI logger'});
+  }
+  scores.nutrition={score:Math.min(15,nutScore),max:15,details:nutDetails};
+
+  // ── RECOVERY / SLEEP (10 pts) ────────────────────────────────────────────
+  let recScore=0,recDetails=[];
+  const sleepData=body.filter(x=>x.sleep).slice(0,14);
+  if(sleepData.length>=3){
+    const avgSleep=sleepData.reduce((s,x)=>s+parseFloat(x.sleep),0)/sleepData.length;
+    if(avgSleep>=8){recScore+=10;recDetails.push({label:'Avg Sleep Score (14d)',val:avgSleep.toFixed(1)+'/10',status:'optimal',note:'Excellent recovery — growth hormone and cortisol well-managed'});}
+    else if(avgSleep>=7){recScore+=7;recDetails.push({label:'Avg Sleep Score (14d)',val:avgSleep.toFixed(1)+'/10',status:'good',note:'Good but not optimal — 30 min earlier bedtime would help'});}
+    else if(avgSleep>=6){recScore+=4;recDetails.push({label:'Avg Sleep Score (14d)',val:avgSleep.toFixed(1)+'/10',status:'warn',note:'Below optimal — cortisol elevated, recovery impaired'});priorities.push({rank:2,impact:'HIGH',title:'Improve Sleep Quality',body:`Average sleep score ${avgSleep.toFixed(1)}/10. Poor sleep elevates cortisol (stalls fat loss), lowers testosterone, impairs muscle repair, and makes every training session harder. At 47, sleep is as anabolic as training.`,action:'Bed by 9:30 PM · no screens 30 min before · keep room cold and dark'});}
+    else{recScore+=1;recDetails.push({label:'Avg Sleep Score',val:avgSleep.toFixed(1)+'/10',status:'bad',note:'Critically low — this is limiting all other adaptations'});priorities.push({rank:1,impact:'CRITICAL',title:'Fix Sleep — Everything Else Depends On It',body:`Sleep score ${avgSleep.toFixed(1)}/10 is significantly impacting every other metric. Fat loss stalls. Testosterone drops. Muscle repair stops. Training feels 2–3 RPE points harder. Fix sleep and every other number improves.`,action:'Treat 9:30 PM bedtime as non-negotiable for 2 weeks — track the difference'});}
+  } else {
+    recDetails.push({label:'Sleep',val:null,status:'missing',note:'Log sleep scores in Body Comp tab'});
+  }
+  scores.recovery={score:Math.min(10,recScore),max:10,details:recDetails};
+
+  // ── HORMONAL HEALTH (10 pts) ─────────────────────────────────────────────
+  let hormScore=0,hormDetails=[];
+  if(latestBw){
+    if(latestBw.test){
+      const t=parseFloat(latestBw.test);
+      if(t>=600){hormScore+=5;hormDetails.push({label:'Testosterone',val:t+' ng/dL',status:'optimal',note:'600+ is excellent for 47'});}
+      else if(t>=400){hormScore+=3;hormDetails.push({label:'Testosterone',val:t+' ng/dL',status:'warn',note:'Below optimal — sleep and zinc are the first levers'});priorities.push({rank:3,impact:'MEDIUM',title:'Optimize Testosterone Levels',body:`${t} ng/dL is below the 600 optimal floor. At 47, testosterone drives muscle retention, fat loss, and energy. Sleep is the biggest natural lever — every hour of sleep deprivation measurably drops testosterone.`,action:'Prioritize sleep 8h · check zinc and vitamin D levels · retest in 90 days'});}
+      else{hormScore+=1;hormDetails.push({label:'Testosterone',val:t+' ng/dL',status:'bad',note:'Low — discuss with doctor'});priorities.push({rank:2,impact:'HIGH',title:'Address Low Testosterone',body:`${t} ng/dL is clinically low. This needs a conversation with your doctor. Low testosterone at this level makes fat loss, muscle retention, and energy management significantly harder.`,action:'Schedule appointment with doctor or endocrinologist'});}
+    }
+    if(latestBw.vitd){
+      const v=parseFloat(latestBw.vitd);
+      if(v>=50){hormScore+=3;hormDetails.push({label:'Vitamin D',val:v+' ng/mL',status:'optimal',note:'50+ is the performance range'});}
+      else if(v>=30){hormScore+=2;hormDetails.push({label:'Vitamin D',val:v+' ng/mL',status:'warn',note:'Suboptimal — increase supplementation'});priorities.push({rank:4,impact:'MEDIUM',title:'Raise Vitamin D to Performance Range',body:`${v} ng/mL is adequate but below the 50–80 ng/mL optimal zone. Vitamin D affects testosterone production, immune function, insulin sensitivity, and muscle function.`,action:'Increase to 4,000–5,000 IU/day with K2 · retest in 90 days'});}
+      else{hormScore+=0;hormDetails.push({label:'Vitamin D',val:v+' ng/mL',status:'bad',note:'Deficient — supplement immediately'});priorities.push({rank:2,impact:'HIGH',title:'Fix Vitamin D Deficiency',body:`${v} ng/mL is deficient. This directly impairs testosterone production, muscle function, and insulin sensitivity — all critical to your goals.`,action:'5,000 IU/day with K2 immediately · retest in 60 days'});}
+    }
+    if(latestBw.crp){
+      const c=parseFloat(latestBw.crp);
+      if(c<1){hormScore+=2;hormDetails.push({label:'hs-CRP',val:c+' mg/L',status:'optimal',note:'Low inflammation — recovery is clean'});}
+      else if(c<3){hormScore+=1;hormDetails.push({label:'hs-CRP',val:c+' mg/L',status:'warn',note:'Mild inflammation — omega-3s, sleep, and recovery focus'});}
+      else{hormScore+=0;hormDetails.push({label:'hs-CRP',val:c+' mg/L',status:'bad',note:'High inflammation — address sources'});priorities.push({rank:2,impact:'HIGH',title:'Reduce Systemic Inflammation',body:`hs-CRP ${c} mg/L indicates significant chronic inflammation. This impairs fat loss, testosterone production, insulin sensitivity, and recovery. Omega-3s (3g/day), sleep optimization, and reducing processed foods are the primary interventions.`,action:'3g omega-3 EPA+DHA daily · eliminate seed oils · prioritize sleep'});}
+    }
+  } else {
+    hormDetails.push({label:'Hormonal Panel',val:null,status:'missing',note:'No bloodwork — testosterone and vitamin D unavailable'});
+  }
+  scores.hormonal={score:Math.min(10,hormScore),max:10,details:hormDetails};
+
+  // ── TOTAL SCORE ──────────────────────────────────────────────────────────
+  const totalScore=Object.values(scores).reduce((s,x)=>s+x.score,0);
+  const totalMax=Object.values(scores).reduce((s,x)=>s+x.max,0);
+  const healthScore=Math.round((totalScore/totalMax)*100);
+
+  // ── BIO AGE CALCULATION ──────────────────────────────────────────────────
+  // Based on metabolic markers + body comp + lifestyle factors
+  let bioAgeAdj=0;
+  if(latestBw?.homa){const h=parseFloat(latestBw.homa);if(h<1)bioAgeAdj-=6;else if(h<1.5)bioAgeAdj-=3;else if(h>=2)bioAgeAdj+=5;else if(h>=3)bioAgeAdj+=9;}
+  if(latestBw?.test){const t=parseFloat(latestBw.test);if(t>=700)bioAgeAdj-=4;else if(t>=500)bioAgeAdj-=1;else if(t<400)bioAgeAdj+=5;}
+  if(latestBw?.vitd){const v=parseFloat(latestBw.vitd);if(v>=60)bioAgeAdj-=2;else if(v<30)bioAgeAdj+=3;}
+  if(latestBw?.crp){const c=parseFloat(latestBw.crp);if(c<1)bioAgeAdj-=2;else if(c>3)bioAgeAdj+=3;}
+  const wBComp=body.filter(x=>x.bf);
+  if(wBComp.length){const bf=parseFloat(wBComp[wBComp.length-1].bf);if(bf<15)bioAgeAdj-=3;else if(bf>25)bioAgeAdj+=3;}
+  const weeksOf90t=Math.max(1,Math.ceil((new Date()-cs90)/604800000));
+  const avgPerWeekT=rW90.length?rW90.length/weeksOf90t:0;
+  if(avgPerWeekT>=4)bioAgeAdj-=3;else if(avgPerWeekT<2)bioAgeAdj+=3;
+  const sleepD=body.filter(x=>x.sleep).slice(0,14);
+  if(sleepD.length){const avgS=sleepD.reduce((s,x)=>s+parseFloat(x.sleep),0)/sleepD.length;if(avgS>=8.5)bioAgeAdj-=2;else if(avgS<6.5)bioAgeAdj+=4;}
+  const bioAge=Math.max(25,Math.min(75,chronoAge+bioAgeAdj));
+
+  // ── RENDER RESULTS ───────────────────────────────────────────────────────
+  // Score ring
+  const arc=document.getElementById('health-score-arc');
+  const numEl=document.getElementById('health-score-num');
+  const labelEl=document.getElementById('health-score-label');
+  const subEl=document.getElementById('health-score-sub');
+  arc.style.strokeDashoffset=289-(289*(healthScore/100));
+  numEl.textContent=healthScore;
+  numEl.style.color=healthScore>=80?'var(--green2)':healthScore>=65?'var(--amber)':'var(--red)';
+  arc.style.stroke=healthScore>=80?'var(--green2)':healthScore>=65?'var(--amber)':'var(--red)';
+  labelEl.textContent=healthScore>=85?'Elite':healthScore>=75?'Strong':healthScore>=65?'Building':healthScore>=50?'Developing':'Needs Work';
+  labelEl.style.color=healthScore>=80?'var(--green2)':healthScore>=65?'var(--amber)':'var(--red)';
+  subEl.textContent=`${totalScore}/${totalMax} pts across 5 categories`;
+
+  // Bio age
+  const bioEl=document.getElementById('bio-age-num');
+  const bioLabel=document.getElementById('bio-age-label');
+  bioEl.textContent=bioAge;
+  const bioVs=document.getElementById('bio-age-vs');
+  bioVs.textContent=`vs chronological age ${chronoAge}`;
+  if(bioAge<chronoAge-3){bioEl.style.color='var(--green2)';bioLabel.textContent=`${chronoAge-bioAge} years younger than your age`;bioLabel.style.color='var(--green2)';}
+  else if(bioAge>chronoAge+3){bioEl.style.color='var(--red)';bioLabel.textContent=`${bioAge-chronoAge} years older than your age`;bioLabel.style.color='var(--red)';}
+  else{bioEl.style.color='var(--amber)';bioLabel.textContent='Matching chronological age';bioLabel.style.color='var(--amber)';}
+
+  // Breakdown rows
+  const breakdownCard=document.getElementById('score-breakdown-card');
+  breakdownCard.style.display='block';
+  const catNames={metabolic:'Metabolic Health',composition:'Body Composition',training:'Training & Strength',nutrition:'Nutrition',recovery:'Sleep & Recovery',hormonal:'Hormonal Health'};
+  document.getElementById('score-breakdown-rows').innerHTML=Object.entries(scores).map(([cat,s])=>{
+    const pct=Math.round((s.score/s.max)*100);
+    const c=pct>=80?'var(--green2)':pct>=60?'var(--amber)':'var(--red)';
+    const detailHtml=s.details.map(d=>{const dc=d.status==='optimal'?'var(--green2)':d.status==='good'?'var(--amber)':d.status==='warn'?'var(--amber)':d.status==='missing'?'var(--muted)':'var(--red)';return`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(200,134,10,.06);font-size:12px;"><span style="color:var(--pale);">${d.label}${d.val!==null&&d.val!==undefined?' — '+d.val:''}</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:${dc};">${d.status.toUpperCase()}</span></div><div style="font-size:11px;color:var(--muted);padding-bottom:5px;font-style:italic;">${d.note}</div>`;}).join('');
+    return`<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(200,134,10,.1);"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--cream);">${catNames[cat]}</div><div style="font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:${c};">${s.score}/${s.max}</div></div><div class="pb-bar" style="margin-bottom:8px;"><div class="pf" style="width:${pct}%;background:${c};"></div></div>${detailHtml}</div>`;
+  }).join('');
+
+  // Priorities
+  const priCard=document.getElementById('priorities-card');
+  priCard.style.display='block';
+  // Add generic priorities if we don't have 5 specific ones
+  if(priorities.length<5&&rW7.length<4)priorities.push({rank:5,impact:'MEDIUM',title:'Hit 4 Sessions This Week',body:'Training frequency is the most controllable variable. 4 sessions this week compounds into 200+ sessions per year. This is what drives the metabolic change.',action:'Schedule 4 specific training windows before the week starts'});
+  if(priorities.length<5){const refeeds=load(K.refeed);const weeksSinceRefeed=refeeds.length?Math.round((new Date()-new Date(refeeds[0].date+'T00:00:00'))/604800000):99;if(weeksSinceRefeed>=4)priorities.push({rank:4,impact:'MEDIUM',title:'Schedule This Week\'s Refeed',body:`${weeksSinceRefeed} weeks since your last refeed. Your protocol calls for one every 4–6 weeks. A properly timed refeed resets leptin, protects testosterone, and often breaks a weight loss stall.`,action:'Pick a day this week — 300–500g extra carbs, keep protein high'});}
+  priorities.sort((a,b)=>a.rank-b.rank).splice(5);
+  const impColors={'CRITICAL':'var(--red)','HIGH':'var(--amber)','MEDIUM':'var(--green2)','LOW':'var(--muted)'};
+  document.getElementById('priorities-list').innerHTML=priorities.slice(0,5).map((p,i)=>`<div style="display:flex;gap:12px;padding:13px 0;border-bottom:1px solid rgba(200,134,10,.1);">${i===priorities.length-1?'':''}<div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:var(--amber);flex-shrink:0;width:24px;line-height:1.2;">${i+1}</div><div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--cream);">${p.title}</div><span style="font-family:'DM Mono',monospace;font-size:9px;font-weight:500;padding:2px 7px;border:1px solid ${impColors[p.impact]||'var(--muted)'};color:${impColors[p.impact]||'var(--muted)'};">${p.impact}</span></div><div style="font-size:13px;color:var(--pale);line-height:1.65;margin-bottom:6px;">${p.body}</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);letter-spacing:.03em;">→ ${p.action}</div></div></div>`).join('');
+
+  // Full report card
+  const frCard=document.getElementById('full-report-card');
+  frCard.style.display='block';
+  const dateStr=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('full-report-body').innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:14px;">Generated ${dateStr} · ACEPEAK Health Analyzer · Chronological Age: ${chronoAge}</div>
+<div style="background:var(--black);border:1px solid var(--amber-border);padding:14px;margin-bottom:12px;"><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;">Summary</div><div style="font-size:13px;color:var(--pale);line-height:1.8;">Health Score: <strong style="color:var(--amber);">${healthScore}/100</strong> &nbsp;·&nbsp; Biological Age: <strong style="color:${bioAge<chronoAge?'var(--green2)':bioAge>chronoAge?'var(--red)':'var(--amber)'};">${bioAge}</strong><br>Sessions this week: ${rW7.length} &nbsp;·&nbsp; Total logged: ${workouts.length} &nbsp;·&nbsp; Current streak: ${calcStreak()} days<br>${latestBw?.homa?`HOMA-IR: ${latestBw.homa} (${parseFloat(latestBw.homa)<1?'Optimal':parseFloat(latestBw.homa)<2?'Borderline':'Insulin Resistant'})`:''}</div></div>
+<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-top:10px;">This analysis is informational only and does not constitute medical advice. Consult your physician for clinical decisions.</div>`;
+
+  toast('Analysis complete ✓');
+}
+
+function renderDataCoverage(){
+  const body=load(K.body),bw=load(K.bloodwork),workouts=load(K.workouts),nutr=load(K.nutrition),lifts=load(K.lifts);
+  const items=[
+    {label:'Weigh-ins',count:body.filter(x=>x.weight).length,target:10,unit:'entries'},
+    {label:'Bloodwork panels',count:bw.length,target:3,unit:'panels'},
+    {label:'Workouts logged',count:workouts.length,target:20,unit:'sessions'},
+    {label:'Nutrition days',count:nutr.length,target:14,unit:'days'},
+    {label:'Lifts / PRs',count:lifts.length,target:20,unit:'entries'},
+    {label:'Sleep scores',count:body.filter(x=>x.sleep).length,target:14,unit:'entries'},
+    {label:'Body fat %',count:body.filter(x=>x.bf).length,target:3,unit:'entries'},
+    {label:'Waist measurements',count:body.filter(x=>x.waist).length,target:5,unit:'entries'},
+  ];
+  document.getElementById('data-coverage-rows').innerHTML=items.map(item=>{
+    const pct=Math.min(100,Math.round((item.count/item.target)*100));
+    const c=pct>=100?'var(--green2)':pct>=50?'var(--amber)':'var(--red)';
+    return`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--pale);">${item.label}</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:${c};">${item.count} / ${item.target} ${item.unit}</span></div><div class="pb-bar"><div class="pf" style="width:${pct}%;background:${c};"></div></div></div>`;
+  }).join('');
+}
 
 // IMPORT
 const parseCSVLine=line=>{const result=[],re=/("(?:[^"]*(?:""[^"]*)*)"|[^,]*)/g;let m;while((m=re.exec(line))!==null){if(m.index===re.lastIndex)re.lastIndex++;result.push(m[1]);}return result;};
