@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Family Fitness Challenge 🏆</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:#09090F;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;min-height:100vh}
+input,select,textarea,button{font-family:inherit}
+
+/* Layout */
+#app{padding-bottom:76px}
+.wrap{max-width:540px;margin:0 auto;padding:0 16px}
+
+/* Header */
+.hdr{background:#0C0C1E;border-bottom:1px solid rgba(255,255,255,0.06);padding:16px 20px 12px;position:sticky;top:0;z-index:50}
+.hdr-inner{max-width:540px;margin:0 auto}
+.hdr-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.hdr-title{font-size:17px;font-weight:800;letter-spacing:-.4px}
+.hdr-sub{font-size:11px;color:#7777AA;margin-top:3px}
+.prog-bar{margin-top:8px;height:4px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#00E5A0,#00B8FF);border-radius:4px;transition:width .5s}
+.sync{font-size:11px;font-weight:600;padding:4px 9px;border-radius:6px;white-space:nowrap;border:1px solid transparent;flex-shrink:0}
+.sync-idle{display:none}
+.sync-saving{background:rgba(255,255,255,0.06);color:#aaa;border-color:rgba(255,255,255,0.1)}
+.sync-saved{background:rgba(0,229,160,0.1);color:#00E5A0;border-color:rgba(0,229,160,0.25)}
+.sync-error{background:rgba(255,107,107,0.1);color:#FF6B6B;border-color:rgba(255,107,107,0.25)}
+
+/* Nav */
+.nav{position:fixed;bottom:0;left:0;right:0;background:#0C0C1E;border-top:1px solid rgba(255,255,255,0.06);display:flex;z-index:50}
+.nav-btn{flex:1;background:none;border:none;padding:10px 0 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:#7777AA}
+.nav-btn.on{color:#00E5A0;font-weight:700}
+.nav-icon{font-size:20px;line-height:1}
+.nav-lbl{font-size:10px}
+
+/* Tabs */
+.tab{display:none;padding-top:20px}
+.tab.on{display:block}
+
+/* Cards */
+.card{background:#111120;border-radius:14px;border:1px solid rgba(255,255,255,0.07);margin-bottom:14px;overflow:hidden}
+
+/* Forms */
+.field{margin-bottom:18px}
+.lbl{display:block;font-size:11px;color:#7777AA;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}
+input,select,textarea{background:#09090F;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#fff;padding:12px 14px;font-size:15px;outline:none;width:100%}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button{opacity:1}
+select{appearance:none}
+input:focus,select:focus,textarea:focus{border-color:rgba(0,229,160,0.35)}
+
+/* Buttons */
+.btn{border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-g{background:#00E5A0;color:#000}
+.btn-ghost{background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.45);border:1px solid rgba(255,255,255,0.1)}
+.btn-acc{background:rgba(0,229,160,0.08);color:#00E5A0;border:1px solid rgba(0,229,160,0.25)}
+.btn-full{width:100%}
+.btn-sm{padding:6px 11px;font-size:12px;border-radius:8px}
+
+/* Cat tabs */
+.cat-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.cat-tab{border-radius:9px;padding:8px 13px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(255,255,255,0.08);background:#111120;color:#7777AA}
+
+/* Board */
+.l-card{background:#111120;border-radius:14px;margin-bottom:12px;border:1.5px solid rgba(255,255,255,0.07);overflow:hidden}
+.l-row{display:flex;align-items:center;padding:14px 16px;gap:12px}
+.rank{width:40px;height:40px;border-radius:50%;flex-shrink:0;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-weight:700}
+.bd-row{display:flex;gap:10px;margin-top:5px;flex-wrap:wrap}
+.pts{font-size:30px;font-weight:900;letter-spacing:-1px;line-height:1}
+
+/* Preview */
+.prev-box{border-radius:12px;padding:13px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06)}
+.prev-pts{font-size:34px;font-weight:900;letter-spacing:-1px;color:#333}
+.prev-pts.on{color:#00E5A0}
+.info-box{border-radius:12px;padding:13px;margin-bottom:16px;font-size:14px;line-height:1.6}
+.hint{font-size:12px;color:#7777AA;margin-top:5px}
+
+/* History */
+.l-entry{background:#111120;border-radius:12px;border:1px solid rgba(255,255,255,0.07);margin-bottom:10px;overflow:hidden}
+.l-erow{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.l-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.inline-panel{border-top:1px solid rgba(255,255,255,0.06);padding:12px 14px;background:#0C0C1E}
+.conf-strip{border-top:1px solid rgba(255,107,107,0.15);padding:10px 14px;background:#130808;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+/* Scoring */
+.s-row{display:flex;gap:12px;padding:10px 0}
+.s-row:not(:last-child){border-bottom:1px solid rgba(255,255,255,0.05)}
+.s-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+
+/* Participant row */
+.p-row{padding:11px 0;display:flex;justify-content:space-between;align-items:flex-start}
+.p-row:not(:last-child){border-bottom:1px solid rgba(255,255,255,0.07)}
+
+/* Wizard */
+#wizard{position:fixed;inset:0;background:#09090F;display:flex;align-items:center;justify-content:center;z-index:100;padding:24px}
+.wiz{max-width:430px;width:100%}
+.wiz-title{font-size:21px;font-weight:800;margin-bottom:8px}
+.wiz-sub{font-size:13px;color:#7777AA;line-height:1.65;margin-bottom:20px}
+.dots{display:flex;gap:6px;margin-bottom:20px}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15)}
+.dot.on{background:#00E5A0}
+
+/* Misc */
+.empty{text-align:center;color:#7777AA;margin-top:64px}
+.empty-icon{font-size:46px}
+.empty-text{margin-top:12px;line-height:1.8;font-size:14px}
+.sub{color:#7777AA}
+.flex{display:flex}
+.gap8{gap:8px}
+.gap6{gap:6px}
+.fw7{font-weight:700}
+.fs14{font-size:14px}
+.fs13{font-size:13px}
+.fs12{font-size:12px}
+.fs11{font-size:11px}
+code{font-family:monospace;word-break:break-all}
+a{color:#00E5A0}
+</style>
+</head>
+<body>
+
+<!-- Wizard -->
+<div id="wizard"><div class="wiz" id="wiz-content"></div></div>
+
+<!-- App -->
+<div id="app" style="display:none">
+  <div class="hdr">
+    <div class="hdr-inner">
+      <div class="hdr-row">
+        <div><div class="hdr-title" id="hdr-title">Family Fitness Challenge</div><div class="hdr-sub" id="hdr-sub"></div></div>
+        <span class="sync sync-idle" id="sync"></span>
+      </div>
+      <div class="prog-bar" id="prog-bar" style="display:none"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="tab-board"   class="tab on"></div>
+    <div id="tab-log"     class="tab"></div>
+    <div id="tab-history" class="tab"></div>
+    <div id="tab-setup"   class="tab"></div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn on" id="nb-board"   onclick="go('board')">  <span class="nav-icon">🏆</span><span class="nav-lbl">Board</span>  </button>
+    <button class="nav-btn"    id="nb-log"     onclick="go('log')">    <span class="nav-icon">➕</span><span class="nav-lbl">Log</span>    </button>
+    <button class="nav-btn"    id="nb-history" onclick="go('history')"><span class="nav-icon">📋</span><span class="nav-lbl">History</span></button>
+    <button class="nav-btn"    id="nb-setup"   onclick="go('setup')">  <span class="nav-icon">⚙️</span><span class="nav-lbl">Setup</span>  </button>
+  </nav>
+</div>
+
+<script>
+'use strict';
+const API='https://api.jsonbin.io/v3/b';
+const LK='ff_key', LB='ff_bin';
+const CATS={
+  workout:{label:'Workout',icon:'🏋️',color:'#00E5A0'},
+  steps:  {label:'Steps',  icon:'👟',color:'#4FC3F7'},
+  meal:   {label:'Meal Plan',icon:'🥗',color:'#FFB74D'},
+  water:  {label:'Water',  icon:'💧',color:'#40C4FF'},
+};
+const WKS=['Weight Training','Running','Walking','Cycling','Pilates','Yoga','Swimming','HIIT','Cardio','Jump Rope','Boxing','Basketball','Tennis','Dance','Rowing','Stretching','Other'];
+const MEDALS=['🥇','🥈','🥉'],MC=['#FFD700','#C0C0C0','#CD7F32'];
+
+// ── State ──────────────────────────────────────────────
+let D={challengeName:'Family Fitness Challenge',startDate:'',participants:[],logs:[]};
+let TAB='board', pollT=null;
+let editLogId=null,confDelId=null,confRemId=null,editParId=null,hFilt='all';
+// Log form
+let LF={pid:'',date:today(),cat:'workout',wt:'',min:'',steps:''};
+// Wizard
+let wStep=1,wKey='',wBin='',wErr='',wBusy=false;
+// Challenge edit
+let CE={on:false,name:'',start:''};
+
+// ── Helpers ────────────────────────────────────────────
+function today(){return new Date().toISOString().slice(0,10)}
+function pts(cat,min,steps){
+  if(cat==='workout')return Math.max(0,Math.floor((+min||0)/20));
+  if(cat==='steps')  return Math.max(0,Math.floor((+steps||0)/10000));
+  return 1;
+}
+function pStat(pid){
+  const ls=D.logs.filter(l=>l.pid===pid);
+  const t=ls.reduce((s,l)=>s+(l.pts||0),0);
+  const bd={workout:0,steps:0,meal:0,water:0};
+  ls.forEach(l=>{bd[l.cat]=(bd[l.cat]||0)+(l.pts||0);});
+  return{t,bd};
+}
+function daysIn(){
+  if(!D.startDate)return 0;
+  return Math.max(0,Math.min(90,Math.floor((new Date(today())-new Date(D.startDate))/86400000)+1));
+}
+function getKey(){return localStorage.getItem(LK)||''}
+function getBin(){return localStorage.getItem(LB)||''}
+function saveConf(k,b){localStorage.setItem(LK,k);localStorage.setItem(LB,b)}
+
+// ── JSONBin ────────────────────────────────────────────
+async function jFetch(url,opts={}){
+  const h={'X-Master-Key':getKey(),'Content-Type':'application/json',...(opts.headers||{})};
+  const r=await fetch(url,{...opts,headers:h});
+  if(!r.ok)throw new Error(r.status);
+  return r.json();
+}
+async function jLoad(){
+  const b=getBin(); if(!b)return null;
+  const j=await jFetch(`${API}/${b}/latest`);
+  return j.record;
+}
+async function jSave(data){
+  const b=getBin(); if(!b)return false;
+  await jFetch(`${API}/${b}`,{method:'PUT',body:JSON.stringify(data)});
+  return true;
+}
+async function jCreate(data){
+  const j=await jFetch(API,{method:'POST',headers:{'X-Bin-Name':'Family Fitness Challenge','X-Bin-Private':'false'},body:JSON.stringify(data)});
+  return j.metadata.id;
+}
+
+// ── Sync badge ─────────────────────────────────────────
+function badge(s){
+  const el=document.getElementById('sync'); if(!el)return;
+  el.className='sync sync-'+s;
+  if(s==='saving')el.textContent='⏳ saving…';
+  if(s==='saved') el.textContent='✓ saved';
+  if(s==='error') el.textContent='⚠️ save failed';
+  if(s==='idle')  el.textContent='';
+}
+
+// ── Persist ────────────────────────────────────────────
+async function save(nd){
+  D=nd; draw(); updateHdr(); badge('saving');
+  try{await jSave(D);badge('saved');setTimeout(()=>badge('idle'),4000);}
+  catch(_){badge('error');}
+}
+
+// ── Poll ───────────────────────────────────────────────
+async function poll(){
+  try{
+    const f=await jLoad();
+    if(f&&JSON.stringify(f)!==JSON.stringify(D)){
+      D=f;
+      if(TAB==='board')  rBoard();
+      if(TAB==='history')rHistory();
+      updateHdr();
+    }
+  }catch(_){}
+}
+
+// ── Header ─────────────────────────────────────────────
+function updateHdr(){
+  const d=daysIn();
+  document.getElementById('hdr-title').textContent=D.challengeName;
+  document.getElementById('hdr-sub').textContent=D.startDate
+    ?`Day ${d} of 90 · ${Math.max(0,90-d)} days left`
+    :'Set start date in Setup · 90-day challenge';
+  const pb=document.getElementById('prog-bar');
+  if(D.startDate){pb.style.display='block';document.getElementById('prog-fill').style.width=Math.min(100,(d/90)*100)+'%';}
+  else pb.style.display='none';
+}
+
+// ── Tab switch ─────────────────────────────────────────
+function go(t){
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('on'));
+  document.getElementById('tab-'+t).classList.add('on');
+  document.getElementById('nb-'+t).classList.add('on');
+  TAB=t; draw();
+}
+function draw(){
+  if(TAB==='board')   rBoard();
+  if(TAB==='log')     rLog();
+  if(TAB==='history') rHistory();
+  if(TAB==='setup')   rSetup();
+}
+
+// ── BOARD ──────────────────────────────────────────────
+function rBoard(){
+  const board=[...D.participants].map(p=>({...p,...pStat(p.id)})).sort((a,b)=>b.t-a.t);
+  if(!board.length){
+    document.getElementById('tab-board').innerHTML=`<div class="empty"><div class="empty-icon">🏆</div><div class="empty-text">No participants yet.<br>Go to Setup to add family members.</div></div>`;
+    return;
+  }
+  let h='';
+  board.forEach((p,i)=>{
+    const r=i+1,med=r<=3&&p.t>0,ldr=r===1&&p.t>0;
+    const rc=med?MC[r-1]:'#7777AA';
+    const bd=Object.entries(CATS).map(([k,c])=>`<span style="font-size:11px;color:${p.bd[k]>0?c.color:'#333'}">${c.icon} ${p.bd[k]||0} pt${p.bd[k]!==1?'s':''}</span>`).join('');
+    h+=`<div class="l-card" style="border-color:${med?MC[r-1]+'55':'rgba(255,255,255,0.07)'};${ldr?'box-shadow:0 0 26px rgba(255,215,0,0.11)':''}">
+      <div class="l-row">
+        <div class="rank" style="background:${med?MC[r-1]+'22':'rgba(255,255,255,0.04)'};border-color:${rc};color:${rc};font-size:${med?19:13}px">${med?MEDALS[r-1]:r}</div>
+        <div style="flex:1"><div style="font-weight:700;font-size:15px;color:${ldr?'#FFD700':'#fff'}">${p.name}${ldr?' 👑':''}</div><div class="bd-row">${bd}</div></div>
+        <div style="text-align:right"><div class="pts" style="color:${p.t>0?'#00E5A0':'#333'}">${p.t}</div><div style="font-size:10px;color:#7777AA">total pts</div></div>
+      </div></div>`;
+  });
+  document.getElementById('tab-board').innerHTML=h;
+}
+
+// ── LOG ────────────────────────────────────────────────
+function rLog(){
+  const pv=pts(LF.cat,LF.min,LF.steps), ok=LF.pid&&pv>0;
+  const pOpts=D.participants.map(p=>`<option value="${p.id}"${LF.pid==p.id?' selected':''}>${p.name}</option>`).join('');
+  const cTabs=Object.entries(CATS).map(([k,c])=>`<button class="cat-tab" onclick="setCat('${k}')" style="${LF.cat===k?`background:${c.color}22;color:${c.color};border-color:${c.color}`:''}">${c.icon} ${c.label}</button>`).join('');
+  const wtOpts=WKS.map(w=>`<option value="${w}">`).join('');
+
+  let catHtml='';
+  if(LF.cat==='workout'){
+    catHtml=`<div class="field"><label class="lbl">Workout Type</label>
+      <input list="wl" id="lf-wt" value="${LF.wt}" oninput="LF.wt=this.value" placeholder="e.g. Weight Training, Pilates…">
+      <datalist id="wl">${wtOpts}</datalist></div>
+      <div class="field"><label class="lbl">Duration (minutes)</label>
+      <input type="number" min="0" id="lf-min" value="${LF.min}" oninput="LF.min=this.value;livePreview()" placeholder="e.g. 60">
+      <div class="hint" id="lhint">${LF.min>0?`${LF.min} min ÷ 20 = <strong style="color:#00E5A0">${Math.floor(LF.min/20)} pt${Math.floor(LF.min/20)!==1?'s':''}</strong>`:''}</div></div>`;
+  } else if(LF.cat==='steps'){
+    catHtml=`<div class="field"><label class="lbl">Step Count</label>
+      <input type="number" min="0" id="lf-steps" value="${LF.steps}" oninput="LF.steps=this.value;livePreview()" placeholder="e.g. 12000">
+      <div class="hint" id="lhint">${LF.steps>0?`${Number(LF.steps).toLocaleString()} steps ÷ 10,000 = <strong style="color:#4FC3F7">${Math.floor(LF.steps/10000)} pt${Math.floor(LF.steps/10000)!==1?'s':''}</strong>`:''}</div></div>`;
+  } else if(LF.cat==='meal'){
+    catHtml=`<div class="info-box" style="background:rgba(255,183,77,.06);border:1px solid rgba(255,183,77,.2);color:#FFB74D">🥗 <strong>Meal plan adherence today</strong><br><span class="sub fs12">Log that you stuck to your meal plan. Awards 1 point.</span></div>`;
+  } else {
+    const p=D.participants.find(x=>x.id==LF.pid);
+    catHtml=`<div class="info-box" style="background:rgba(64,196,255,.06);border:1px solid rgba(64,196,255,.2);color:#40C4FF">💧 <strong>Daily water goal hit</strong><br><span class="sub fs12">${p?`Goal: ${p.waterGoal} oz · `:''}Awards 1 point.</span></div>`;
+  }
+
+  const pvBg =pv>0?'rgba(0,229,160,.05)':'rgba(255,255,255,.02)';
+  const pvBrd=pv>0?'rgba(0,229,160,.2)':'rgba(255,255,255,.06)';
+
+  document.getElementById('tab-log').innerHTML=`
+    <div class="field"><label class="lbl">Who is logging?</label>
+      <select onchange="LF.pid=this.value;rLog()"><option value="">Select participant…</option>${pOpts}</select></div>
+    <div class="field"><label class="lbl">Date</label>
+      <input type="date" value="${LF.date}" onchange="LF.date=this.value"></div>
+    <div class="field"><label class="lbl">Activity</label><div class="cat-tabs">${cTabs}</div></div>
+    ${catHtml}
+    <div class="prev-box" id="prev-box" style="background:${pvBg};border:1px solid ${pvBrd}">
+      <div><div class="lbl" style="margin-bottom:2px">Points this entry</div>
+      ${LF.cat==='workout'&&LF.min>0?`<div class="fs12 sub">Every 20 min = 1 pt</div>`:''}
+      ${LF.cat==='steps'&&LF.steps>0?`<div class="fs12 sub">Every 10,000 steps = 1 pt</div>`:''}</div>
+      <div class="prev-pts${pv>0?' on':''}" id="prev-pts">+${pv}</div></div>
+    <button class="btn btn-g btn-full" onclick="submitLog()"${ok?'':' disabled'}>Log Entry</button>`;
+}
+
+function setCat(c){LF.cat=c;LF.wt='';LF.min='';LF.steps='';rLog();}
+
+function livePreview(){
+  const pv=pts(LF.cat,LF.min,LF.steps);
+  const pEl=document.getElementById('prev-pts');
+  const pb =document.getElementById('prev-box');
+  const lh =document.getElementById('lhint');
+  if(pEl){pEl.textContent='+'+pv;pEl.className='prev-pts'+(pv>0?' on':'');}
+  if(pb){pb.style.background=pv>0?'rgba(0,229,160,.05)':'rgba(255,255,255,.02)';pb.style.borderColor=pv>0?'rgba(0,229,160,.2)':'rgba(255,255,255,.06)';}
+  if(lh){
+    if(LF.cat==='workout'&&LF.min>0)lh.innerHTML=`${LF.min} min ÷ 20 = <strong style="color:#00E5A0">${Math.floor(LF.min/20)} pt${Math.floor(LF.min/20)!==1?'s':''}</strong>`;
+    if(LF.cat==='steps'&&LF.steps>0)lh.innerHTML=`${Number(LF.steps).toLocaleString()} steps ÷ 10,000 = <strong style="color:#4FC3F7">${Math.floor(LF.steps/10000)} pt${Math.floor(LF.steps/10000)!==1?'s':''}</strong>`;
+  }
+  const sb=document.querySelector('#tab-log .btn-g');
+  if(sb)sb.disabled=!LF.pid||pv===0;
+}
+
+function submitLog(){
+  const pv=pts(LF.cat,LF.min,LF.steps);
+  if(!LF.pid||pv===0)return;
+  const entry={id:Date.now(),pid:+LF.pid,date:LF.date,cat:LF.cat,wt:LF.wt||'',min:+LF.min||0,steps:+LF.steps||0,pts:pv};
+  save({...D,logs:[...D.logs,entry]});
+  LF.wt='';LF.min='';LF.steps='';
+}
+
+// ── HISTORY ────────────────────────────────────────────
+function rHistory(){
+  const pOpts=D.participants.map(p=>`<option value="${p.id}"${hFilt==p.id?' selected':''}>${p.name}</option>`).join('');
+  const logs=[...D.logs].filter(l=>hFilt==='all'||l.pid==+hFilt).sort((a,b)=>b.id-a.id);
+  const wtOpts=WKS.map(w=>`<option value="${w}">`).join('');
+
+  let entries='';
+  if(!logs.length){entries='<div style="text-align:center;color:#7777AA;margin-top:40px;font-size:14px">No entries yet. Start logging!</div>';}
+  else logs.forEach(l=>{
+    const p=D.participants.find(x=>x.id===l.pid);
+    const c=CATS[l.cat];
+    const isE=editLogId===l.id, isD=confDelId===l.id;
+    const canE=l.cat==='workout'||l.cat==='steps';
+    const desc=l.cat==='workout'?`${l.wt||'Workout'} · ${l.min} min`:l.cat==='steps'?`${Number(l.steps).toLocaleString()} steps`:l.cat==='meal'?'Meal plan adherence':'Water goal hit';
+
+    let ePanel='',dPanel='';
+    if(isE){
+      if(l.cat==='workout')ePanel=`<div class="inline-panel">
+        <div class="field" style="margin-bottom:10px"><label class="lbl" style="margin-bottom:3px">Workout Type</label>
+        <input list="wl2" id="ewt" value="${l.wt||''}" style="font-size:13px;padding:9px 12px">
+        <datalist id="wl2">${wtOpts}</datalist></div>
+        <div class="field" style="margin-bottom:10px"><label class="lbl" style="margin-bottom:3px">Minutes</label>
+        <input type="number" min="0" id="emin" value="${l.min||0}" style="font-size:13px;padding:9px 12px" oninput="eHint(this.value,'w')">
+        <div class="hint" id="ehint">${l.min} min = <strong style="color:#00E5A0">${Math.floor((l.min||0)/20)} pts</strong></div></div>
+        <button class="btn btn-g btn-sm" onclick="saveEdit(${l.id},'w')">Save Changes</button></div>`;
+      else ePanel=`<div class="inline-panel">
+        <div class="field" style="margin-bottom:10px"><label class="lbl" style="margin-bottom:3px">Steps</label>
+        <input type="number" min="0" id="esteps" value="${l.steps||0}" style="font-size:13px;padding:9px 12px" oninput="eHint(this.value,'s')">
+        <div class="hint" id="ehint">${Number(l.steps).toLocaleString()} = <strong style="color:#4FC3F7">${Math.floor((l.steps||0)/10000)} pts</strong></div></div>
+        <button class="btn btn-g btn-sm" onclick="saveEdit(${l.id},'s')">Save Changes</button></div>`;
+    }
+    if(isD)dPanel=`<div class="conf-strip"><span style="font-size:13px;color:#FF6B6B">Delete this entry?</span>
+      <div class="flex gap8"><button class="btn btn-sm" style="background:#FF6B6B;color:#fff;border:none" onclick="delLog(${l.id})">Delete</button>
+      <button class="btn btn-ghost btn-sm" onclick="confDelId=null;rHistory()">Cancel</button></div></div>`;
+
+    entries+=`<div class="l-entry" style="${isE?'border-color:rgba(0,229,160,.25)':''}">
+      <div class="l-erow">
+        <div class="l-icon" style="background:${c.color}18">${c.icon}</div>
+        <div style="flex:1;min-width:0"><div class="fw7 fs14">${p?.name||'?'} <span class="sub" style="font-weight:400;font-size:12px">· ${l.date}</span></div>
+        <div class="sub fs12" style="margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${desc}</div></div>
+        <div style="font-size:17px;font-weight:800;color:${c.color};flex-shrink:0">+${l.pts}</div>
+        <div class="flex gap6" style="flex-shrink:0">
+          ${canE?`<button class="btn btn-sm ${isE?'btn-acc':'btn-ghost'}" style="padding:4px 9px;font-size:12px" onclick="togEdit(${l.id})">${isE?'✕':'Edit'}</button>`:''}
+          <button onclick="togDel(${l.id})" style="background:none;border:none;color:${isD?'#FF6B6B':'rgba(255,255,255,.2)'};cursor:pointer;font-size:16px;padding:3px">🗑</button>
+        </div>
+      </div>${ePanel}${dPanel}</div>`;
+  });
+
+  document.getElementById('tab-history').innerHTML=`
+    <div class="field"><select onchange="hFilt=this.value;editLogId=null;confDelId=null;rHistory()">
+      <option value="all"${hFilt==='all'?' selected':''}>All participants</option>${pOpts}</select></div>
+    ${entries}`;
+}
+
+function togEdit(id){editLogId=editLogId===id?null:id;confDelId=null;rHistory();}
+function togDel(id){confDelId=confDelId===id?null:id;editLogId=null;rHistory();}
+function eHint(v,t){
+  const h=document.getElementById('ehint');if(!h)return;
+  if(t==='w')h.innerHTML=`${v} min = <strong style="color:#00E5A0">${Math.floor(v/20)} pts</strong>`;
+  if(t==='s')h.innerHTML=`${Number(v).toLocaleString()} = <strong style="color:#4FC3F7">${Math.floor(v/10000)} pts</strong>`;
+}
+function saveEdit(lid,t){
+  let ul;
+  if(t==='w'){const wt=document.getElementById('ewt')?.value||'',mn=+document.getElementById('emin')?.value||0;
+    ul=D.logs.map(l=>l.id===lid?{...l,wt,min:mn,pts:pts('workout',mn,0)}:l);}
+  else{const st=+document.getElementById('esteps')?.value||0;
+    ul=D.logs.map(l=>l.id===lid?{...l,steps:st,pts:pts('steps',0,st)}:l);}
+  editLogId=null;save({...D,logs:ul});
+}
+function delLog(id){confDelId=null;editLogId=null;save({...D,logs:D.logs.filter(l=>l.id!==id)});}
+
+// ── SETUP ──────────────────────────────────────────────
+function rSetup(){
+  // Challenge
+  let cCard=CE.on?`<div class="card" style="padding:18px"><div class="fw7 fs14" style="margin-bottom:14px">🏁 Challenge Settings</div>
+    <div class="field"><label class="lbl">Name</label><input id="ce-n" value="${CE.name}"></div>
+    <div class="field"><label class="lbl">Start Date</label><input type="date" id="ce-d" value="${CE.start}">
+    <div class="hint" style="margin-top:5px">Challenge runs 90 days from this date.</div></div>
+    <div class="flex gap8"><button class="btn btn-g" onclick="saveChallenge()">Save</button>
+    <button class="btn btn-ghost" onclick="CE.on=false;rSetup()">Cancel</button></div></div>`
+  :`<div class="card" style="padding:18px"><div class="fw7 fs14" style="margin-bottom:12px">🏁 Challenge Settings</div>
+    <div class="fs14" style="margin-bottom:5px"><span class="sub">Name: </span>${D.challengeName}</div>
+    <div class="fs14" style="margin-bottom:13px"><span class="sub">Start: </span>${D.startDate||'<span style="color:#FF7043">Not set</span>'}</div>
+    <button class="btn btn-acc btn-sm" onclick="CE={on:true,name:D.challengeName,start:D.startDate};rSetup()">Edit Settings</button></div>`;
+
+  // Add participant
+  const aCard=`<div class="card" style="padding:18px"><div class="fw7 fs14" style="margin-bottom:14px">👤 Add Participant</div>
+    <div class="field"><label class="lbl">Full Name</label>
+    <input id="pn" placeholder="Family member name…" onkeydown="if(event.key==='Enter')addP()"></div>
+    <div class="field"><label class="lbl">Daily Water Goal (oz)</label>
+    <input type="number" id="pw" value="64" placeholder="64">
+    <div class="hint" style="margin-top:4px">Personal goal — hitting it earns 1 pt/day.</div></div>
+    <button class="btn btn-g btn-full" onclick="addP()">+ Add Participant</button></div>`;
+
+  // List
+  let pList='';
+  if(D.participants.length){
+    const rows=D.participants.map((p,i)=>{
+      const isC=confRemId===p.id,isE=editParId===p.id,st=pStat(p.id);
+      let ex='';
+      if(isE)ex+=`<div class="flex gap8" style="margin-top:9px;align-items:center">
+        <input type="number" id="ew-${p.id}" value="${p.waterGoal}" style="width:88px;padding:8px 11px;font-size:13px">
+        <span class="sub fs12">oz/day</span><button class="btn btn-g btn-sm" onclick="saveWater(${p.id})">Save</button></div>`;
+      if(isC)ex+=`<div style="margin-top:9px;background:#130808;border-radius:8px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px">
+        <span style="font-size:13px;color:#FF6B6B">Remove ${p.name} and all logs?</span>
+        <div class="flex gap8"><button class="btn btn-sm" style="background:#FF6B6B;color:#fff;border:none" onclick="removeP(${p.id})">Yes, Remove</button>
+        <button class="btn btn-ghost btn-sm" onclick="confRemId=null;rSetup()">Cancel</button></div></div>`;
+      return `<div class="p-row" style="${i===D.participants.length-1?'border-bottom:none':''}">
+        <div style="flex:1"><div class="fw7 fs14">${p.name}</div><div class="sub fs12">💧 ${p.waterGoal} oz/day · ${st.t} pts total</div>${ex}</div>
+        <div class="flex gap6" style="flex-shrink:0;margin-left:10px">
+          <button class="btn btn-ghost btn-sm" onclick="togEditW(${p.id})">${isE?'✕':'Edit'}</button>
+          <button class="btn btn-sm" style="background:rgba(255,107,107,.08);color:${isC?'#FF6B6B':'rgba(255,107,107,.55)'};border:1px solid rgba(255,107,107,${isC?.35:.18})" onclick="togRemove(${p.id})">Remove</button>
+        </div></div>`;
+    }).join('');
+    pList=`<div class="card" style="padding:18px"><div class="fw7 fs14" style="margin-bottom:12px">👨‍👩‍👧‍👦 Family (${D.participants.length})</div>${rows}</div>`;
+  }
+
+  // Scoring
+  const guide=`<div class="card" style="padding:18px"><div class="fw7 fs14" style="margin-bottom:10px">📊 Scoring Rules</div>
+    ${[{i:'🏋️',n:'Workout',c:'#00E5A0',r:'1 pt per 20 minutes',e:'60 min = 3 pts · 40 min = 2 pts'},
+       {i:'👟',n:'Steps',c:'#4FC3F7',r:'1 pt per 10,000 steps',e:'20,000 steps = 2 pts'},
+       {i:'🥗',n:'Meal Plan',c:'#FFB74D',r:'1 pt per day of adherence',e:'Daily — yes or no'},
+       {i:'💧',n:'Water Goal',c:'#40C4FF',r:'1 pt per goal hit',e:'Personal oz target per day'},
+    ].map((x,i,a)=>`<div class="s-row" style="${i===a.length-1?'border:none':''}">
+      <div class="s-icon" style="background:${x.c}18">${x.i}</div>
+      <div><div class="fw7 fs14">${x.n}</div><div style="font-size:12px;color:${x.c};margin-top:2px">${x.r}</div>
+      <div class="sub" style="font-size:11px;margin-top:2px">${x.e}</div></div></div>`).join('')}</div>`;
+
+  // Bin info
+  const binCard=`<div class="card" style="padding:18px"><div class="fw7 fs14" style="margin-bottom:8px">🔗 Data Connection</div>
+    <div class="sub fs12" style="line-height:1.65;margin-bottom:10px">Data syncs via JSONBin. Family members need the same API key + Bin ID when they first open the app — they enter it once and it's saved on their device.</div>
+    <div class="fs12" style="margin-bottom:4px"><span class="sub">Bin ID: </span><code style="color:#00E5A0;font-size:13px">${getBin()}</code></div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="resetConn()">Reset connection</button></div>`;
+
+  document.getElementById('tab-setup').innerHTML=cCard+aCard+pList+guide+binCard;
+}
+
+function saveChallenge(){
+  const n=document.getElementById('ce-n')?.value||D.challengeName;
+  const s=document.getElementById('ce-d')?.value||D.startDate;
+  CE.on=false;save({...D,challengeName:n,startDate:s});
+}
+function addP(){
+  const n=(document.getElementById('pn')?.value||'').trim();
+  const w=+document.getElementById('pw')?.value||64;
+  if(!n||D.participants.find(p=>p.name.toLowerCase()===n.toLowerCase()))return;
+  save({...D,participants:[...D.participants,{id:Date.now(),name:n,waterGoal:w}]});
+}
+function togEditW(id){editParId=editParId===id?null:id;confRemId=null;rSetup();}
+function saveWater(id){const v=+document.getElementById('ew-'+id)?.value||64;editParId=null;save({...D,participants:D.participants.map(p=>p.id===id?{...p,waterGoal:v}:p)});}
+function togRemove(id){confRemId=confRemId===id?null:id;editParId=null;rSetup();}
+function removeP(id){confRemId=null;save({...D,participants:D.participants.filter(p=>p.id!==id),logs:D.logs.filter(l=>l.pid!==id)});}
+function resetConn(){localStorage.removeItem(LK);localStorage.removeItem(LB);location.reload();}
+
+// ── WIZARD ─────────────────────────────────────────────
+function rWiz(){
+  let h='',err=wErr?`<div style="color:#FF6B6B;font-size:13px;margin-top:10px;padding:9px 12px;background:rgba(255,107,107,.08);border-radius:8px">${wErr}</div>`:'';
+  const dots=(n)=>[...Array(3)].map((_,i)=>`<div class="dot${i<n?' on':''}"></div>`).join('');
+
+  if(wStep===1){h=`
+    <div class="wiz-title">👋 Let's get started</div>
+    <div class="wiz-sub">Your data will be stored in <strong style="color:#fff">JSONBin.io</strong> — a free cloud service — so everyone in the family shares the same live leaderboard, on any device, no account needed for them.<br><br>
+    First, <a href="https://jsonbin.io" target="_blank">create a free JSONBin account</a>, then copy your <strong style="color:#fff">Master API Key</strong> from Account → API Keys.</div>
+    <div class="dots">${dots(1)}</div>
+    <div class="field"><label class="lbl">Master API Key</label>
+    <input type="password" id="wk" placeholder="$2a$10$…" value="${wKey}" style="font-family:monospace;font-size:13px"></div>
+    ${err}
+    <button class="btn btn-g btn-full" style="margin-top:14px" onclick="wiz1()"${wBusy?' disabled':''}>${wBusy?'Checking…':'Continue →'}</button>`;}
+
+  else if(wStep===2){h=`
+    <div class="wiz-title">📦 Connect storage</div>
+    <div class="wiz-sub">Create a fresh challenge bin, or connect to one that already exists.</div>
+    <div class="dots">${dots(2)}</div>
+    <button class="btn btn-g btn-full" style="margin-bottom:12px" onclick="wizCreate()"${wBusy?' disabled':''}>${wBusy?'Creating…':'✨ Create new challenge bin'}</button>
+    <div style="text-align:center;color:#7777AA;font-size:13px;margin:10px 0">— or connect existing —</div>
+    <div class="field"><label class="lbl">Existing Bin ID</label><input id="wb" placeholder="64a3b2c…" value="${wBin}"></div>
+    ${err}
+    <button class="btn btn-acc btn-full" onclick="wizConnect()"${wBusy?' disabled':''}>${wBusy?'Connecting…':'Use existing bin →'}</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="wStep=1;wErr='';rWiz()">← Back</button>`;}
+
+  else{h=`
+    <div class="wiz-title">🎉 You're all set!</div>
+    <div class="wiz-sub">Share this page URL with family. When they open it they'll see a setup screen — give them your Bin ID and API key. They enter it once and it saves on their device.</div>
+    <div class="dots">${dots(3)}</div>
+    <div class="card" style="padding:14px;margin-bottom:16px">
+      <div class="sub fs12" style="margin-bottom:5px">Bin ID <span style="color:#7777AA">(share this)</span></div>
+      <code style="color:#00E5A0;font-size:14px">${wBin}</code>
+      <div class="sub fs12" style="margin-top:10px;margin-bottom:5px">API Key <span style="color:#7777AA">(share carefully)</span></div>
+      <code style="color:#aaa;font-size:12px">${wKey.slice(0,24)}…</code>
+    </div>
+    <button class="btn btn-g btn-full" onclick="wizDone()">Open the Tracker 🏆</button>`;}
+
+  document.getElementById('wiz-content').innerHTML=h;
+}
+
+async function wiz1(){
+  wKey=(document.getElementById('wk')?.value||'').trim();
+  if(!wKey){wErr='Please enter your API key.';rWiz();return;}
+  wBusy=true;wErr='';rWiz();
+  // Quick format check then proceed
+  await new Promise(r=>setTimeout(r,300));
+  wBusy=false;wStep=2;rWiz();
+}
+async function wizCreate(){
+  wBusy=true;wErr='';rWiz();
+  try{
+    localStorage.setItem(LK,wKey);
+    wBin=await jCreate(D);
+    localStorage.setItem(LB,wBin);
+    wBusy=false;wStep=3;rWiz();
+  }catch(e){wBusy=false;wErr='Failed to create bin. Double-check your API key and try again.';rWiz();}
+}
+async function wizConnect(){
+  wBin=(document.getElementById('wb')?.value||'').trim();
+  if(!wBin){wErr='Please enter a Bin ID.';rWiz();return;}
+  wBusy=true;wErr='';rWiz();
+  try{
+    localStorage.setItem(LK,wKey);localStorage.setItem(LB,wBin);
+    const loaded=await jLoad();
+    if(!loaded)throw new Error();
+    D=loaded;wBusy=false;wStep=3;rWiz();
+  }catch(_){wBusy=false;wErr='Could not connect to that bin. Check the Bin ID and API key.';rWiz();}
+}
+function wizDone(){
+  document.getElementById('wizard').style.display='none';
+  document.getElementById('app').style.display='block';
+  updateHdr();rBoard();
+  pollT=setInterval(poll,15000);
+}
+
+// ── INIT ───────────────────────────────────────────────
+(async function init(){
+  if(!getKey()||!getBin()){document.getElementById('wizard').style.display='flex';rWiz();return;}
+  try{const f=await jLoad();if(f)D=f;}catch(_){}
+  document.getElementById('wizard').style.display='none';
+  document.getElementById('app').style.display='block';
+  updateHdr();rBoard();
+  pollT=setInterval(poll,15000);
+})();
+</script>
+</body>
+</html>
