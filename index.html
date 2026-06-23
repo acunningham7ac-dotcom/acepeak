@@ -472,9 +472,9 @@ tr:hover td{background:var(--amber-dim);}
   <div class="card">
     <div class="ct"><span class="d"></span>Macros — Last Logged</div>
     <div class="mr">
-      <div class="mi"><div class="ml">Protein</div><div class="pb-bar"><div class="pf" id="pp" style="width:0%"></div></div><div class="mn"><span id="vp">0g</span><span>220–270g</span></div></div>
-      <div class="mi"><div class="ml">Carbs</div><div class="pb-bar"><div class="pf blue" id="pc" style="width:0%"></div></div><div class="mn"><span id="vc">0g</span><span>140–180g</span></div></div>
-      <div class="mi"><div class="ml">Fat</div><div class="pb-bar"><div class="pf green" id="pf2" style="width:0%"></div></div><div class="mn"><span id="vf">0g</span><span>60–90g</span></div></div>
+      <div class="mi"><div class="ml">Protein</div><div class="pb-bar"><div class="pf" id="pp" style="width:0%"></div></div><div class="mn"><span id="vp">0g</span><span>220–253g</span></div></div>
+      <div class="mi"><div class="ml">Carbs</div><div class="pb-bar"><div class="pf blue" id="pc" style="width:0%"></div></div><div class="mn"><span id="vc">0g</span><span>≤75g</span></div></div>
+      <div class="mi"><div class="ml">Fat</div><div class="pb-bar"><div class="pf green" id="pf2" style="width:0%"></div></div><div class="mn"><span id="vf">0g</span><span>150–170g</span></div></div>
     </div>
     <div style="text-align:right;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);"><span id="vcal">0</span> kcal today</div>
   </div>
@@ -497,7 +497,7 @@ tr:hover td{background:var(--amber-dim);}
   <div class="card"><div class="ct"><span class="d"></span>7-Day Macro Averages</div>
     <div class="g3" style="margin-bottom:10px;">
       <div class="sb"><div class="sl">Avg Protein</div><div class="sv amber" id="avg-protein">—</div><div class="ss">g/day · target 220–270</div></div>
-      <div class="sb"><div class="sl">Avg Carbs</div><div class="sv" id="avg-carbs">—</div><div class="ss">g/day · target 140–180</div></div>
+      <div class="sb"><div class="sl">Avg Carbs</div><div class="sv" id="avg-carbs">—</div><div class="ss">g/day · target ≤75</div></div>
       <div class="sb"><div class="sl">Avg Kcal</div><div class="sv" id="avg-kcal">—</div><div class="ss">target 2400–2500</div></div>
     </div>
     <div class="ca" id="macro-trend-chart"><div class="ndc">Log 3+ days to see protein trend</div></div>
@@ -776,9 +776,9 @@ tr:hover td{background:var(--amber-dim);}
   <div class="card" id="todays-total-card" style="display:none;">
     <div class="ct"><span class="d green"></span>Total for <span id="total-date-label" style="color:var(--amber);">Today</span></div>
     <div class="g3" style="margin-bottom:8px;">
-      <div class="sb"><div class="sl">Protein</div><div class="sv amber" id="today-p-total">0g</div><div class="ss">target 220–270g</div></div>
-      <div class="sb"><div class="sl">Carbs</div><div class="sv" id="today-c-total">0g</div><div class="ss">target 140–180g</div></div>
-      <div class="sb"><div class="sl">Fat</div><div class="sv" id="today-f-total">0g</div><div class="ss">target 60–90g</div></div>
+      <div class="sb"><div class="sl">Protein</div><div class="sv amber" id="today-p-total">0g</div><div class="ss">target 220–253g</div></div>
+      <div class="sb"><div class="sl">Carbs</div><div class="sv" id="today-c-total">0g</div><div class="ss">target ≤75g</div></div>
+      <div class="sb"><div class="sl">Fat</div><div class="sv" id="today-f-total">0g</div><div class="ss">target 150–170g</div></div>
     </div>
     <div class="mr">
       <div class="mi"><div class="ml">Protein</div><div class="pb-bar"><div class="pf" id="t-pp" style="width:0%"></div></div></div>
@@ -795,20 +795,100 @@ tr:hover td{background:var(--amber-dim);}
   </div>
 
   <!-- PROTOCOL REFERENCE -->
-  <div class="card"><div class="ct"><span class="d"></span>Protocol Reference</div>
-    <div class="sh">Training Day (5 AM Protocol)</div>
-    <div class="sr"><span><strong>Pre-Workout</strong></span><span style="font-size:12px;color:var(--muted);">Cottage cheese + berries + almonds · ~35g protein · 3:00–4:00 AM</span></div>
-    <div class="sr"><span><strong>Post-Workout</strong></span><span style="font-size:12px;color:var(--muted);">Whey shake + banana + 5g creatine · ~40g protein</span></div>
-    <div class="sr"><span><strong>Dinner</strong></span><span style="font-size:12px;color:var(--muted);">8–10 oz protein + sweet potato + vegetables · ~50g protein</span></div>
-    <div class="sh">Supplements</div>
+  <!-- TRAINING DAY -->
+  <div class="card">
+    <div class="ct"><span class="d"></span>Training Day Meal Plan</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:12px;">Target: ~220g protein · ≤75g carbs · Fat flexible · Fasted training 6–7 AM</div>
+
+    <div class="sh" style="margin-top:0;">7:15–7:45 AM — Post-Workout Breakfast</div>
+    <div class="sr"><span>6 whole eggs scrambled in 1 tbsp olive oil or butter</span><span class="badge amber">high fat</span></div>
+    <div class="sr"><span>8 oz cooked chicken thighs (skin-on)</span><span class="badge amber">protein</span></div>
+    <div class="sr"><span>1 cup sautéed spinach or kale</span><span class="badge green">minimal carbs</span></div>
+    <div class="sr"><span>Optional: 1 scoop whey isolate in black coffee</span><span class="badge amber">+25g protein</span></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);padding:5px 0 10px;">~65g protein · ~6g carbs · ~45g fat</div>
+
+    <div class="sh">10:00–10:30 AM — Mid-Morning Snack</div>
+    <div class="sr"><span>1 can (5 oz) sardines or salmon in olive oil</span><span class="badge amber">omega-3s</span></div>
+    <div class="sr"><span>1 oz macadamia nuts or almonds</span><span class="badge amber">healthy fats</span></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);padding:5px 0 10px;">~28g protein · ~3g carbs · ~28g fat</div>
+
+    <div class="sh">1:00–1:30 PM — Lunch</div>
+    <div class="sr"><span>10 oz grilled ribeye or sirloin steak</span><span class="badge amber">protein + fat</span></div>
+    <div class="sr"><span>Large mixed greens salad + olive oil + vinegar</span><span class="badge green">minimal carbs</span></div>
+    <div class="sr"><span>½ avocado</span><span class="badge amber">healthy fats</span></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);padding:5px 0 10px;">~70g protein · ~8g carbs · ~42g fat</div>
+
+    <div class="sh">4:00–4:30 PM — Afternoon Snack (if needed)</div>
+    <div class="sr"><span>1 scoop whey isolate + water + ice + spinach</span><span class="badge amber">optional</span></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);padding:5px 0 10px;">~25g protein · ~2g carbs · ~1g fat</div>
+
+    <div class="sh">7:00–7:30 PM — Dinner</div>
+    <div class="sr"><span>10 oz baked chicken thighs (skin-on)</span><span class="badge amber">protein</span></div>
+    <div class="sr"><span>8–10 oz salmon or mackerel (1–2x/week)</span><span class="badge amber">omega-3s</span></div>
+    <div class="sr"><span>Steamed broccoli or asparagus with butter</span><span class="badge green">minimal carbs</span></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);padding:5px 0 10px;">~65g protein · ~6g carbs · ~38g fat</div>
+
+    <div style="background:var(--black);border:1px solid var(--amber-border);border-left:2px solid var(--amber);padding:11px;margin-top:4px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Training Day Totals</div>
+      <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">~253g protein · ~25–30g carbs · ~150–170g fat</div>
+    </div>
+  </div>
+
+  <!-- RECOVERY DAY -->
+  <div class="card">
+    <div class="ct"><span class="d"></span>Recovery Day Meal Plan</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:12px;">Target: 180–200g protein · ≤60g carbs · Light-moderate activity + 10k steps + sauna</div>
+
+    <div class="sh" style="margin-top:0;">7:30–8:00 AM — Breakfast</div>
+    <div class="sr"><span>4 whole eggs + 4 egg whites omelet with spinach + cheese</span><span class="badge amber">protein</span></div>
+    <div class="sr"><span>6 oz leftover steak or chicken thighs</span><span class="badge amber">protein</span></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);padding:5px 0 10px;">~55g protein · ~5g carbs · ~35g fat</div>
+
+    <div class="sh">10:30–11:00 AM — Mid-Morning Snack</div>
+    <div class="sr"><span>¾ cup plain full-fat Greek yogurt + 1 tbsp chia seeds</span><span class="badge amber">protein + fat</span></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);padding:5px 0 10px;">~18g protein · ~8g carbs · ~12g fat</div>
+
+    <div class="sh">1:00–1:30 PM — Lunch</div>
+    <div class="sr"><span>8 oz grilled chicken thighs or lean beef</span><span class="badge amber">protein</span></div>
+    <div class="sr"><span>Large salad + olive oil + cucumber + olives</span><span class="badge green">minimal carbs</span></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);padding:5px 0 10px;">~55g protein · ~6g carbs · ~30g fat</div>
+
+    <div class="sh">4:00–4:30 PM — Afternoon Snack</div>
+    <div class="sr"><span>1 can sardines or 1 scoop whey isolate shake</span><span class="badge amber">protein</span></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);padding:5px 0 10px;">~25g protein · ~2g carbs · ~12g fat</div>
+
+    <div class="sh">7:00–7:30 PM — Dinner</div>
+    <div class="sr"><span>8 oz salmon or other fatty fish</span><span class="badge amber">omega-3s</span></div>
+    <div class="sr"><span>Steamed vegetables with butter</span><span class="badge green">minimal carbs</span></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);padding:5px 0 10px;">~50g protein · ~4g carbs · ~35g fat</div>
+
+    <div style="background:var(--black);border:1px solid var(--amber-border);border-left:2px solid var(--amber);padding:11px;margin-top:4px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Recovery Day Totals</div>
+      <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">~203g protein · ~25g carbs · ~124g fat</div>
+    </div>
+  </div>
+
+  <!-- FASTED TRAINING NOTE -->
+  <div class="card dark">
+    <div class="ct"><span class="d green"></span>Fasted Training — Why It Works for You</div>
+    <div style="font-size:13px;color:var(--pale);line-height:1.8;margin-bottom:10px;">Training fasted (6–7 AM, no food beforehand) enhances fat oxidation and insulin sensitivity — both critical for metabolic syndrome reversal and post-bypass healing. Your body is already adapted to using fat as fuel on low-carb, which makes fasted training particularly effective.</div>
+    <div style="font-size:13px;color:var(--pale);line-height:1.8;margin-bottom:10px;"><strong style="color:var(--amber);">Only add pre-workout fuel</strong> if you feel dizzy, extremely fatigued, or performance drops significantly. In that case: 1–2 hard-boiled eggs or a few macadamia nuts 30 minutes before training. Avoid protein shakes pre-workout — they can blunt fat-burning.</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);letter-spacing:.04em;">No food after 8:30 PM · 1 gallon water daily · electrolytes after sauna</div>
+  </div>
+
+  <!-- SUPPLEMENTS -->
+  <div class="card dark">
+    <div class="ct"><span class="d"></span>Supplements</div>
     <div class="sr"><span><strong>Creatine Monohydrate</strong></span><span class="badge amber">5g daily · post-workout</span></div>
-    <div class="sr"><span>Vitamin D</span><span class="badge amber">2,000–5,000 IU/day</span></div>
-    <div class="sr"><span>Omega-3s</span><span class="badge amber">2–3g EPA+DHA</span></div>
-    <div class="sr"><span>Water</span><span class="badge amber">1 gallon/day minimum</span></div>
+    <div class="sr"><span>Omega-3 Fish Oil</span><span class="badge amber">2–3g EPA+DHA · anti-inflammatory</span></div>
+    <div class="sr"><span>Vitamin D</span><span class="badge amber">2,000–5,000 IU/day + K2</span></div>
+    <div class="sr"><span>Magnesium</span><span class="badge amber">before bed · recovery + sleep</span></div>
+    <div class="sr"><span>High-quality multivitamin</span><span class="badge amber">heart support · discuss with doctor</span></div>
+    <div class="sr"><span>Electrolytes</span><span class="badge amber">especially after sauna · sea salt + water</span></div>
   </div>
 
   <!-- ALL DAYS LOG -->
-  <div class="card"><div class="ct"><span class="d"></span>All Days Log</div>
+  <div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;"><div class="ct" style="margin-bottom:0;"><span class="d"></span>All Days Log</div><button class="btn ghost" style="padding:4px 10px;font-size:10px;" onclick="rebuildAllDailyTotals()" title="Recalculate all daily totals from meal entries">↻ Sync Totals</button></div>
     <div class="tw"><table><thead><tr><th>Date</th><th>Type</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Kcal</th><th>Meals</th><th></th></tr></thead>
     <tbody id="nutrition-log"><tr><td colspan="8"><div class="empty"><div class="ei">◈</div>No days logged yet.</div></td></tr></tbody></table></div>
   </div>
@@ -816,15 +896,92 @@ tr:hover td{background:var(--amber-dim);}
 
 <!-- SCHEDULE -->
 <div id="tab-schedule" class="tab"><div class="wrap">
-  <div class="card"><div class="ct"><span class="d"></span>Weekly Structure</div>
-    <div class="tw"><table><thead><tr><th>Day</th><th>Pre-Dawn</th><th>Training</th><th>Fueling</th><th>Evening</th></tr></thead>
-    <tbody><tr><td><strong>Mon</strong></td><td style="font-family:'DM Mono',monospace;font-size:11px;">Snack 3–4 AM</td><td><span class="badge amber">Lift Day 1</span></td><td style="font-size:12px;">Pre + Post + Dinner</td><td style="font-family:'DM Mono',monospace;font-size:11px;">Bed 9–10 PM</td></tr><tr><td><strong>Tue</strong></td><td style="font-family:'DM Mono',monospace;font-size:11px;">Snack 3–4 AM</td><td><span class="badge amber">Lift Day 2</span></td><td style="font-size:12px;">Pre + Post + Dinner</td><td style="font-family:'DM Mono',monospace;font-size:11px;">Bed 9–10 PM</td></tr><tr><td><strong>Wed</strong></td><td style="font-family:'DM Mono',monospace;font-size:11px;">Normal breakfast</td><td><span class="badge green">Active Recovery</span></td><td style="font-size:12px;">3 meals · 3–4 hr gaps</td><td style="font-family:'DM Mono',monospace;font-size:11px;">Bed 9–10 PM</td></tr><tr><td><strong>Thu</strong></td><td style="font-family:'DM Mono',monospace;font-size:11px;">Snack 3–4 AM</td><td><span class="badge amber">Lift Day 3</span></td><td style="font-size:12px;">Pre + Post + Dinner</td><td style="font-family:'DM Mono',monospace;font-size:11px;">Bed 9–10 PM</td></tr><tr><td><strong>Fri</strong></td><td style="font-family:'DM Mono',monospace;font-size:11px;">Snack 3–4 AM</td><td><span class="badge amber">Lift Day 4</span></td><td style="font-size:12px;">Pre + Post + Dinner</td><td style="font-family:'DM Mono',monospace;font-size:11px;">Bed 9–10 PM</td></tr><tr><td><strong>Sat</strong></td><td style="font-family:'DM Mono',monospace;font-size:11px;">Normal breakfast</td><td><span class="badge blue">HIIT / Walk</span></td><td style="font-size:12px;">3 meals · 3–4 hr gaps</td><td style="font-family:'DM Mono',monospace;font-size:11px;">Bed 9–10 PM</td></tr><tr><td><strong>Sun</strong></td><td style="font-family:'DM Mono',monospace;font-size:11px;">Normal breakfast</td><td><span class="badge" style="background:rgba(200,134,10,.08);color:var(--muted);border:1px solid rgba(200,134,10,.2);">Full Rest</span></td><td style="font-size:12px;">3 meals + batch prep</td><td style="font-family:'DM Mono',monospace;font-size:11px;">Bed 9–10 PM</td></tr></tbody></table></div>
+
+  <!-- TRAINING DAY TIMING -->
+  <div class="card">
+    <div class="ct"><span class="d amber"></span>Training Day Schedule</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:12px;">Heavy / intense lifting days — fasted training, eat within 30–45 min post-workout</div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--amber);min-width:110px;">5:30–6:00 AM</span><span style="font-size:13px;color:var(--pale);">Wake up · 16–20 oz water + pinch sea salt · hydrate before training</span></div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--amber);min-width:110px;">6:00–7:00 AM</span><span style="font-size:13px;color:var(--pale);">Workout — fasted or black coffee only</span></div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--amber);min-width:110px;">7:15–7:45 AM</span><span style="font-size:13px;color:var(--pale);">Post-workout breakfast — eggs + chicken thighs + spinach · eat within 30–45 min of finishing</span></div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--amber);min-width:110px;">10:00–10:30 AM</span><span style="font-size:13px;color:var(--pale);">Mid-morning snack — sardines + macadamia nuts</span></div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--amber);min-width:110px;">1:00–1:30 PM</span><span style="font-size:13px;color:var(--pale);">Lunch — steak + mixed greens salad + avocado</span></div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--amber);min-width:110px;">4:00–4:30 PM</span><span style="font-size:13px;color:var(--pale);">Optional protein shake if needed (only if short on protein)</span></div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--amber);min-width:110px;">7:00–7:30 PM</span><span style="font-size:13px;color:var(--pale);">Dinner — chicken thighs or salmon + vegetables</span></div>
+    <div class="sr" style="border:none;"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--amber);min-width:110px;">9:00–10:00 PM</span><span style="font-size:13px;color:var(--pale);">Wind down · no food after 8:30 PM · bed by 9:30 PM</span></div>
   </div>
+
+  <!-- RECOVERY DAY TIMING -->
+  <div class="card">
+    <div class="ct"><span class="d green"></span>Recovery Day Schedule</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:12px;">Light–moderate activity · 10,000 steps · sauna · batch food prep (Sunday)</div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green2);min-width:110px;">6:00–7:00 AM</span><span style="font-size:13px;color:var(--pale);">Wake up · hydrate · optional light walk</span></div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green2);min-width:110px;">7:30–8:00 AM</span><span style="font-size:13px;color:var(--pale);">Breakfast — eggs + omelet + leftover steak or chicken</span></div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green2);min-width:110px;">10:30–11:00 AM</span><span style="font-size:13px;color:var(--pale);">Mid-morning snack — Greek yogurt + chia seeds</span></div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green2);min-width:110px;">1:00–1:30 PM</span><span style="font-size:13px;color:var(--pale);">Lunch — chicken or beef + salad + olive oil dressing</span></div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green2);min-width:110px;">4:00–4:30 PM</span><span style="font-size:13px;color:var(--pale);">Afternoon snack — sardines or whey isolate shake</span></div>
+    <div class="sr"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green2);min-width:110px;">7:00–7:30 PM</span><span style="font-size:13px;color:var(--pale);">Dinner — salmon + steamed vegetables with butter</span></div>
+    <div class="sr" style="border:none;"><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--green2);min-width:110px;">Evening</span><span style="font-size:13px;color:var(--pale);">10k steps + sauna · rehydrate aggressively with electrolytes after sauna</span></div>
+  </div>
+
+  <!-- PROGRESSION RULES -->
   <div class="card"><div class="ct"><span class="d"></span>Progression Rules</div>
-    <ul class="cl"><li><span class="ck">→</span>Add 5–10 lbs or 1–2 reps when top set feels clean at RPE ≤8.</li><li><span class="ck">→</span>Strength target: +10–20 lbs on key lifts in 3–6 months.</li><li><span class="ck">→</span>Strength drops &gt;10% → add 200–300 kcal immediately. No exceptions.</li><li><span class="ck">→</span>Refeed every 4–6 weeks: 300–500g extra carbs for 1–2 days.</li><li><span class="ck">→</span>Fat loss ceiling: 0.5–1 lb/week. Going faster costs muscle.</li></ul>
+    <ul class="cl">
+      <li><span class="ck">→</span>Add 5–10 lbs or 1–2 reps when top set feels clean at RPE ≤8.</li>
+      <li><span class="ck">→</span>Strength target: +10–20 lbs on key lifts in 3–6 months.</li>
+      <li><span class="ck">→</span>Strength drops &gt;10% → add 200–300 kcal immediately. No exceptions.</li>
+      <li><span class="ck">→</span>Refeed every 4–6 weeks: 300–500g extra carbs for 1–2 days.</li>
+      <li><span class="ck">→</span>Fat loss ceiling: 0.5–1 lb/week. Going faster costs muscle.</li>
+      <li><span class="ck">→</span>Sunday: batch prep chicken thighs + hard-boiled eggs for the week.</li>
+    </ul>
   </div>
+
+  <!-- SHOPPING LIST -->
+  <div class="card">
+    <div class="ct"><span class="d"></span>Weekly Shopping List</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:12px;">Designed for 1 person · 7 days · cost-effective · heart-healthy · buy proteins in bulk and freeze</div>
+    <div class="sh" style="margin-top:0;">Proteins</div>
+    <div class="sr"><span>4–5 dozen large eggs</span><span class="badge amber">base of every meal</span></div>
+    <div class="sr"><span>6–8 lbs chicken thighs (skin-on, bone-in or boneless)</span><span class="badge amber">bulk + freeze</span></div>
+    <div class="sr"><span>4–5 lbs ribeye or sirloin steak (family packs)</span><span class="badge amber">portion + freeze</span></div>
+    <div class="sr"><span>3–4 lbs salmon or fatty fish (fresh or frozen)</span><span class="badge amber">1–2x/week</span></div>
+    <div class="sr"><span>6–8 cans sardines or mackerel in olive oil</span><span class="badge green">economical · omega-3s</span></div>
+    <div class="sr"><span>1 large tub unflavored whey isolate</span><span class="badge amber">top-up protein</span></div>
+    <div class="sh">Fats & Produce</div>
+    <div class="sr"><span>2 large bags spinach or mixed greens</span><span class="badge green">minimal carbs</span></div>
+    <div class="sr"><span>3–4 heads broccoli or 2 bunches asparagus</span><span class="badge green">minimal carbs</span></div>
+    <div class="sr"><span>4–5 avocados</span><span class="badge amber">healthy fats</span></div>
+    <div class="sr"><span>2–3 cucumbers · 2 bags celery · 2–3 bell peppers</span><span class="badge green">minimal carbs</span></div>
+    <div class="sr"><span>1 jar pitted olives</span><span class="badge amber">healthy fats</span></div>
+    <div class="sr"><span>1 bag macadamia nuts or almonds (raw, unsalted)</span><span class="badge amber">healthy fats</span></div>
+    <div class="sr"><span>Extra-virgin olive oil (large bottle)</span><span class="badge amber">primary cooking fat</span></div>
+    <div class="sr"><span>Butter or ghee (grass-fed if possible)</span><span class="badge amber">cooking + flavor</span></div>
+    <div class="sh">Staples</div>
+    <div class="sr"><span>Apple cider vinegar or balsamic vinegar</span><span class="badge amber">dressings</span></div>
+    <div class="sr"><span>Sea salt · black pepper · garlic · herbs / spices</span><span class="badge amber">flavor</span></div>
+    <div class="sr"><span>Plain full-fat Greek yogurt + chia seeds</span><span class="badge amber">recovery days</span></div>
+    <div class="sr"><span>Electrolyte powder (no sugar) or sea salt packets</span><span class="badge amber">post-sauna · post-workout</span></div>
+    <div style="background:var(--black4);border:1px solid rgba(200,134,10,.2);border-left:2px solid var(--green2);padding:11px;margin-top:12px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--green2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Cost Tips</div>
+      <div style="font-size:13px;color:var(--pale);line-height:1.8;">Chicken thighs + eggs + sardines are your cheapest high-protein options — build meals around them. Buy beef in family packs when on sale and freeze in 10 oz portions. Frozen salmon is often as nutritious as fresh and significantly cheaper.</div>
+    </div>
+  </div>
+
+  <!-- BATCH PREP -->
+  <div class="card dark">
+    <div class="ct"><span class="d"></span>Sunday Batch Prep</div>
+    <ul class="cl">
+      <li><span class="ck">1.</span>Bake or pan-sear a full batch of chicken thighs (6–8 lbs) — portion into 8–10 oz servings and refrigerate</li>
+      <li><span class="ck">2.</span>Hard-boil 12–18 eggs — keep in fridge for quick snacks and additions</li>
+      <li><span class="ck">3.</span>Pre-wash and dry all greens — store in container for fast salad assembly</li>
+      <li><span class="ck">4.</span>Portion and freeze any beef or fish you won't use in the first 3 days</li>
+      <li><span class="ck">5.</span>Fill and refrigerate a gallon jug of water — visual reminder to drink it</li>
+    </ul>
+  </div>
+
+  <!-- REFEED LOG -->
   <div class="card"><div class="ct"><span class="d amber"></span>Refeed Log</div>
-    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:11px;">Every 4–6 weeks · 300–500g extra carbs · 1–2 days · Protects hormones and strength.</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.04em;margin-bottom:11px;">Every 4–6 weeks · 300–500g extra carbs · 1–2 days · Protects hormones and strength · keep protein high.</div>
     <div class="fr"><div class="fi"><label>Date</label><input type="date" id="rf-date"></div><div class="fi" style="max-width:115px;"><label>Extra Carbs (g)</label><input type="number" id="rf-carbs" placeholder="400"></div><div class="fi"><label>Notes / Response</label><input type="text" id="rf-notes" placeholder="e.g. Strength great, energy 9/10"></div></div>
     <button class="btn" onclick="logRefeed()">Log Refeed</button>
     <div id="refeed-log" style="margin-top:11px;"></div>
@@ -1282,23 +1439,142 @@ function updateNDateLabels(){const d=getNDate();const label=fmtNDate(d);const tl
 
 // ===== NUTRITION / AI MEAL LOGGER =====
 let aiParsedMeal=null,voiceRec=null,voiceActive=false;
-const DEFAULT_MEALS=[{id:'sm1',name:'Pre-Workout (3–4 AM)',desc:'Cottage cheese + berries + almonds',protein:35,carbs:30,fat:8},{id:'sm2',name:'Post-Workout Shake',desc:'Whey + banana + creatine',protein:40,carbs:35,fat:3},{id:'sm3',name:'Chicken + Rice + Broccoli',desc:'8oz chicken, cup rice, broccoli',protein:55,carbs:48,fat:8},{id:'sm4',name:'Steak + Sweet Potato',desc:'8oz sirloin + medium sweet potato',protein:52,carbs:32,fat:14},{id:'sm5',name:'Salmon + Greens',desc:'6oz salmon + salad + olive oil',protein:38,carbs:8,fat:22}];
+const DEFAULT_MEALS=[
+  {id:'sm1',name:'Post-Workout Breakfast',desc:'6 eggs scrambled in olive oil + 8oz chicken thighs + spinach',protein:65,carbs:6,fat:45},
+  {id:'sm2',name:'Mid-Morning Snack',desc:'1 can sardines in olive oil + 1oz macadamia nuts',protein:28,carbs:3,fat:28},
+  {id:'sm3',name:'Lunch — Steak + Salad',desc:'10oz ribeye or sirloin + mixed greens + olive oil + ½ avocado',protein:70,carbs:8,fat:42},
+  {id:'sm4',name:'Afternoon Shake (optional)',desc:'1 scoop whey isolate + water + ice + spinach',protein:25,carbs:2,fat:1},
+  {id:'sm5',name:'Dinner — Chicken',desc:'10oz chicken thighs skin-on + broccoli or asparagus + butter',protein:65,carbs:6,fat:38},
+  {id:'sm6',name:'Dinner — Salmon',desc:'8–10oz salmon + steamed vegetables + butter (1–2x/week)',protein:55,carbs:5,fat:35},
+  {id:'sm7',name:'Recovery Breakfast',desc:'4 whole eggs + 4 egg whites + spinach + cheese + 6oz leftover chicken',protein:55,carbs:5,fat:35},
+  {id:'sm8',name:'Recovery Snack — Yogurt',desc:'¾ cup plain full-fat Greek yogurt + 1 tbsp chia seeds',protein:18,carbs:8,fat:12},
+  {id:'sm9',name:'Recovery Lunch',desc:'8oz chicken thighs + large salad + olive oil + cucumber + olives',protein:55,carbs:6,fat:30},
+];
 const initSavedMeals=()=>{if(!localStorage.getItem(K.saved_meals))save(K.saved_meals,DEFAULT_MEALS);};
 function toggleVoice(){if(!('webkitSpeechRecognition' in window)&&!('SpeechRecognition' in window)){toast('Voice not supported — try Chrome','var(--amber)');return;}if(voiceActive){if(voiceRec)voiceRec.stop();return;}const SR=window.SpeechRecognition||window.webkitSpeechRecognition;voiceRec=new SR();voiceRec.lang='en-US';voiceRec.continuous=false;voiceRec.interimResults=true;const btn=document.getElementById('voice-btn'),vs=document.getElementById('voice-status');voiceRec.onstart=()=>{voiceActive=true;btn.classList.add('listening');btn.textContent='⏹';vs.style.display='block';vs.textContent='🎙 Listening — speak your meal...';};voiceRec.onresult=e=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;document.getElementById('meal-description').value=t;};voiceRec.onend=()=>{voiceActive=false;btn.classList.remove('listening');btn.textContent='🎙️';const v=document.getElementById('meal-description').value.trim();if(v){vs.textContent='✓ Got it — tap Calculate Macros';setTimeout(()=>vs.style.display='none',3000);}};voiceRec.onerror=e=>{voiceActive=false;btn.classList.remove('listening');btn.textContent='🎙️';vs.style.display='none';toast('Voice error: '+e.error,'var(--amber)');};voiceRec.start();}
 async function parseMealWithAI(){const key=getApiKey();if(!key){toast('Add API key in Setup first','var(--red)');return;}const desc=document.getElementById('meal-description').value.trim();if(!desc){toast('Describe your meal first','var(--red)');return;}const btn=document.getElementById('parse-btn'),st=document.getElementById('ai-meal-status');btn.textContent='Calculating...';btn.disabled=true;st.style.display='block';st.textContent='Estimating macros...';document.getElementById('ai-meal-result').style.display='none';try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:apiHeaders(),body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,messages:[{role:'user',content:`Estimate macros for this meal. Return ONLY valid JSON, no markdown:\n{"protein":0,"carbs":0,"fat":0,"kcal":0,"breakdown":"brief per-item note"}\nMeal: ${desc}\nBe specific — use portion sizes mentioned.`}]})});const data=await r.json();if(data.error)throw new Error(data.error.message);aiParsedMeal=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());document.getElementById('ai-protein').textContent=aiParsedMeal.protein+'g';document.getElementById('ai-carbs').textContent=aiParsedMeal.carbs+'g';document.getElementById('ai-fat').textContent=aiParsedMeal.fat+'g';document.getElementById('ai-kcal-line').textContent=`Estimated ${aiParsedMeal.kcal} kcal`;document.getElementById('ai-breakdown').textContent=aiParsedMeal.breakdown||'';document.getElementById('ai-meal-result').style.display='block';updateNDateLabels();st.style.display='none';}catch(err){st.textContent='Error: '+(err.message||'Check API key or try more specific portions.');console.error(err);}btn.textContent='Calculate Macros ✨';btn.disabled=false;}
 function confirmAIMeal(){if(!aiParsedMeal)return;const desc=document.getElementById('meal-description').value.trim();const date=getNDate();logMealEntry(date,desc,aiParsedMeal.protein,aiParsedMeal.carbs,aiParsedMeal.fat,aiParsedMeal.kcal);clearAIMeal();document.getElementById('meal-description').value='';toast('Meal logged → '+fmtNDate(date)+' ✓');renderNutritionTab();}
 const clearAIMeal=()=>{aiParsedMeal=null;document.getElementById('ai-meal-result').style.display='none';document.getElementById('ai-meal-status').style.display='none';};
 function logMealEntry(date,desc,p,c,f,kcal){const ts=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});const entries=load(K.meal_entries);entries.unshift({date,desc,protein:Math.round(p),carbs:Math.round(c),fat:Math.round(f),kcal:kcal||Math.round(p*4+c*4+f*9),time:ts,id:Date.now()});save(K.meal_entries,entries);rebuildDailyTotal(date);renderDashboard();}
-function rebuildDailyTotal(date){const entries=load(K.meal_entries).filter(x=>x.date===date);const d=load(K.nutrition);const idx=d.findIndex(x=>x.date===date);if(!entries.length){if(idx>=0){d.splice(idx,1);save(K.nutrition,d);}return;}const tp=Math.round(entries.reduce((s,x)=>s+x.protein,0));const tc=Math.round(entries.reduce((s,x)=>s+x.carbs,0));const tf=Math.round(entries.reduce((s,x)=>s+x.fat,0));const tk=Math.round(tp*4+tc*4+tf*9);const training=document.getElementById('n-training')?.value||'Yes';const sleep=document.getElementById('n-sleep')?.value||'';if(idx>=0){d[idx].protein=tp;d[idx].carbs=tc;d[idx].fat=tf;d[idx].kcal=tk;d[idx].mealCount=entries.length;}else{d.unshift({date,training,protein:tp,carbs:tc,fat:tf,kcal:tk,sleep,mealCount:entries.length,notes:entries.map(e=>e.desc.slice(0,20)).join(' | '),id:Date.now()});}save(K.nutrition,d);}
+function rebuildDailyTotal(date){
+  const entries=load(K.meal_entries).filter(x=>x.date===date);
+  const d=load(K.nutrition);
+  const idx=d.findIndex(x=>x.date===date);
+  if(!entries.length){if(idx>=0&&d[idx].mealCount){d.splice(idx,1);save(K.nutrition,d);}return;}
+  const tp=Math.round(entries.reduce((s,x)=>s+x.protein,0));
+  const tc=Math.round(entries.reduce((s,x)=>s+x.carbs,0));
+  const tf=Math.round(entries.reduce((s,x)=>s+x.fat,0));
+  const tk=Math.round(tp*4+tc*4+tf*9);
+  const existing=idx>=0?d[idx]:null;
+  const training=existing?.training||document.getElementById('n-training')?.value||'Yes';
+  const sleep=existing?.sleep||document.getElementById('n-sleep')?.value||'';
+  if(idx>=0){d[idx].protein=tp;d[idx].carbs=tc;d[idx].fat=tf;d[idx].kcal=tk;d[idx].mealCount=entries.length;d[idx].notes=entries.map(e=>e.desc.slice(0,25)).join(' | ');}
+  else{d.push({date,training,protein:tp,carbs:tc,fat:tf,kcal:tk,sleep,mealCount:entries.length,notes:entries.map(e=>e.desc.slice(0,25)).join(' | '),id:Date.now()});d.sort((a,b)=>b.date.localeCompare(a.date));}
+  save(K.nutrition,d);
+}
+function rebuildAllDailyTotals(){
+  const entries=load(K.meal_entries);
+  const dates=[...new Set(entries.map(x=>x.date))];
+  dates.forEach(date=>rebuildDailyTotal(date));
+  toast('All totals recalculated ✓');
+  renderNutritionTab();renderDashboard();
+}
 function addSavedMeal(){const name=document.getElementById('sm-name').value.trim();if(!name){toast('Enter meal name','var(--red)');return;}const meals=load(K.saved_meals);meals.push({id:'sm'+Date.now(),name,desc:document.getElementById('sm-desc').value,protein:parseFloat(document.getElementById('sm-p').value)||0,carbs:parseFloat(document.getElementById('sm-c').value)||0,fat:parseFloat(document.getElementById('sm-f').value)||0});save(K.saved_meals,meals);['sm-name','sm-p','sm-c','sm-f','sm-desc'].forEach(i=>document.getElementById(i).value='');renderSavedMeals();toast('Meal saved ✓');}
 function renderSavedMeals(){const meals=load(K.saved_meals);const el=document.getElementById('saved-meals-list');if(!el)return;if(!meals.length){el.innerHTML='<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted);">No saved meals yet — add one below.</div>';return;}el.innerHTML=meals.map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(200,134,10,.1);"><div style="flex:1;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:16px;font-weight:700;color:var(--amber);">${m.name}</div><div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted);margin-top:2px;">${m.desc||''} · ${m.protein}p / ${m.carbs}c / ${m.fat}f · ${Math.round(m.protein*4+m.carbs*4+m.fat*9)} kcal</div></div><button class="btn" style="padding:7px 14px;font-size:11px;" onclick="logSavedMeal('${m.id}')">Log</button><button class="dx" onclick="delSavedMeal('${m.id}')">✕</button></div>`).join('');}
 const logSavedMeal=id=>{const m=load(K.saved_meals).find(x=>x.id===id);if(!m)return;const date=getNDate();logMealEntry(date,m.name,m.protein,m.carbs,m.fat,Math.round(m.protein*4+m.carbs*4+m.fat*9));toast(m.name+' → '+fmtNDate(date)+' ✓');renderNutritionTab();};
 const delSavedMeal=id=>{save(K.saved_meals,load(K.saved_meals).filter(x=>x.id!==id));renderSavedMeals();};
-function renderTodaysMeals(){const date=getNDate();const entries=load(K.meal_entries).filter(x=>x.date===date);const el=document.getElementById('todays-meals-log');if(!el)return;updateNDateLabels();if(!entries.length){el.innerHTML=`<div class="empty" style="padding:14px;"><div class="ei">◈</div>No meals logged for ${fmtNDate(date)}.</div>`;return;}el.innerHTML=entries.map(e=>`<div class="meal-entry-row"><div style="flex:1;"><div style="font-size:13px;color:var(--pale);">${e.desc}</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;">${e.protein}p · ${e.carbs}c · ${e.fat}f · ${e.kcal} kcal${e.time?' · '+e.time:''}</div></div><button class="btn ghost" style="padding:3px 8px;font-size:9px;margin-right:4px;" onclick="moveMealEntry(${e.id},'${date}')">Move Date</button><button class="dx" onclick="delMealEntry(${e.id},'${date}')">✕</button></div>`).join('');}
+function renderTodaysMeals(){
+  const date=getNDate();
+  const allEntries=load(K.meal_entries);
+  const entries=allEntries.filter(x=>x.date===date);
+  const el=document.getElementById('todays-meals-log');
+  if(!el)return;
+  updateNDateLabels();
+  if(!entries.length){el.innerHTML=`<div class="empty" style="padding:14px;"><div class="ei">◈</div>No meals logged for ${fmtNDate(date)}.</div>`;return;}
+  el.innerHTML=entries.map(e=>`
+    <div class="meal-entry-row" id="meal-row-${e.id}">
+      <div style="flex:1;">
+        <div style="font-size:13px;color:var(--pale);">${e.desc}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px;">${e.protein}p · ${e.carbs}c · ${e.fat}f · ${e.kcal} kcal${e.time?' · '+e.time:''}</div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <button class="btn ghost" style="padding:3px 8px;font-size:9px;" onclick="editMealEntry(${e.id})">Edit</button>
+        <button class="btn ghost" style="padding:3px 8px;font-size:9px;" onclick="moveMealEntry(${e.id},'${date}')">Move</button>
+        <button class="dx" onclick="delMealEntry(${e.id},'${date}')">✕</button>
+      </div>
+    </div>
+    <div id="edit-row-${e.id}" style="display:none;background:var(--black4);border:1px solid var(--amber-border);padding:11px;margin-bottom:6px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;">Edit Meal Entry</div>
+      <div class="fr">
+        <div class="fi"><label>Description</label><input type="text" id="edit-desc-${e.id}" value="${e.desc.replace(/"/g,'&quot;')}" style="background:var(--black);border:1px solid var(--amber-border);color:var(--cream);font-family:'Inter',sans-serif;font-size:13px;padding:8px 10px;width:100%;outline:none;"></div>
+      </div>
+      <div class="fr">
+        <div class="fi" style="max-width:75px;"><label>Protein (g)</label><input type="number" id="edit-p-${e.id}" value="${e.protein}" style="background:var(--black);border:1px solid var(--amber-border);color:var(--amber);font-family:'DM Mono',monospace;font-size:13px;padding:8px 10px;width:100%;outline:none;text-align:center;"></div>
+        <div class="fi" style="max-width:75px;"><label>Carbs (g)</label><input type="number" id="edit-c-${e.id}" value="${e.carbs}" style="background:var(--black);border:1px solid var(--amber-border);color:var(--cream);font-family:'DM Mono',monospace;font-size:13px;padding:8px 10px;width:100%;outline:none;text-align:center;"></div>
+        <div class="fi" style="max-width:75px;"><label>Fat (g)</label><input type="number" id="edit-f-${e.id}" value="${e.fat}" style="background:var(--black);border:1px solid var(--amber-border);color:var(--cream);font-family:'DM Mono',monospace;font-size:13px;padding:8px 10px;width:100%;outline:none;text-align:center;"></div>
+        <div class="fi"><label>Date</label><input type="date" id="edit-date-${e.id}" value="${e.date}" style="background:var(--black);border:1px solid var(--amber-border);color:var(--cream);font-family:'DM Mono',monospace;font-size:13px;padding:8px 10px;width:100%;outline:none;"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="btn" style="padding:8px 16px;font-size:12px;" onclick="saveMealEdit(${e.id},'${date}')">Save Changes</button>
+        <button class="btn ghost" style="padding:8px 12px;font-size:11px;" onclick="cancelMealEdit(${e.id})">Cancel</button>
+      </div>
+    </div>`).join('');
+}
+function editMealEntry(id){
+  document.getElementById('edit-row-'+id).style.display='block';
+  document.getElementById('meal-row-'+id).style.opacity='0.4';
+}
+function cancelMealEdit(id){
+  document.getElementById('edit-row-'+id).style.display='none';
+  document.getElementById('meal-row-'+id).style.opacity='1';
+}
+function saveMealEdit(id,originalDate){
+  const entries=load(K.meal_entries);
+  const idx=entries.findIndex(x=>x.id===id);
+  if(idx<0)return;
+  const newDate=document.getElementById('edit-date-'+id).value;
+  const newP=parseFloat(document.getElementById('edit-p-'+id).value)||0;
+  const newC=parseFloat(document.getElementById('edit-c-'+id).value)||0;
+  const newF=parseFloat(document.getElementById('edit-f-'+id).value)||0;
+  const newDesc=document.getElementById('edit-desc-'+id).value.trim();
+  entries[idx]={...entries[idx],date:newDate,desc:newDesc,protein:Math.round(newP),carbs:Math.round(newC),fat:Math.round(newF),kcal:Math.round(newP*4+newC*4+newF*9)};
+  save(K.meal_entries,entries);
+  // Recalculate both original date and new date if date changed
+  rebuildDailyTotal(originalDate);
+  if(newDate!==originalDate)rebuildDailyTotal(newDate);
+  renderTodaysTotal();renderTodaysMeals();renderNutritionLog();renderDashboard();
+  toast('Meal updated ✓');
+}
 function moveMealEntry(id,currentDate){const newDate=prompt('Move this meal to date (YYYY-MM-DD):',currentDate);if(!newDate||newDate===currentDate)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(newDate)){toast('Invalid date format','var(--red)');return;}const entries=load(K.meal_entries);const idx=entries.findIndex(x=>x.id===id);if(idx<0)return;entries[idx].date=newDate;save(K.meal_entries,entries);rebuildDailyTotal(currentDate);rebuildDailyTotal(newDate);renderTodaysTotal();renderTodaysMeals();renderNutritionLog();renderDashboard();toast(`Moved to ${fmtNDate(newDate)} ✓`);}
 function delMealEntry(id,date){const entries=load(K.meal_entries).filter(x=>x.id!==id);save(K.meal_entries,entries);rebuildDailyTotal(date||getNDate());renderTodaysTotal();renderTodaysMeals();renderNutritionLog();renderDashboard();}
-function renderTodaysTotal(){const date=getNDate();const entries=load(K.meal_entries).filter(x=>x.date===date);const card=document.getElementById('todays-total-card');if(!card)return;updateNDateLabels();if(!entries.length){card.style.display='none';return;}card.style.display='block';const tp=Math.round(entries.reduce((s,x)=>s+x.protein,0)),tc=Math.round(entries.reduce((s,x)=>s+x.carbs,0)),tf=Math.round(entries.reduce((s,x)=>s+x.fat,0)),tk=Math.round(tp*4+tc*4+tf*9);document.getElementById('today-p-total').textContent=tp+'g';document.getElementById('today-c-total').textContent=tc+'g';document.getElementById('today-f-total').textContent=tf+'g';document.getElementById('today-kcal-total').textContent=`${tk} kcal total`;document.getElementById('t-pp').style.width=Math.min(100,(tp/245)*100)+'%';document.getElementById('t-pc').style.width=Math.min(100,(tc/160)*100)+'%';document.getElementById('t-pf').style.width=Math.min(100,(tf/75)*100)+'%';}
-function renderNutritionLog(){const d=load(K.nutrition),tb=document.getElementById('nutrition-log');if(!tb)return;if(!d.length){tb.innerHTML='<tr><td colspan="8"><div class="empty"><div class="ei">🥩</div>No days logged yet.</div></td></tr>';return;}tb.innerHTML=d.map(n=>`<tr><td>${fmt(n.date)}</td><td><span class="badge ${n.training==='Yes'?'gold':'blue'}">${n.training==='Yes'?'Train':'Rest'}</span></td><td>${n.protein}g</td><td>${n.carbs}g</td><td>${n.fat}g</td><td>${n.kcal}</td><td>${n.mealCount||1}</td><td><button class="dx" onclick="del('${K.nutrition}',${n.id},[renderNutritionLog,renderDashboard])">✕</button></td></tr>`).join('');}
+function renderTodaysTotal(){const date=getNDate();const entries=load(K.meal_entries).filter(x=>x.date===date);const card=document.getElementById('todays-total-card');if(!card)return;updateNDateLabels();if(!entries.length){card.style.display='none';return;}card.style.display='block';const tp=Math.round(entries.reduce((s,x)=>s+x.protein,0)),tc=Math.round(entries.reduce((s,x)=>s+x.carbs,0)),tf=Math.round(entries.reduce((s,x)=>s+x.fat,0)),tk=Math.round(tp*4+tc*4+tf*9);document.getElementById('today-p-total').textContent=tp+'g';document.getElementById('today-c-total').textContent=tc+'g';document.getElementById('today-f-total').textContent=tf+'g';document.getElementById('today-kcal-total').textContent=`${tk} kcal total`;document.getElementById('t-pp').style.width=Math.min(100,(tp/245)*100)+'%';document.getElementById('t-pc').style.width=Math.min(100,(tc/75)*100)+'%';document.getElementById('t-pf').style.width=Math.min(100,(tf/160)*100)+'%';}
+function renderNutritionLog(){
+  const d=load(K.nutrition),tb=document.getElementById('nutrition-log');
+  if(!tb)return;
+  if(!d.length){tb.innerHTML='<tr><td colspan="8"><div class="empty"><div class="ei">◈</div>No days logged yet.</div></td></tr>';return;}
+  const allEntries=load(K.meal_entries);
+  tb.innerHTML=d.map(n=>{
+    const actualEntries=allEntries.filter(x=>x.date===n.date).length;
+    const mismatch=n.mealCount&&actualEntries>0&&actualEntries!==n.mealCount;
+    return`<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;color:var(--amber);text-decoration:underline;" onclick="jumpToDate('${n.date}')" title="Tap to view meals for this date">${fmt(n.date)}</td>
+      <td><span class="badge ${n.training==='Yes'?'amber':'blue'}">${n.training==='Yes'?'Train':'Rest'}</span></td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;">${n.protein}g</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;">${n.carbs}g</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;">${n.fat}g</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;">${n.kcal}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;${mismatch?'color:var(--red);':''}">${actualEntries||n.mealCount||1}${mismatch?' ⚠':''}</td>
+      <td><button class="dx" onclick="del('${K.nutrition}',${n.id},[renderNutritionLog,renderDashboard])">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+function jumpToDate(date){
+  const el=document.getElementById('n-date');
+  if(el){el.value=date;updateNDateLabels();renderTodaysMeals();renderTodaysTotal();}
+  const nb=document.querySelector('.nb.active');
+  if(nb&&nb.textContent.trim()!=='Nutrition'){document.querySelectorAll('.nb').forEach(b=>{if(b.textContent.trim()==='Nutrition')b.click();});}
+  toast('Viewing '+fmtNDate(date));
+}
 const renderNutritionTab=()=>{renderApiKeyStatus();renderSavedMeals();renderTodaysMeals();renderTodaysTotal();renderNutritionLog();switchNTab(activeNTab);};
 function logManualMeal(){const desc=document.getElementById('m-desc').value.trim()||'Manual entry';const p=parseFloat(document.getElementById('m-protein').value)||0;const c=parseFloat(document.getElementById('m-carbs').value)||0;const f=parseFloat(document.getElementById('m-fat').value)||0;const k=parseFloat(document.getElementById('m-kcal').value)||Math.round(p*4+c*4+f*9);if(!p&&!c&&!f){toast('Enter at least one macro','var(--red)');return;}const date=getNDate();logMealEntry(date,desc,p,c,f,k);['m-desc','m-protein','m-carbs','m-fat','m-kcal'].forEach(i=>document.getElementById(i).value='');toast('Logged → '+fmtNDate(date)+' ✓');renderNutritionTab();}
 // SCHEDULE / REFEED
