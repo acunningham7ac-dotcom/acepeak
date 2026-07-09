@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#12100E">
-<title>ACEPEAK — Lab Protocol</title>
+<title>ACEPEAK — Protocol</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -18,19 +18,21 @@
   --data:'DM Mono',ui-monospace,monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{background:var(--ink);color:var(--bone);font-family:var(--body);font-size:15px;line-height:1.5;padding-bottom:82px;}
+body{background:var(--ink);color:var(--bone);font-family:var(--body);font-size:15px;line-height:1.5;padding-bottom:84px;}
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
 :focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
 
 #strip{position:sticky;top:0;z-index:40;background:var(--slate);border-bottom:1px solid var(--line);
-  padding:9px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
-#strip .lbl{font-family:var(--data);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);}
-#strip .val{font-family:var(--data);font-size:15px;font-weight:500;color:var(--amber);letter-spacing:.02em;}
+  padding:9px 16px;display:flex;justify-content:space-between;gap:10px;}
+#strip .u{flex:1;}
+#strip .u:last-child{text-align:right;}
+#strip .lbl{font-family:var(--data);font-size:8px;letter-spacing:.13em;text-transform:uppercase;color:var(--mute);}
+#strip .val{font-family:var(--data);font-size:13px;font-weight:500;color:var(--amber);margin-top:2px;}
 #strip .val.urgent{color:var(--verm);}
 
-header{padding:22px 16px 10px;}
-header h1{font-family:var(--disp);font-size:34px;font-weight:300;letter-spacing:.02em;line-height:1;}
-header .sub{font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-top:6px;}
+header{padding:20px 16px 8px;}
+header h1{font-family:var(--disp);font-size:33px;font-weight:300;line-height:1;}
+header .sub{font-family:var(--data);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--mute);margin-top:6px;}
 
 .tab{display:none;padding:0 16px 24px;}
 .tab.active{display:block;animation:fade .26s cubic-bezier(.22,.9,.3,1);}
@@ -39,20 +41,32 @@ header .sub{font-family:var(--data);font-size:10px;letter-spacing:.14em;text-tra
 
 nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(28,26,23,.97);
   backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;
-  padding:6px 4px calc(6px + env(safe-area-inset-bottom));}
-nav button{flex:1;background:none;border:0;padding:7px 2px;display:flex;flex-direction:column;
-  align-items:center;gap:3px;color:var(--mute);cursor:pointer;transition:color .18s;}
-nav button .ic{font-size:17px;line-height:1;}
-nav button .tx{font-family:var(--data);font-size:8px;letter-spacing:.08em;text-transform:uppercase;}
+  padding:6px 2px calc(6px + env(safe-area-inset-bottom));}
+nav button{flex:1;background:none;border:0;padding:7px 1px;display:flex;flex-direction:column;
+  align-items:center;gap:3px;color:var(--mute);cursor:pointer;transition:color .18s;min-width:0;}
+nav button .ic{font-size:16px;line-height:1;}
+nav button .tx{font-family:var(--data);font-size:7px;letter-spacing:.05em;text-transform:uppercase;}
 nav button.on{color:var(--amber);}
 
 .card{background:var(--slate);border:1px solid var(--line);border-radius:3px;padding:16px;margin-bottom:14px;}
 .card h2{font-family:var(--disp);font-size:22px;font-weight:400;margin-bottom:3px;}
-.card .cap{font-family:var(--data);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--mute);margin-bottom:14px;}
-.eyebrow{font-family:var(--data);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);
+.card .cap{font-family:var(--data);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:14px;}
+.eyebrow{font-family:var(--data);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--mute);
   margin:26px 0 10px;display:flex;align-items:center;gap:10px;}
 .eyebrow::after{content:'';flex:1;height:1px;background:var(--line);}
 
+/* objectives */
+.obj{padding:14px 0;border-bottom:1px solid var(--line);}
+.obj:last-child{border:0;padding-bottom:0;}
+.obj-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+.obj-n{font-family:var(--data);font-size:9px;color:var(--amber);letter-spacing:.12em;}
+.obj-t{font-size:14px;font-weight:500;margin-top:3px;}
+.obj-v{font-family:var(--data);font-size:16px;font-weight:500;white-space:nowrap;}
+.obj-bar{height:5px;background:var(--raise);border-radius:3px;overflow:hidden;margin-top:9px;}
+.obj-fill{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.22,.9,.3,1);}
+.obj-eta{font-family:var(--data);font-size:10px;color:var(--mute);margin-top:6px;}
+
+/* reference range bar */
 .rr{margin-bottom:20px;}
 .rr-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
 .rr-name{font-size:13px;font-weight:500;}
@@ -68,36 +82,35 @@ nav button.on{color:var(--amber);}
   background:repeating-linear-gradient(45deg,transparent 0 3px,var(--verm-dim) 3px 6px);}
 .rr-tick{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--bone);
   box-shadow:0 0 0 2px var(--slate);transition:left .7s cubic-bezier(.22,.9,.3,1);}
-.rr-tick.bad{background:var(--verm);}
-.rr-tick.good{background:var(--verd);}
+.rr-tick.bad{background:var(--verm);} .rr-tick.good{background:var(--verd);}
 .rr-foot{display:flex;justify-content:space-between;align-items:center;font-family:var(--data);font-size:9px;color:var(--mute);margin-top:6px;}
-.rr-flag{font-family:var(--data);font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:2px;}
+.rr-flag{font-family:var(--data);font-size:9px;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border-radius:2px;}
 .rr-flag.bad{background:var(--verm);color:#fff;}
 .rr-flag.warn{background:var(--amber);color:var(--ink);}
 .rr-flag.good{background:var(--verd);color:#fff;}
 @media(prefers-reduced-motion:reduce){.rr-tick{transition:none;}}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:9px;}
-.stat{background:var(--raise);border:1px solid var(--line);border-radius:2px;padding:11px 9px;text-align:center;}
-.stat .k{font-family:var(--data);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);}
-.stat .v{font-family:var(--data);font-size:19px;font-weight:500;margin-top:4px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:9px;}
+.stat{background:var(--raise);border:1px solid var(--line);border-radius:2px;padding:11px 8px;text-align:center;}
+.stat .k{font-family:var(--data);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);}
+.stat .v{font-family:var(--data);font-size:18px;font-weight:500;margin-top:4px;}
 .stat .v.good{color:var(--verd);} .stat .v.bad{color:var(--verm);} .stat .v.amb{color:var(--amber);}
+.stat .s{font-family:var(--data);font-size:8px;color:var(--mute);margin-top:2px;}
 
 .mac{margin-bottom:12px;}
 .mac-top{display:flex;justify-content:space-between;font-family:var(--data);font-size:10px;margin-bottom:5px;}
-.mac-top .n{letter-spacing:.1em;text-transform:uppercase;color:var(--mute);}
+.mac-top .n{letter-spacing:.09em;text-transform:uppercase;color:var(--mute);}
 .mac-bar{height:5px;background:var(--raise);border-radius:3px;overflow:hidden;}
 .mac-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.22,.9,.3,1);}
 
-label{display:block;font-family:var(--data);font-size:9px;letter-spacing:.11em;text-transform:uppercase;
-  color:var(--mute);margin-bottom:5px;}
-input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--line);border-radius:2px;padding:10px 11px;font-size:15px;}
+label{display:block;font-family:var(--data);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:5px;}
+input,select{width:100%;background:var(--raise);border:1px solid var(--line);border-radius:2px;padding:10px 11px;font-size:15px;}
 .row{display:grid;gap:10px;margin-bottom:11px;}
 .row.c2{grid-template-columns:1fr 1fr;} .row.c3{grid-template-columns:1fr 1fr 1fr;}
 .row.c4{grid-template-columns:repeat(4,1fr);}
 
 .btn{background:var(--amber);color:var(--ink);border:0;border-radius:2px;padding:11px 18px;
-  font-family:var(--data);font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+  font-family:var(--data);font-size:11px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;
   cursor:pointer;width:100%;transition:opacity .15s;}
 .btn:active{opacity:.75;}
 .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--bone);}
@@ -106,28 +119,26 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
 .item{background:var(--raise);border:1px solid var(--line);border-radius:2px;padding:12px;margin-bottom:8px;}
 .item-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
 .item-t{font-size:14px;font-weight:500;}
-.item-d{font-family:var(--data);font-size:9px;color:var(--mute);letter-spacing:.06em;margin-top:2px;}
-.item-m{font-family:var(--data);font-size:10px;color:var(--mute);margin-top:7px;line-height:1.5;}
+.item-d{font-family:var(--data);font-size:9px;color:var(--mute);letter-spacing:.05em;margin-top:2px;}
+.item-m{font-family:var(--data);font-size:10px;color:var(--mute);margin-top:7px;line-height:1.55;}
 .acts{display:flex;gap:6px;flex-shrink:0;}
 .acts button{background:none;border:1px solid var(--line);border-radius:2px;color:var(--mute);
   width:30px;height:30px;font-size:12px;cursor:pointer;display:grid;place-items:center;}
 .acts button.del{border-color:rgba(179,58,43,.4);color:var(--verm);}
 
-.empty{text-align:center;padding:32px 16px;color:var(--mute);}
+.empty{text-align:center;padding:30px 16px;color:var(--mute);}
 .empty .ei{font-size:26px;margin-bottom:8px;opacity:.5;}
 .empty p{font-size:13px;}
 
 .timer{text-align:center;padding:6px 0 2px;}
-.timer .clock{font-family:var(--data);font-size:52px;font-weight:500;line-height:1;letter-spacing:-.02em;}
-.timer .clock.hot{color:var(--verm);}
-.timer .clock.rest{color:var(--verd);}
-.timer .phase{font-family:var(--data);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:8px;}
+.timer .clock{font-family:var(--data);font-size:50px;font-weight:500;line-height:1;letter-spacing:-.02em;}
+.timer .clock.hot{color:var(--verm);} .timer .clock.rest{color:var(--verd);}
+.timer .phase{font-family:var(--data);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--mute);margin-top:8px;}
 .timer .rounds{font-family:var(--data);font-size:11px;color:var(--amber);margin-top:4px;}
 .timer-ctl{display:flex;gap:8px;margin-top:16px;}
 
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
-.chip{background:var(--raise);border:1px solid var(--line);border-radius:16px;padding:6px 13px;
-  font-size:12px;cursor:pointer;transition:all .15s;}
+.chip{background:var(--raise);border:1px solid var(--line);border-radius:16px;padding:6px 13px;font-size:12px;cursor:pointer;transition:all .15s;}
 .chip.on{background:var(--amber);color:var(--ink);border-color:var(--amber);font-weight:500;}
 
 .flow-step{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);}
@@ -138,46 +149,47 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
 
 .note{background:var(--verm-dim);border-left:2px solid var(--verm);border-radius:0 2px 2px 0;
   padding:12px 13px;margin-bottom:14px;font-size:13px;line-height:1.55;}
-.note strong{display:block;font-family:var(--data);font-size:9px;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--verm);margin-bottom:6px;}
+.note strong{display:block;font-family:var(--data);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--verm);margin-bottom:6px;}
 .note.calm{background:var(--amber-dim);border-color:var(--amber);}
 .note.calm strong{color:var(--amber);}
+.note.ok{background:var(--verd-dim);border-color:var(--verd);}
+.note.ok strong{color:var(--verd);}
 
 .day{border:1px solid var(--line);border-radius:2px;margin-bottom:8px;overflow:hidden;}
 .day-hd{background:var(--raise);padding:11px 13px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
-.day-hd .dn{font-family:var(--data);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--amber);}
+.day-hd .dn{font-family:var(--data);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);}
 .day-hd .dt{font-size:14px;font-weight:500;margin-top:2px;}
 .day-bd{display:none;padding:12px 13px;font-size:13px;}
 .day-bd.open{display:block;}
 .ex{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);gap:10px;}
 .ex:last-child{border:0;}
-.ex .exn{flex:1;}
-.ex .exn b{font-weight:500;}
-.ex .core{font-family:var(--data);font-size:8px;color:var(--amber);letter-spacing:.1em;}
+.ex .exn{flex:1;} .ex .exn b{font-weight:500;}
+.ex .core{font-family:var(--data);font-size:8px;color:var(--amber);letter-spacing:.09em;}
 .ex .exs{font-family:var(--data);font-size:11px;color:var(--mute);white-space:nowrap;}
 
 #toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(80px);
   background:var(--amber);color:var(--ink);padding:11px 20px;border-radius:2px;font-family:var(--data);
-  font-size:11px;letter-spacing:.06em;z-index:80;opacity:0;transition:.3s;pointer-events:none;max-width:90vw;text-align:center;}
+  font-size:11px;z-index:80;opacity:0;transition:.3s;pointer-events:none;max-width:90vw;text-align:center;}
 #toast.on{transform:translateX(-50%) translateY(0);opacity:1;}
 
 .modal{position:fixed;inset:0;background:rgba(10,9,8,.9);z-index:90;display:none;align-items:center;justify-content:center;padding:16px;}
 .modal.on{display:flex;}
-.modal-box{background:var(--slate);border:1px solid var(--line);border-radius:3px;padding:20px;
-  width:100%;max-width:420px;max-height:86vh;overflow-y:auto;}
+.modal-box{background:var(--slate);border:1px solid var(--line);border-radius:3px;padding:20px;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;}
 .modal-box h3{font-family:var(--disp);font-size:22px;font-weight:400;margin-bottom:16px;}
 
-.chart{height:130px;margin:10px 0;}
+.chart{height:132px;margin:10px 0;}
 .chart svg{width:100%;height:100%;}
 .chart-lbl{font-family:var(--data);font-size:9px;fill:var(--mute);}
 .nd{display:grid;place-items:center;height:100%;color:var(--mute);font-size:12px;}
+.legend{display:flex;gap:14px;justify-content:center;font-family:var(--data);font-size:9px;color:var(--mute);margin-top:-4px;}
+.legend i{display:inline-block;width:9px;height:2px;margin-right:4px;vertical-align:middle;}
 </style>
 </head>
 <body>
 
 <div id="strip">
-  <div><div class="lbl">Next blood draw</div><div class="val" id="strip-date">—</div></div>
-  <div style="text-align:right"><div class="lbl">Days remaining</div><div class="val" id="strip-days">—</div></div>
+  <div class="u"><div class="lbl">Blood draw</div><div class="val" id="strip-blood">—</div></div>
+  <div class="u"><div class="lbl">Next DEXA</div><div class="val" id="strip-dexa">—</div></div>
 </div>
 
 <header>
@@ -185,43 +197,64 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
   <div class="sub" id="hdr-sub">Protocol day —</div>
 </header>
 
+<!-- TODAY -->
 <section class="tab active" id="t-today">
   <div id="today-alerts"></div>
+
+  <div class="card">
+    <h2>Three objectives</h2>
+    <div class="cap">Three different clocks</div>
+    <div id="objectives"></div>
+  </div>
+
   <div class="card">
     <h2 id="plan-day">—</h2>
     <div class="cap" id="plan-focus">—</div>
     <div id="plan-detail"></div>
   </div>
+
   <div class="card">
     <h2>Fuel today</h2>
     <div class="cap">Against your targets</div>
     <div id="today-macros"></div>
     <div class="grid" style="margin-top:14px">
-      <div class="stat"><div class="k">Sat fat</div><div class="v" id="t-satfat">0</div></div>
-      <div class="stat"><div class="k">Alcohol</div><div class="v" id="t-alc">0</div></div>
-      <div class="stat"><div class="k">Sardines</div><div class="v" id="t-sard">0</div></div>
+      <div class="stat"><div class="k">Sat fat</div><div class="v" id="t-satfat">0</div><div class="s" id="t-satfat-s"></div></div>
+      <div class="stat"><div class="k">Alcohol</div><div class="v" id="t-alc">0</div><div class="s">target zero</div></div>
+      <div class="stat"><div class="k">Sardines</div><div class="v" id="t-sard">0</div><div class="s">this week</div></div>
+      <div class="stat"><div class="k">Meals ≥30g P</div><div class="v" id="t-pmeals">0</div><div class="s">of 4</div></div>
     </div>
   </div>
+
+  <div class="card">
+    <h2>Trend weight</h2>
+    <div class="cap">7-day average · the scale lies, the trend doesn't</div>
+    <div class="chart" id="wt-chart"></div>
+    <div class="legend"><span><i style="background:var(--mute)"></i>Daily</span><span><i style="background:var(--amber)"></i>Trend</span></div>
+    <div class="grid" style="margin-top:14px">
+      <div class="stat"><div class="k">Trend</div><div class="v amb" id="w-trend">—</div><div class="s">lbs</div></div>
+      <div class="stat"><div class="k">Rate</div><div class="v" id="w-rate">—</div><div class="s" id="w-rate-s">lbs / wk</div></div>
+      <div class="stat"><div class="k">% BW / wk</div><div class="v" id="w-pct">—</div><div class="s">keep under 1.0</div></div>
+    </div>
+  </div>
+
   <div class="card">
     <h2>This week</h2>
     <div class="cap">Rolling 7 days</div>
     <div class="grid">
-      <div class="stat"><div class="k">Lifts</div><div class="v amb" id="w-lifts">0</div></div>
-      <div class="stat"><div class="k">Zone 2 min</div><div class="v amb" id="w-z2">0</div></div>
-      <div class="stat"><div class="k">Sauna</div><div class="v amb" id="w-sauna">0</div></div>
-      <div class="stat"><div class="k">Avg sleep</div><div class="v" id="w-sleep">—</div></div>
-      <div class="stat"><div class="k">Avg RPE</div><div class="v" id="w-rpe">—</div></div>
-      <div class="stat"><div class="k">Weight</div><div class="v" id="w-wt">—</div></div>
+      <div class="stat"><div class="k">Lifts</div><div class="v amb" id="w-lifts">0</div><div class="s">of 4</div></div>
+      <div class="stat"><div class="k">Zone 2</div><div class="v" id="w-z2">0</div><div class="s">of 180 min</div></div>
+      <div class="stat"><div class="k">Sauna</div><div class="v amb" id="w-sauna">0</div><div class="s">sessions</div></div>
+      <div class="stat"><div class="k">Avg steps</div><div class="v" id="w-steps">—</div><div class="s">floor 8,000</div></div>
+      <div class="stat"><div class="k">Avg sleep</div><div class="v" id="w-sleep">—</div><div class="s">hours</div></div>
+      <div class="stat"><div class="k">Avg RPE</div><div class="v" id="w-rpe">—</div><div class="s">keep ≤ 8.0</div></div>
     </div>
-  </div>
-  <div class="card">
-    <h2>Weight trend</h2>
-    <div class="cap">Morning, fasted, post-void</div>
-    <div class="chart" id="wt-chart"></div>
   </div>
 </section>
 
+<!-- TRAIN -->
 <section class="tab" id="t-train">
+  <div id="deload-note"></div>
+
   <div class="eyebrow">Log a session</div>
   <div class="card">
     <div class="row c2">
@@ -241,6 +274,7 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
   <div class="card">
     <div class="chips" id="core-chips"></div>
     <div class="chart" id="lift-chart"></div>
+    <div id="e1rm" class="cap" style="text-align:center;margin:0 0 12px"></div>
     <div class="row c3">
       <div><label>Weight</label><input type="number" id="l-wt" placeholder="lbs"></div>
       <div><label>Sets</label><input type="number" id="l-sets" placeholder="4"></div>
@@ -275,6 +309,7 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
   <div id="lift-list"></div>
 </section>
 
+<!-- FUEL -->
 <section class="tab" id="t-fuel">
   <div class="card">
     <h2>Today's plate</h2>
@@ -303,33 +338,39 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
   <div id="meal-list"></div>
 </section>
 
+<!-- BODY -->
 <section class="tab" id="t-body">
   <div class="note calm">
-    <strong>Measurement protocol</strong>
-    Same conditions every time or the numbers are noise. Morning, fasted, after voiding, before water.
-    Waist at the navel, tape level, at the end of a normal exhale. Never suck in. Never change the landmark.
+    <strong>Your scale measures one thing honestly</strong>
+    Weight. Nothing else. Your bioimpedance scale read 22.3% body fat and 205 lbs lean; DEXA read 29.8% and
+    179.9 lbs. It overstated your lean mass by 25 pounds. Log weight here. Get composition from the Scans tab.
   </div>
   <div class="card">
     <div class="row c3">
       <div><label>Date</label><input type="date" id="b-date"></div>
       <div><label>Weight (lbs)</label><input type="number" step="0.1" id="b-wt"></div>
-      <div><label>Waist (in)</label><input type="number" step="0.25" id="b-waist"></div>
+      <div><label>Steps</label><input type="number" id="b-steps"></div>
     </div>
-    <div class="row c2">
+    <div class="row c3">
       <div><label>Sleep (hrs)</label><input type="number" step="0.1" id="b-sleep"></div>
+      <div><label>Waist (in)</label><input type="number" step="0.25" id="b-waist"></div>
       <div><label>Notes</label><input id="b-note" placeholder="Optional"></div>
     </div>
     <button class="btn" onclick="saveBody()">Log measurement</button>
+    <div class="cap" style="margin:12px 0 0;text-align:center;line-height:1.7">
+      Morning, fasted, after voiding, before water.<br>Waist is optional and secondary — android %fat is the real number.
+    </div>
   </div>
   <div class="card">
-    <h2>Waist</h2>
-    <div class="cap">The marker that tracks visceral fat</div>
-    <div class="chart" id="waist-chart"></div>
+    <h2>Steps</h2>
+    <div class="cap">NEAT moves more of the deficit than the workout does</div>
+    <div class="chart" id="steps-chart"></div>
   </div>
   <div class="eyebrow">History</div>
   <div id="body-list"></div>
 </section>
 
+<!-- LABS -->
 <section class="tab" id="t-labs">
   <div id="lab-warning"></div>
   <div class="card">
@@ -374,6 +415,81 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
   <div id="lab-list"></div>
 </section>
 
+<!-- SCANS -->
+<section class="tab" id="t-scans">
+  <div id="scan-notes"></div>
+  <div class="card">
+    <h2>Latest scan</h2>
+    <div class="cap" id="scan-meta">No scan logged</div>
+    <div class="grid">
+      <div class="stat"><div class="k">Body fat</div><div class="v" id="sc-bf">—</div><div class="s">%</div></div>
+      <div class="stat"><div class="k">Lean mass</div><div class="v" id="sc-lean">—</div><div class="s">lbs</div></div>
+      <div class="stat"><div class="k">Fat mass</div><div class="v" id="sc-fat">—</div><div class="s">lbs</div></div>
+      <div class="stat"><div class="k">Android</div><div class="v" id="sc-and">—</div><div class="s">% fat</div></div>
+      <div class="stat"><div class="k">A/G ratio</div><div class="v" id="sc-ag">—</div><div class="s">apple vs pear</div></div>
+      <div class="stat"><div class="k">RMR</div><div class="v" id="sc-rmr">—</div><div class="s">cal / day</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Where the fat is</h2>
+    <div class="cap">Regional distribution</div>
+    <div id="regional"></div>
+  </div>
+
+  <div class="card">
+    <h2>Lean mass across scans</h2>
+    <div class="cap">The only honest test of objective 3</div>
+    <div class="chart" id="lean-chart"></div>
+  </div>
+  <div class="card">
+    <h2>Android % fat</h2>
+    <div class="cap">The depot driving your labs</div>
+    <div class="chart" id="and-chart"></div>
+  </div>
+
+  <div class="eyebrow">Log a DEXA scan</div>
+  <div class="card">
+    <div class="row c2">
+      <div><label>Scan date</label><input type="date" id="d-date"></div>
+      <div><label>Total mass (lbs)</label><input type="number" step="0.1" id="d-mass"></div>
+    </div>
+    <div class="row c3">
+      <div><label>Body fat %</label><input type="number" step="0.1" id="d-bf"></div>
+      <div><label>Lean (lbs)</label><input type="number" step="0.1" id="d-lean"></div>
+      <div><label>Fat (lbs)</label><input type="number" step="0.1" id="d-fat"></div>
+    </div>
+    <div class="row c3">
+      <div><label>BMC (lbs)</label><input type="number" step="0.1" id="d-bmc"></div>
+      <div><label>Android %fat</label><input type="number" step="0.1" id="d-and"></div>
+      <div><label>Gynoid %fat</label><input type="number" step="0.1" id="d-gyn"></div>
+    </div>
+    <div class="row c3">
+      <div><label>Legs %fat</label><input type="number" step="0.1" id="d-legs"></div>
+      <div><label>Trunk %fat</label><input type="number" step="0.1" id="d-trunk"></div>
+      <div><label>VAT (lbs)</label><input type="number" step="0.1" id="d-vat" placeholder="CoreScan"></div>
+    </div>
+    <div class="row c3">
+      <div><label>RSMI</label><input type="number" step="0.01" id="d-rsmi"></div>
+      <div><label>BMD T-score</label><input type="number" step="0.1" id="d-tscore"></div>
+      <div><label>RMR</label><input type="number" id="d-rmr"></div>
+    </div>
+    <button class="btn" onclick="saveScan()">Save scan</button>
+    <div class="cap" style="margin:12px 0 0;text-align:center">A/G ratio is computed from android ÷ gynoid.</div>
+  </div>
+
+  <div class="eyebrow">Ask for this next time</div>
+  <div class="card">
+    <div class="flow-step"><div class="flow-n">01</div><div class="flow-b"><strong>Run CoreScan</strong><span>Your last scan left VAT and SAT blank. CoreScan is validated for BMI 18.5–40 and yours is 36.5. You qualify. It separates visceral from subcutaneous fat in the android region — the number you actually want.</span></div></div>
+    <div class="flow-step"><div class="flow-n">02</div><div class="flow-b"><strong>Same machine, same time of day</strong><span>Fasted, hydrated normally, no training that morning. Cross-machine comparisons are worthless.</span></div></div>
+    <div class="flow-step"><div class="flow-n">03</div><div class="flow-b"><strong>Ask for regional lean, not just total</strong><span>Arms and legs lean mass tell you where any muscle loss is happening.</span></div></div>
+  </div>
+
+  <div class="eyebrow">Scan history</div>
+  <div id="scan-list"></div>
+</section>
+
+<!-- RECOVER -->
 <section class="tab" id="t-recover">
   <div class="eyebrow">Interval timer</div>
   <div class="card">
@@ -391,7 +507,18 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
       <button class="btn" onclick="toggleHiit()" id="hiit-btn">Start</button>
       <button class="btn ghost" onclick="resetHiit()">Reset</button>
     </div>
-    <div class="cap" style="margin:14px 0 0;text-align:center">Bike or rower. Low joint load at your bodyweight.</div>
+    <div class="cap" style="margin:14px 0 0;text-align:center">Friday only. Bike or rower. Adding a second HIIT day costs recovery you don't have.</div>
+  </div>
+
+  <div class="eyebrow">Zone 2 — your biggest lever</div>
+  <div class="card">
+    <div class="row c2">
+      <div><label>Date</label><input type="date" id="z-date"></div>
+      <div><label>Minutes</label><input type="number" id="z-min" placeholder="50"></div>
+    </div>
+    <button class="btn" onclick="saveZone2()">Log zone 2</button>
+    <div class="mac" style="margin-top:16px" id="z2-progress"></div>
+    <div class="cap" style="margin:6px 0 0;text-align:center" id="z2-hr">—</div>
   </div>
 
   <div class="eyebrow">Sauna timer</div>
@@ -427,51 +554,62 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
     <div style="margin-top:18px" id="mob-list"></div>
   </div>
 
-  <div class="eyebrow">Zone 2</div>
-  <div class="card">
-    <div class="row c2">
-      <div><label>Date</label><input type="date" id="z-date"></div>
-      <div><label>Minutes</label><input type="number" id="z-min" placeholder="45"></div>
-    </div>
-    <button class="btn" onclick="saveZone2()">Log zone 2</button>
-    <div class="cap" style="margin:14px 0 0;text-align:center" id="z2-hr">—</div>
-  </div>
-
   <div class="eyebrow">Recovery log</div>
   <div id="rec-list"></div>
 </section>
 
+<!-- SETUP -->
 <section class="tab" id="t-setup">
-  <div class="eyebrow">Macro targets — edit freely</div>
+  <div class="eyebrow">Energy — derived from your measured RMR</div>
   <div class="card">
     <div class="row c2">
-      <div><label>Calories</label><input type="number" id="g-kcal"></div>
-      <div><label>Protein (g)</label><input type="number" id="g-protein"></div>
+      <div><label>Measured RMR</label><input type="number" id="g-rmr"></div>
+      <div><label>Activity factor</label><input type="number" step="0.05" id="g-af"></div>
     </div>
     <div class="row c2">
+      <div><label>Deficit (kcal/day)</label><input type="number" id="g-deficit"></div>
+      <div><label>Calorie target</label><input type="number" id="g-kcal"></div>
+    </div>
+    <button class="btn ghost" onclick="autoCalc()" style="margin-bottom:9px">Recalculate from RMR</button>
+    <div class="cap" style="text-align:center;line-height:1.7" id="tdee-note">—</div>
+  </div>
+
+  <div class="eyebrow">Macro targets — edit freely</div>
+  <div class="card">
+    <div class="row c3">
+      <div><label>Protein (g)</label><input type="number" id="g-protein"></div>
       <div><label>Carbs (g)</label><input type="number" id="g-carbs"></div>
       <div><label>Fat (g)</label><input type="number" id="g-fat"></div>
     </div>
+    <div class="row c3">
+      <div><label>Sat fat cap</label><input type="number" id="g-satfat"></div>
+      <div><label>Sardines / wk</label><input type="number" id="g-sardines"></div>
+      <div><label>Step floor</label><input type="number" id="g-steps"></div>
+    </div>
     <div class="row c2">
-      <div><label>Sat fat cap (g)</label><input type="number" id="g-satfat"></div>
-      <div><label>Sardine tins / week</label><input type="number" id="g-sardines"></div>
+      <div><label>Zone 2 min / wk</label><input type="number" id="g-z2"></div>
+      <div><label>Max loss %BW/wk</label><input type="number" step="0.1" id="g-maxrate"></div>
     </div>
     <button class="btn" onclick="saveGoals()">Save targets</button>
     <div class="cap" style="margin:12px 0 0;text-align:center" id="goal-check">—</div>
   </div>
 
-  <div class="eyebrow">Profile</div>
+  <div class="eyebrow">Objectives</div>
   <div class="card">
     <div class="row c2">
-      <div><label>Date of birth</label><input type="date" id="p-dob"></div>
-      <div><label>Next blood draw</label><input type="date" id="p-draw"></div>
+      <div><label>Goal body fat %</label><input type="number" step="0.5" id="p-goalbf"></div>
+      <div><label>Stretch body fat %</label><input type="number" step="0.5" id="p-stretchbf"></div>
     </div>
     <div class="row c2">
-      <div><label>Lean mass (lbs)</label><input type="number" step="0.1" id="p-lean"></div>
+      <div><label>Next blood draw</label><input type="date" id="p-draw"></div>
+      <div><label>Next DEXA</label><input type="date" id="p-dexa"></div>
+    </div>
+    <div class="row c2">
+      <div><label>Date of birth</label><input type="date" id="p-dob"></div>
       <div><label>Protocol start</label><input type="date" id="p-start"></div>
     </div>
-    <button class="btn" onclick="saveProfile()">Save profile</button>
-    <div class="cap" style="margin:12px 0 0;text-align:center" id="lean-check">—</div>
+    <button class="btn" onclick="saveProfile()">Save objectives</button>
+    <div class="cap" style="margin:12px 0 0;text-align:center;line-height:1.7" id="lean-check">—</div>
   </div>
 
   <div class="eyebrow">Your data</div>
@@ -482,7 +620,7 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
     </label>
     <button class="btn danger" onclick="wipeAll()">Erase everything</button>
     <div class="cap" style="margin:14px 0 0;text-align:center;line-height:1.7">
-      Everything is stored on this device only.<br>Nothing is sent anywhere.
+      Everything is stored on this device only.<br>No network calls. Nothing is sent anywhere.
     </div>
   </div>
 
@@ -499,6 +637,7 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
   <button data-tab="fuel"><span class="ic">●</span><span class="tx">Fuel</span></button>
   <button data-tab="body"><span class="ic">◐</span><span class="tx">Body</span></button>
   <button data-tab="labs"><span class="ic">◉</span><span class="tx">Labs</span></button>
+  <button data-tab="scans"><span class="ic">⬢</span><span class="tx">Scans</span></button>
   <button data-tab="recover"><span class="ic">≋</span><span class="tx">Recover</span></button>
   <button data-tab="setup"><span class="ic">⚙</span><span class="tx">Setup</span></button>
 </nav>
@@ -508,19 +647,23 @@ input,select,textarea{width:100%;background:var(--raise);border:1px solid var(--
 
 <script>
 /* ---------- STORAGE ---------- */
-var K={sessions:'ap7_s',lifts:'ap7_l',body:'ap7_b',labs:'ap7_bl',meals:'ap7_m',rec:'ap7_r',goals:'ap7_g',prof:'ap7_p'};
+var K={sessions:'ap8_s',lifts:'ap8_l',body:'ap8_b',labs:'ap8_bl',meals:'ap8_m',rec:'ap8_r',
+        scans:'ap8_dx',goals:'ap8_g',prof:'ap8_p'};
 var cache=new Map();
 function load(k){if(cache.has(k))return cache.get(k);var d;try{d=JSON.parse(localStorage.getItem(k)||'[]');}catch(e){d=[];}cache.set(k,d);return d;}
 function save(k,d){localStorage.setItem(k,JSON.stringify(d));cache.set(k,d);}
 function loadO(k,def){try{var v=JSON.parse(localStorage.getItem(k));return v&&typeof v==='object'?Object.assign({},def,v):Object.assign({},def);}catch(e){return Object.assign({},def);}}
 function saveO(k,d){localStorage.setItem(k,JSON.stringify(d));}
 
-var DEF_GOALS={kcal:2300,protein:200,carbs:80,fat:130,satfat:30,sardines:5};
-var DEF_PROF={dob:'1978-05-23',draw:'2026-08-15',lean:205,start:'2026-07-08'};
+var DEF_GOALS={rmr:2098,af:1.40,deficit:600,kcal:2350,protein:190,carbs:80,fat:140,
+               satfat:25,sardines:5,steps:8000,z2:180,maxrate:1.0};
+var DEF_PROF={dob:'1978-05-23',draw:'2026-08-15',dexa:'2026-09-18',start:'2026-07-08',
+              goalbf:15,stretchbf:12};
 var GOALS=loadO(K.goals,DEF_GOALS), PROF=loadO(K.prof,DEF_PROF);
 
 function today(){return new Date().toISOString().slice(0,10);}
 function fmtLong(d){if(!d)return'—';return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function fmtShort(d){if(!d)return'—';return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});}
 function daysBetween(a,b){return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5);}
 function uid(){return Date.now()+Math.floor(Math.random()*1000);}
 function num(v){var n=parseFloat(v);return isNaN(n)?0:n;}
@@ -532,24 +675,25 @@ function toast(msg,color){var t=$('toast');t.textContent=msg;t.style.background=
 var CORE=['Back Squat','Deadlift','Bench Press','Overhead Press','Bent-Over Row','Leg Press'];
 
 var PROGRAM=[
- {day:'Monday',focus:'Push — chest, shoulders, triceps',ex:[
+ {day:'Monday',focus:'Push — chest, shoulders, triceps',lift:1,ex:[
   {n:'Bench Press',s:'4 × 6 @ RIR 2',core:1},{n:'Incline Dumbbell Press',s:'4 × 10'},
   {n:'Overhead Press',s:'3 × 8 @ RIR 2',core:1},{n:'Cable Lateral Raise',s:'3 × 15'},
   {n:'Overhead Cable Extension',s:'3 × 12'},{n:'Rope Pushdown',s:'3 × 15'}]},
- {day:'Tuesday',focus:'Lower A — quads · then 20 min zone 2',ex:[
+ {day:'Tuesday',focus:'Lower A — quads · then 20 min zone 2',lift:1,ex:[
   {n:'Back Squat',s:'4 × 6 @ RIR 2',core:1},{n:'Leg Press',s:'3 × 10',core:1},
-  {n:'Walking Lunge',s:'3 × 12 / leg'},{n:'Leg Extension',s:'3 × 15'},{n:'Standing Calf Raise',s:'4 × 12'}]},
+  {n:'Bulgarian Split Squat',s:'3 × 10 / leg'},{n:'Leg Extension',s:'3 × 15'},
+  {n:'Standing Calf Raise',s:'4 × 12'},{n:'Zone 2 — bike',s:'20 min'}]},
  {day:'Wednesday',focus:'Recovery — the day that lowers triglycerides',ex:[
-  {n:'Zone 2 walk or bike',s:'45 min'},{n:'Mobility flow',s:'10 min'},{n:'Sauna',s:'20 min'}]},
- {day:'Thursday',focus:'Pull — back, rear delts, biceps',ex:[
+  {n:'Zone 2 walk or bike',s:'50 min'},{n:'Mobility flow',s:'10 min'},{n:'Sauna',s:'20 min'}]},
+ {day:'Thursday',focus:'Pull — back, rear delts, biceps',lift:1,ex:[
   {n:'Bent-Over Row',s:'4 × 6 @ RIR 2',core:1},{n:'Lat Pulldown',s:'3 × 10'},
   {n:'Chest-Supported Row',s:'3 × 12'},{n:'Face Pull',s:'3 × 15'},
   {n:'EZ Bar Curl',s:'3 × 10'},{n:'Hammer Curl',s:'3 × 12'}]},
- {day:'Friday',focus:'Lower B — posterior chain · HIIT finisher',ex:[
+ {day:'Friday',focus:'Lower B — posterior chain · HIIT finisher',lift:1,ex:[
   {n:'Deadlift',s:'3 × 5 @ RIR 2',core:1},{n:'Romanian Deadlift',s:'3 × 8'},
   {n:'Seated Leg Curl',s:'3 × 12'},{n:'Hip Thrust',s:'3 × 10'},{n:'HIIT — bike or rower',s:'8 × 30s / 90s'}]},
  {day:'Saturday',focus:'Long zone 2 — the biggest lever you have',ex:[
-  {n:'Zone 2 walk or bike',s:'60 min'},{n:'Mobility flow',s:'10 min'},{n:'Sauna',s:'20 min'}]},
+  {n:'Zone 2 walk or bike',s:'70 min'},{n:'Mobility flow',s:'10 min'},{n:'Sauna',s:'20 min'}]},
  {day:'Sunday',focus:'Full rest — cook the week, weigh in',ex:[
   {n:'No training',s:'—'},{n:'Batch cook',s:'4 meals × 5 days'},{n:'Weekly weigh-in',s:'Morning, fasted'}]}
 ];
@@ -560,7 +704,7 @@ var MOBILITY=[{n:'Cat–cow',s:45},{n:'90/90 hip switch',s:60},{n:'Couch stretch
 
 var TEMPLATES=[
  {n:'Sardine bowl',d:'2 tins sardines in olive oil, 3 eggs, 2 cups spinach',p:54,c:4,f:38,sf:9,sard:2},
- {n:'Sirloin & asparagus',d:'8 oz sirloin, 1 lb asparagus, 1 tbsp olive oil',p:52,c:8,f:22,sf:7,sard:0},
+ {n:'Sirloin & asparagus',d:'8 oz top sirloin, 1 lb asparagus, 1 tbsp olive oil',p:52,c:8,f:22,sf:7,sard:0},
  {n:'Thigh skillet',d:'8 oz chicken thigh, zucchini + peppers, olive oil',p:46,c:10,f:26,sf:7,sard:0},
  {n:'Beef & broccoli',d:'8 oz 93/7 ground beef, 3 cups broccoli, olive oil',p:50,c:12,f:24,sf:8,sard:0},
  {n:'Egg scramble',d:'4 whole eggs + 4 whites, 2 cups spinach',p:40,c:4,f:24,sf:7,sard:0},
@@ -583,14 +727,14 @@ var MARKERS=[
 ];
 
 /* ---------- NAV ---------- */
-var TITLES={today:['Today','Protocol day'],train:['Train','4 lifts · 2 zone 2 · 1 rest'],
- fuel:['Fuel','Four foods, done right'],body:['Body','Same conditions, every time'],
- labs:['Labs','The only scoreboard'],recover:['Recover','Where the adaptation happens'],
- setup:['Setup','Your numbers, your rules']};
+var TITLES={today:['Today','Protocol day'],train:['Train','4 lifts · 180 min zone 2 · 1 rest'],
+ fuel:['Fuel','Four foods, done right'],body:['Body','Weight and steps only'],
+ labs:['Labs','Objective one'],scans:['Scans','Objectives two and three'],
+ recover:['Recover','Where the adaptation happens'],setup:['Setup','Your numbers, your rules']};
 var RENDER={};
 
 function showTab(id){
-  var tabs=document.querySelectorAll('.tab'),i;
+  var i,tabs=document.querySelectorAll('.tab');
   for(i=0;i<tabs.length;i++)tabs[i].classList.remove('active');
   var btns=document.querySelectorAll('nav button');
   for(i=0;i<btns.length;i++)btns[i].classList.toggle('on',btns[i].dataset.tab===id);
@@ -601,34 +745,71 @@ function showTab(id){
   if(RENDER[id])RENDER[id]();
 }
 (function(){var b=document.querySelectorAll('nav button');
-  for(var i=0;i<b.length;i++)(function(btn){btn.onclick=function(){showTab(btn.dataset.tab);};})(b[i]);})();
+  for(var i=0;i<b.length;i++)(function(x){x.onclick=function(){showTab(x.dataset.tab);};})(b[i]);})();
 function currentTab(){return document.querySelector('nav button.on').dataset.tab;}
 
 function renderStrip(){
-  var d=daysBetween(today(),PROF.draw);
-  $('strip-date').textContent=fmtLong(PROF.draw);
-  var el=$('strip-days');
-  el.textContent = d>0 ? d : (d===0 ? 'Today' : (-d)+' overdue');
-  el.classList.toggle('urgent',d<=7);
+  function put(el,date){
+    var d=daysBetween(today(),date);
+    el.textContent=(d>0? d+'d · '+fmtShort(date) : d===0?'Today':(-d)+'d overdue');
+    el.classList.toggle('urgent',d<=7);
+  }
+  put($('strip-blood'),PROF.draw); put($('strip-dexa'),PROF.dexa);
 }
 
+/* ---------- DERIVED ---------- */
+function latestScan(){var s=load(K.scans);return s.length?s[s.length-1]:null;}
+function ffmLbs(){var s=latestScan(); return s? num(s.lean)+num(s.bmc) : 188.6;}
+function currentWeight(){
+  var b=load(K.body).filter(function(x){return x.weight;});
+  if(b.length)return num(b[b.length-1].weight);
+  var s=latestScan(); return s? num(s.mass) : 265.2;
+}
+// 7-day exponential trend
+function trendSeries(){
+  var b=load(K.body).filter(function(x){return x.weight;})
+    .sort(function(a,c){return a.date.localeCompare(c.date);});
+  var a=2/(7+1), out=[], ema=null;
+  b.forEach(function(x){var v=num(x.weight); ema = ema===null? v : a*v+(1-a)*ema;
+    out.push({date:x.date, raw:v, ema:+ema.toFixed(2)});});
+  return out;
+}
+function lossRate(){
+  var t=trendSeries();
+  if(t.length<8)return null;
+  var now=t[t.length-1], then=null;
+  for(var i=t.length-1;i>=0;i--){if(daysBetween(t[i].date,now.date)>=7){then=t[i];break;}}
+  if(!then)return null;
+  var days=daysBetween(then.date,now.date);
+  var perWeek=(then.ema-now.ema)/days*7;
+  return {perWeek:perWeek, pct:perWeek/now.ema*100, trend:now.ema};
+}
+function targetWeight(bfPct){return ffmLbs()/(1-bfPct/100);}
+
 /* ---------- CHART ---------- */
-function lineChart(elId,pts,label,color){
+function lineChart(elId,series,label){
   var el=$(elId);
-  if(pts.length<2){el.innerHTML='<div class="nd">Log 2+ entries</div>';return;}
-  var v=pts.map(function(p){return p.v;});
-  var mn=Math.min.apply(null,v), mx=Math.max.apply(null,v), pad=(mx-mn)*0.18||1;
-  var lo=mn-pad, hi=mx+pad, W=400, H=120;
-  function px(i){return (i/(pts.length-1))*(W-8)+4;}
+  var all=[];
+  series.forEach(function(s){all=all.concat(s.v);});
+  if(all.length<2){el.innerHTML='<div class="nd">Log 2+ entries</div>';return;}
+  var mn=Math.min.apply(null,all), mx=Math.max.apply(null,all), pad=(mx-mn)*0.18||1;
+  var lo=mn-pad, hi=mx+pad, W=400, H=122;
+  var n=series[0].v.length;
+  function px(i){return n<2?W/2:(i/(n-1))*(W-8)+4;}
   function py(x){return H-10-((x-lo)/(hi-lo))*(H-30);}
-  var line=pts.map(function(p,i){return px(i)+','+py(p.v);}).join(' ');
-  var dots=pts.map(function(p,i){return '<circle cx="'+px(i)+'" cy="'+py(p.v)+'" r="3" fill="'+color+'"/>';}).join('');
-  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
-    '<polyline points="'+line+'" fill="none" stroke="'+color+'" stroke-width="2"/>'+dots+
+  var svg='';
+  series.forEach(function(s){
+    if(s.v.length<2)return;
+    var pts=s.v.map(function(v,i){return px(i)+','+py(v);}).join(' ');
+    svg+='<polyline points="'+pts+'" fill="none" stroke="'+s.c+'" stroke-width="'+(s.w||2)+'"'+
+      (s.dash?' stroke-dasharray="3,3"':'')+' opacity="'+(s.o||1)+'"/>';
+    if(s.dots)svg+=s.v.map(function(v,i){return '<circle cx="'+px(i)+'" cy="'+py(v)+'" r="3" fill="'+s.c+'"/>';}).join('');
+  });
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+svg+
     '<text x="4" y="12" class="chart-lbl">'+label+'</text></svg>';
 }
 
-/* ---------- TODAY ---------- */
+/* ---------- MACRO BARS ---------- */
 function macroBars(p,c,f){
   var kcal=p*4+c*4+f*9;
   function bar(name,val,goal,color){
@@ -641,10 +822,66 @@ function macroBars(p,c,f){
     bar('Fat',f,GOALS.fat,'var(--amber)')+bar('Calories',kcal,GOALS.kcal,'var(--bone)');
 }
 
+/* ---------- OBJECTIVES ---------- */
+function renderObjectives(){
+  var out='', labs=load(K.labs), scans=load(K.scans);
+  var rate=lossRate();
+
+  // 1 — labs
+  var tghdl='—', pct1=0, sub1='Log a panel to see progress';
+  if(labs.length){
+    var l=labs[labs.length-1], tg=num(l.trig), hdl=num(l.hdl);
+    if(tg&&hdl){ tghdl=(tg/hdl).toFixed(1);
+      var start=21.2, goal=2;
+      pct1=Math.max(0,Math.min(100,(start-tghdl)/(start-goal)*100));
+      sub1='TG:HDL from '+start+' toward 2.0 · responds within weeks, not months';
+    }
+  }
+  out+=obj('01','Improve the labs',tghdl,pct1,sub1,pct1>60?'verd':'amber');
+
+  // 2 — body fat
+  var bf='—', pct2=0, sub2='Log a DEXA scan';
+  if(scans.length){
+    var s=scans[scans.length-1], cur=num(s.bf);
+    bf=cur.toFixed(1)+'%';
+    var s0=num(scans[0].bf), goal=num(PROF.goalbf);
+    pct2=Math.max(0,Math.min(100,(s0-cur)/(s0-goal)*100));
+    var tw=targetWeight(goal), lose=currentWeight()-tw;
+    sub2='Lose '+lose.toFixed(0)+' lbs of fat → '+tw.toFixed(0)+' lbs';
+    if(rate&&rate.perWeek>0.15){
+      var wks=lose/rate.perWeek;
+      sub2+=' · at '+rate.perWeek.toFixed(1)+' lb/wk ≈ '+Math.round(wks)+' weeks';
+    }else sub2+=' · need 8 more days of weigh-ins for an ETA';
+  }
+  out+=obj('02','Reach '+PROF.goalbf+'% body fat',bf,pct2,sub2,'amber');
+
+  // 3 — lean mass
+  var lm='—', pct3=100, sub3='Log a DEXA scan', col='verd';
+  if(scans.length){
+    var cur=num(scans[scans.length-1].lean);
+    lm=cur.toFixed(1);
+    if(scans.length>1){
+      var prev=num(scans[scans.length-2].lean), delta=cur-prev;
+      pct3=Math.max(0,Math.min(100,100+delta/prev*100*10));
+      sub3=(delta>=0?'+':'')+delta.toFixed(1)+' lbs since last scan';
+      col = delta>=-1 ? 'verd' : 'verm';
+      if(delta<-1)sub3+=' — deficit may be too aggressive';
+    } else sub3='Baseline. Next scan '+fmtShort(PROF.dexa)+' tells you if it is holding.';
+  }
+  out+=obj('03','Hold the muscle',lm+' lbs',pct3,sub3,col);
+  $('objectives').innerHTML=out;
+}
+function obj(n,title,val,pct,sub,col){
+  return '<div class="obj"><div class="obj-hd"><div><div class="obj-n">'+n+'</div>'+
+    '<div class="obj-t">'+title+'</div></div><div class="obj-v" style="color:var(--'+col+')">'+val+'</div></div>'+
+    '<div class="obj-bar"><div class="obj-fill" style="width:'+pct.toFixed(0)+'%;background:var(--'+col+')"></div></div>'+
+    '<div class="obj-eta">'+sub+'</div></div>';
+}
+
+/* ---------- TODAY ---------- */
 RENDER.today=function(){
-  renderStrip();
-  var t=today(), dow=new Date(t+'T12:00:00').getDay();
-  var p=PROGRAM[(dow+6)%7];
+  renderStrip(); renderObjectives();
+  var t=today(), p=PROGRAM[(new Date(t+'T12:00:00').getDay()+6)%7];
   $('plan-day').textContent=p.day;
   $('plan-focus').textContent=p.focus;
   $('plan-detail').innerHTML=p.ex.map(function(e){
@@ -652,53 +889,94 @@ RENDER.today=function(){
       '</div><div class="exs">'+e.s+'</div></div>';}).join('');
 
   var a=[], labs=load(K.labs), meals=load(K.meals);
-  var drawIn=daysBetween(t,PROF.draw);
   if(!labs.length||num(labs[labs.length-1].trig)>=500)
     a.push(['bad','Triglycerides above 500 mg/dL','This is the threshold where pancreatitis risk becomes real. See a doctor — and if you get abdominal pain, do not wait for August.']);
-  if(drawIn>0&&drawIn<=14)a.push(['calm','Blood draw in '+drawIn+' days','Fast 12 hours. Bring the checklist on the Labs tab.']);
+  var dIn=daysBetween(t,PROF.draw);
+  if(dIn>0&&dIn<=14)a.push(['calm','Blood draw in '+dIn+' days','Fast 12 hours. Bring the checklist on the Labs tab.']);
+  var xIn=daysBetween(t,PROF.dexa);
+  if(xIn>0&&xIn<=14)a.push(['calm','DEXA in '+xIn+' days','Ask them to run CoreScan this time. You qualify.']);
+
   var wk=meals.filter(function(m){return daysBetween(m.date,t)<7;});
   var alc=wk.reduce(function(s,m){return s+num(m.alc);},0);
-  if(alc>0)a.push(['bad',alc+' drink'+(alc>1?'s':'')+' logged this week','Alcohol is the fastest driver of triglycerides there is. Target is zero until your next panel.']);
+  if(alc>0)a.push(['bad',alc+' drink'+(alc>1?'s':'')+' this week','Alcohol is the fastest driver of triglycerides there is. Target is zero until your next panel.']);
+
+  var rate=lossRate();
+  if(rate){
+    if(rate.pct>GOALS.maxrate)
+      a.push(['bad','Losing '+rate.pct.toFixed(2)+'% of bodyweight per week','Above '+GOALS.maxrate+'% and lean mass starts going with the fat. Add 200–300 kcal.']);
+    else if(rate.perWeek<0.2&&rate.perWeek>-0.2)
+      a.push(['calm','Trend weight is flat','Seven days of no movement. Check logging accuracy before you cut calories.']);
+    else if(rate.perWeek<0)
+      a.push(['calm','Trend weight is rising','Up '+Math.abs(rate.perWeek).toFixed(1)+' lbs/week. Look at the two highest-calorie days first.']);
+    else a.push(['ok','On pace',rate.perWeek.toFixed(1)+' lbs/week, '+rate.pct.toFixed(2)+'% of bodyweight. That is the range where fat leaves and muscle stays.']);
+  }
   var dates={}; meals.forEach(function(m){dates[m.date]=1;});
   var logged=Object.keys(dates).length, elapsed=Math.max(1,daysBetween(PROF.start,t)+1);
   if(elapsed>=5&&logged/elapsed<0.7)
     a.push(['calm','Logging gaps',"You've logged "+logged+' of '+elapsed+' days. Below about 70% and the averages stop meaning anything.']);
   $('today-alerts').innerHTML=a.map(function(x){
-    return '<div class="note '+(x[0]==='calm'?'calm':'')+'"><strong>'+x[1]+'</strong>'+x[2]+'</div>';}).join('');
+    var cls = x[0]==='calm'?'calm':(x[0]==='ok'?'ok':'');
+    return '<div class="note '+cls+'"><strong>'+x[1]+'</strong>'+x[2]+'</div>';}).join('');
 
   var tm=meals.filter(function(m){return m.date===t;});
   function sum(f){return tm.reduce(function(s,m){return s+num(m[f]);},0);}
   $('today-macros').innerHTML=macroBars(sum('p'),sum('c'),sum('f'));
   var sf=sum('sf'); $('t-satfat').textContent=Math.round(sf)+'g';
   $('t-satfat').className='v '+(sf<=GOALS.satfat?'good':'bad');
-  var al=sum('alc'); $('t-alc').textContent=Math.round(al);
-  $('t-alc').className='v '+(al===0?'good':'bad');
+  $('t-satfat-s').textContent='cap '+GOALS.satfat+'g';
+  var al=sum('alc'); $('t-alc').textContent=Math.round(al); $('t-alc').className='v '+(al===0?'good':'bad');
   var sw=wk.reduce(function(s,m){return s+num(m.sard);},0);
-  $('t-sard').textContent=Math.round(sw)+'/wk';
-  $('t-sard').className='v '+(sw>=GOALS.sardines?'good':'amb');
+  $('t-sard').textContent=Math.round(sw)+'/'+GOALS.sardines; $('t-sard').className='v '+(sw>=GOALS.sardines?'good':'amb');
+  var pm=tm.filter(function(m){return num(m.p)>=30;}).length;
+  $('t-pmeals').textContent=pm; $('t-pmeals').className='v '+(pm>=4?'good':'amb');
 
   var sess=load(K.sessions).filter(function(s){return daysBetween(s.date,t)<7;});
   var rec=load(K.rec).filter(function(r){return daysBetween(r.date,t)<7;});
-  $('w-lifts').textContent=sess.filter(function(s){return !/walk|zone/i.test(s.type);}).length;
-  $('w-z2').textContent=rec.filter(function(r){return r.kind==='zone2';}).reduce(function(s,r){return s+num(r.min);},0);
+  var lifts=sess.filter(function(s){return !/walk|zone/i.test(s.type);}).length;
+  $('w-lifts').textContent=lifts;
+  var z2=rec.filter(function(r){return r.kind==='zone2';}).reduce(function(s,r){return s+num(r.min);},0);
+  $('w-z2').textContent=z2; $('w-z2').className='v '+(z2>=GOALS.z2?'good':'amb');
   $('w-sauna').textContent=rec.filter(function(r){return r.kind==='sauna';}).length;
+
   var body=load(K.body);
+  var st=body.filter(function(b){return daysBetween(b.date,t)<7&&b.steps;});
+  if(st.length){var avg=st.reduce(function(s,b){return s+num(b.steps);},0)/st.length;
+    $('w-steps').textContent=Math.round(avg).toLocaleString();
+    $('w-steps').className='v '+(avg>=GOALS.steps?'good':'bad');}
+  else{$('w-steps').textContent='—';$('w-steps').className='v';}
   var bw=body.filter(function(b){return daysBetween(b.date,t)<7&&b.sleep;});
   $('w-sleep').textContent=bw.length?(bw.reduce(function(s,b){return s+num(b.sleep);},0)/bw.length).toFixed(1):'—';
   var rp=sess.filter(function(s){return s.rpe;});
   var re=$('w-rpe');
-  if(rp.length){var avg=rp.reduce(function(s,x){return s+num(x.rpe);},0)/rp.length;
-    re.textContent=avg.toFixed(1); re.className='v '+(avg>8.3?'bad':(avg>=6.5?'good':'amb'));}
+  if(rp.length){var ar=rp.reduce(function(s,x){return s+num(x.rpe);},0)/rp.length;
+    re.textContent=ar.toFixed(1); re.className='v '+(ar>8.0?'bad':'good');}
   else{re.textContent='—';re.className='v';}
-  var wts=body.filter(function(b){return b.weight;});
-  $('w-wt').textContent=wts.length?wts[wts.length-1].weight:'—';
-  lineChart('wt-chart',wts.map(function(b){return {v:num(b.weight)};}),'Weight (lbs)','var(--amber)');
+
+  var tr=trendSeries();
+  if(tr.length>=2){
+    lineChart('wt-chart',[
+      {v:tr.map(function(x){return x.raw;}),c:'var(--mute)',w:1,o:.55},
+      {v:tr.map(function(x){return x.ema;}),c:'var(--amber)',w:2.5}
+    ],'Weight (lbs)');
+    $('w-trend').textContent=tr[tr.length-1].ema.toFixed(1);
+  } else { lineChart('wt-chart',[{v:[],c:''}],''); $('w-trend').textContent='—'; }
+  if(rate){
+    $('w-rate').textContent=(rate.perWeek>=0?'−':'+')+Math.abs(rate.perWeek).toFixed(2);
+    $('w-rate').className='v '+(rate.pct>GOALS.maxrate?'bad':(rate.perWeek>0.2?'good':'amb'));
+    $('w-pct').textContent=rate.pct.toFixed(2)+'%';
+    $('w-pct').className='v '+(rate.pct>GOALS.maxrate?'bad':'good');
+  }else{$('w-rate').textContent='—';$('w-pct').textContent='—';}
 };
 
 /* ---------- TRAIN ---------- */
 var activeCore=CORE[0];
 function pickCore(c){activeCore=c;RENDER.train();}
 RENDER.train=function(){
+  var wk=Math.floor(daysBetween(PROF.start,today())/7)+1;
+  $('deload-note').innerHTML = (wk%6===0)
+    ? '<div class="note calm"><strong>Deload week — week '+wk+'</strong>Cut every working set to 60% of normal load and stop 4 reps short. Keep zone 2 and sauna unchanged. You are 48, in a deficit, with testosterone at 264. Recovery is the constraint, not stimulus.</div>'
+    : '<div class="note ok"><strong>Week '+wk+' · deload in '+(6-wk%6)+' week'+((6-wk%6)===1?'':'s')+'</strong>Every sixth week, drop to 60% load and stop 4 reps short of failure. Hold RIR 2 the rest of the time. Never train to failure in a deficit.</div>';
+
   $('s-type').innerHTML=PROGRAM.map(function(p){
     return '<option>'+p.day+' — '+p.focus.split('—')[0].trim()+'</option>';}).join('')+
     '<option>Zone 2 walk</option><option>Custom</option>';
@@ -707,17 +985,22 @@ RENDER.train=function(){
   renderLiftChart();
   $('program').innerHTML=PROGRAM.map(function(p){
     return '<div class="day"><div class="day-hd" onclick="this.nextElementSibling.classList.toggle(\'open\')">'+
-      '<div><div class="dn">'+p.day+'</div><div class="dt">'+p.focus+'</div></div>'+
-      '<span style="color:var(--mute)">▾</span></div><div class="day-bd">'+
-      p.ex.map(function(e){return '<div class="ex"><div class="exn"><b>'+e.n+'</b>'+
-        (e.core?' <span class="core">CORE</span>':'')+'</div><div class="exs">'+e.s+'</div></div>';}).join('')+
-      '</div></div>';}).join('');
+      '<div><div class="dn">'+p.day+'</div><div class="dt">'+p.focus+'</div></div><span style="color:var(--mute)">▾</span></div>'+
+      '<div class="day-bd">'+p.ex.map(function(e){
+        return '<div class="ex"><div class="exn"><b>'+e.n+'</b>'+(e.core?' <span class="core">CORE</span>':'')+
+          '</div><div class="exs">'+e.s+'</div></div>';}).join('')+'</div></div>';}).join('');
   renderSessionList(); renderLiftList();
 };
+function e1rm(w,r){return r>0? w*(1+r/30) : 0;}   // Epley
 function renderLiftChart(){
   var d=load(K.lifts).filter(function(l){return l.lift===activeCore&&l.weight;})
     .sort(function(a,b){return a.date.localeCompare(b.date);});
-  lineChart('lift-chart',d.map(function(l){return {v:num(l.weight)};}),activeCore+' (lbs)','var(--amber)');
+  lineChart('lift-chart',[{v:d.map(function(l){return num(l.weight);}),c:'var(--amber)',dots:1}],activeCore+' (lbs)');
+  if(d.length){
+    var last=d[d.length-1], est=e1rm(num(last.weight),num(last.reps));
+    var best=0; d.forEach(function(l){var e=e1rm(num(l.weight),num(l.reps)); if(e>best)best=e;});
+    $('e1rm').textContent = est ? 'Est. 1RM '+Math.round(est)+' lbs · best '+Math.round(best)+' lbs' : '';
+  } else $('e1rm').textContent='';
 }
 function saveSession(){
   if(!$('s-date').value){toast('Pick a date','var(--verm)');return;}
@@ -747,7 +1030,9 @@ function renderSessionList(){
 function renderLiftList(){
   var d=load(K.lifts).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
   $('lift-list').innerHTML=d.length?d.map(function(l){
-    var m=l.weight+' lbs  ·  '+(l.sets||'?')+' × '+(l.reps||'?')+(l.rir?'  ·  RIR '+l.rir:'');
+    var e=e1rm(num(l.weight),num(l.reps));
+    var m=l.weight+' lbs  ·  '+(l.sets||'?')+' × '+(l.reps||'?')+(l.rir?'  ·  RIR '+l.rir:'')+
+      (e?'  ·  e1RM '+Math.round(e):'');
     return row(l.id,K.lifts,l.lift,l.date,m,'editLift');}).join('')
     :empty('◈',"No lifts logged. Pick a core lift above and record today's top set.");
 }
@@ -793,19 +1078,22 @@ function renderMealList(){
 /* ---------- BODY ---------- */
 RENDER.body=function(){
   var d=load(K.body);
-  lineChart('waist-chart',d.filter(function(b){return b.waist;}).map(function(b){return {v:num(b.waist)};}),'Waist (in)','var(--verd)');
+  var st=d.filter(function(b){return b.steps;});
+  lineChart('steps-chart',[{v:st.map(function(b){return num(b.steps);}),c:'var(--verd)',dots:1}],'Steps');
   $('body-list').innerHTML=d.length?d.slice().reverse().map(function(b){
-    var m=[b.waist&&'Waist '+b.waist+'"',b.sleep&&'Sleep '+b.sleep+'h',b.note].filter(Boolean).join('  ·  ');
+    var m=[b.steps&&num(b.steps).toLocaleString()+' steps',b.sleep&&'Sleep '+b.sleep+'h',
+      b.waist&&'Waist '+b.waist+'"',b.note].filter(Boolean).join('  ·  ');
     return row(b.id,K.body,(b.weight||'—')+' lbs',b.date,m,'editBody');}).join('')
     :empty('◐','No measurements yet. Weigh in tomorrow morning, fasted.');
 };
 function saveBody(){
-  if(!$('b-wt').value&&!$('b-waist').value&&!$('b-sleep').value){toast('Enter at least one value','var(--verm)');return;}
+  if(!$('b-wt').value&&!$('b-steps').value&&!$('b-sleep').value&&!$('b-waist').value){
+    toast('Enter at least one value','var(--verm)');return;}
   var d=load(K.body);
-  d.push({id:uid(),date:$('b-date').value||today(),weight:$('b-wt').value,waist:$('b-waist').value,
-    sleep:$('b-sleep').value,note:$('b-note').value});
+  d.push({id:uid(),date:$('b-date').value||today(),weight:$('b-wt').value,steps:$('b-steps').value,
+    sleep:$('b-sleep').value,waist:$('b-waist').value,note:$('b-note').value});
   d.sort(function(a,b){return a.date.localeCompare(b.date);}); save(K.body,d);
-  ['b-wt','b-waist','b-sleep','b-note'].forEach(function(i){$(i).value='';});
+  ['b-wt','b-steps','b-sleep','b-waist','b-note'].forEach(function(i){$(i).value='';});
   RENDER.body(); toast('Measurement logged');
 }
 
@@ -823,36 +1111,32 @@ function rangeBar(m,val){
   var pct=Math.min(100,(v/m.scale)*100), over=v>m.scale;
   var g0=m.good[0]/m.scale*100, g1=m.good[1]/m.scale*100;
   var w0=m.warn[0]/m.scale*100, w1=m.warn[1]/m.scale*100;
-  var status = m.hi ? (v>=m.good[0]?'good':(v>=m.warn[0]?'warn':'bad'))
-                    : (v<=m.good[1]?'good':(v<=m.warn[1]?'warn':'bad'));
-  var severe = m.severe && v>=m.severe;
-  var zones = m.hi
-    ? '<div class="rr-zone bad" style="width:'+w0+'%"></div><div class="rr-zone warn" style="width:'+(g0-w0)+'%"></div><div class="rr-zone good" style="width:'+(100-g0)+'%"></div>'
-    : '<div class="rr-zone good" style="width:'+g1+'%"></div><div class="rr-zone warn" style="width:'+(w1-w0)+'%"></div><div class="rr-zone bad" style="width:'+(100-w1)+'%"></div>';
-  var col = status==='good'?'verd':(status==='warn'?'amber':'verm');
-  var flagTxt = severe?'Off scale — urgent':(status==='good'?'In range':(status==='warn'?'Borderline':'Out of range'));
+  var status=m.hi?(v>=m.good[0]?'good':(v>=m.warn[0]?'warn':'bad')):(v<=m.good[1]?'good':(v<=m.warn[1]?'warn':'bad'));
+  var severe=m.severe&&v>=m.severe;
+  var zones=m.hi
+    ?'<div class="rr-zone bad" style="width:'+w0+'%"></div><div class="rr-zone warn" style="width:'+(g0-w0)+'%"></div><div class="rr-zone good" style="width:'+(100-g0)+'%"></div>'
+    :'<div class="rr-zone good" style="width:'+g1+'%"></div><div class="rr-zone warn" style="width:'+(w1-w0)+'%"></div><div class="rr-zone bad" style="width:'+(100-w1)+'%"></div>';
+  var col=status==='good'?'verd':(status==='warn'?'amber':'verm');
+  var flag=severe?'Off scale — urgent':(status==='good'?'In range':(status==='warn'?'Borderline':'Out of range'));
   return '<div class="rr"><div class="rr-top"><span class="rr-name">'+m.n+'</span>'+
     '<span class="rr-val" style="color:var(--'+col+')">'+v+'<small>'+m.u+'</small></span></div>'+
     '<div class="rr-track">'+zones+(over?'<div class="rr-over"></div>':'')+
     '<div class="rr-tick '+status+'" style="left:'+(over?'calc(100% - 14px)':pct+'%')+'"></div></div>'+
-    '<div class="rr-foot"><span>0</span><span class="rr-flag '+(severe?'bad':status)+'">'+flagTxt+'</span>'+
+    '<div class="rr-foot"><span>0</span><span class="rr-flag '+(severe?'bad':status)+'">'+flag+'</span>'+
     '<span>'+m.scale+(over?'+':'')+'</span></div></div>';
 }
 RENDER.labs=function(){
   renderStrip();
   var labs=load(K.labs), warn=$('lab-warning');
   if(labs.length){
-    var l=calcDerived(labs[labs.length-1]);
-    var age=daysBetween(l.date,today());
+    var l=calcDerived(labs[labs.length-1]), age=daysBetween(l.date,today());
     $('lab-meta').textContent=(l.lab||'Lab')+' · '+fmtLong(l.date)+' · '+age+' days ago';
-    $('lab-bars').innerHTML=MARKERS.map(function(m){return rangeBar(m,l[m.k]);}).join('')||'<div class="nd">No values in this panel</div>';
-    var notes=[];
-    if(num(l.trig)>=500)notes.push(['bad','Triglycerides above 500 mg/dL',
-      'At '+l.trig+' mg/dL you are in the range where clinicians treat urgently because of pancreatitis risk. This needs a physician now, not in August.']);
-    if(num(l.trig)>400&&num(l.ldl))notes.push(['calm','Your LDL number is not reliable',
-      "Calculated LDL is invalid above TG 400. The "+l.ldl+" reading came from a formula that doesn't hold at your triglyceride level. Ask for a direct LDL and an ApoB."]);
-    if(age>90)notes.push(['calm','This panel is stale','Drawn '+age+' days ago. It no longer describes you.']);
-    warn.innerHTML=notes.map(function(x){return '<div class="note '+(x[0]==='calm'?'calm':'')+'"><strong>'+x[1]+'</strong>'+x[2]+'</div>';}).join('');
+    $('lab-bars').innerHTML=MARKERS.map(function(m){return rangeBar(m,l[m.k]);}).join('')||'<div class="nd">No values</div>';
+    var n=[];
+    if(num(l.trig)>=500)n.push(['bad','Triglycerides above 500 mg/dL','At '+l.trig+' mg/dL you are in the range where clinicians treat urgently because of pancreatitis risk. This needs a physician now, not in August.']);
+    if(num(l.trig)>400&&num(l.ldl))n.push(['calm','Your LDL number is not reliable',"Calculated LDL is invalid above TG 400. The "+l.ldl+" reading came from a formula that doesn't hold. Ask for a direct LDL and an ApoB."]);
+    if(age>90)n.push(['calm','This panel is stale','Drawn '+age+' days ago. It no longer describes you.']);
+    warn.innerHTML=n.map(function(x){return '<div class="note '+(x[0]==='calm'?'calm':'')+'"><strong>'+x[1]+'</strong>'+x[2]+'</div>';}).join('');
   }else{
     $('lab-meta').textContent='No panel logged';
     $('lab-bars').innerHTML='<div class="nd">Enter a panel below to set the baseline</div>';
@@ -865,13 +1149,84 @@ RENDER.labs=function(){
 };
 function saveLab(){
   if(!$('bl-date').value){toast('Enter the draw date','var(--verm)');return;}
-  var d=load(K.labs);
-  var rec={id:uid(),date:$('bl-date').value,lab:$('bl-lab').value};
+  var d=load(K.labs), rec={id:uid(),date:$('bl-date').value,lab:$('bl-lab').value};
   ['glucose','insulin','hba1c','trig','hdl','ldl','chol','apob','test','crp'].forEach(function(k){rec[k]=$('bl-'+k).value;});
   d.push(rec); d.sort(function(a,b){return a.date.localeCompare(b.date);}); save(K.labs,d);
   ['bl-lab','bl-glucose','bl-insulin','bl-hba1c','bl-trig','bl-hdl','bl-ldl','bl-chol','bl-apob','bl-test','bl-crp']
     .forEach(function(i){$(i).value='';});
   RENDER.labs(); toast('Panel saved');
+}
+
+/* ---------- SCANS ---------- */
+RENDER.scans=function(){
+  renderStrip();
+  var s=load(K.scans), notes=$('scan-notes');
+  if(!s.length){
+    $('scan-meta').textContent='No scan logged';
+    ['sc-bf','sc-lean','sc-fat','sc-and','sc-ag','sc-rmr'].forEach(function(i){$(i).textContent='—';});
+    $('regional').innerHTML='<div class="nd">Log a scan to see distribution</div>';
+    notes.innerHTML=''; $('scan-list').innerHTML=''; return;
+  }
+  var l=s[s.length-1], age=daysBetween(l.date,today());
+  $('scan-meta').textContent=fmtLong(l.date)+' · '+age+' days ago';
+  $('sc-bf').textContent=num(l.bf).toFixed(1);
+  $('sc-bf').className='v '+(num(l.bf)<=num(PROF.goalbf)?'good':'bad');
+  $('sc-lean').textContent=num(l.lean).toFixed(1); $('sc-lean').className='v good';
+  $('sc-fat').textContent=num(l.fat).toFixed(1); $('sc-fat').className='v bad';
+  $('sc-and').textContent=num(l.android).toFixed(1);
+  $('sc-and').className='v '+(num(l.android)>35?'bad':'amb');
+  var ag=num(l.gynoid)? (num(l.android)/num(l.gynoid)).toFixed(2) : '—';
+  $('sc-ag').textContent=ag; $('sc-ag').className='v '+(num(ag)>1.0?'bad':'good');
+  $('sc-rmr').textContent=l.rmr||Math.round(19.7*((num(l.lean)+num(l.bmc))/2.205)+413);
+  $('sc-rmr').className='v amb';
+
+  // regional
+  var mass=num(l.mass)||num(l.lean)+num(l.fat)+num(l.bmc);
+  var reg=[
+    ['Trunk',num(l.trunk),'62% of your total fat sits here'],
+    ['Android (abdomen)',num(l.android),'The depot that drains into your liver'],
+    ['Gynoid (hips/thighs)',num(l.gynoid),'Metabolically quieter fat'],
+    ['Legs',num(l.legs),'Your leanest region']
+  ].filter(function(r){return r[1];});
+  var mx=Math.max.apply(null,reg.map(function(r){return r[1];}))||1;
+  $('regional').innerHTML=reg.map(function(r){
+    var pct=r[1]/mx*100, col=r[1]>=35?'var(--verm)':(r[1]>=28?'var(--amber)':'var(--verd)');
+    return '<div class="mac"><div class="mac-top"><span class="n">'+r[0]+'</span><span>'+r[1].toFixed(1)+'% fat</span></div>'+
+      '<div class="mac-bar"><div class="mac-fill" style="width:'+pct+'%;background:'+col+'"></div></div>'+
+      '<div class="obj-eta">'+r[2]+'</div></div>';}).join('');
+
+  // notes
+  var n=[];
+  if(!num(l.vat)) n.push(['calm','CoreScan was not run','VAT and SAT came back N/A. CoreScan is validated for BMI 18.5–40 and yours is 36.5 — you qualify. Ask PremierFM to re-process or run it on the next scan. That gives you the visceral number directly.']);
+  if(num(l.android)>=35) n.push(['bad','Android fat at '+num(l.android).toFixed(1)+'%','Central adiposity drains straight into the portal vein. This is the mechanism behind your triglycerides and HOMA-IR — and it is the first fat to leave in a deficit.']);
+  if(s.length>1){
+    var prev=s[s.length-2], dl=num(l.lean)-num(prev.lean);
+    if(dl<-1) n.push(['bad','Lean mass down '+Math.abs(dl).toFixed(1)+' lbs','The deficit is too aggressive or protein is too low. Add 200–300 kcal and hold protein at '+GOALS.protein+'g.']);
+    else n.push(['ok','Lean mass holding',(dl>=0?'+':'')+dl.toFixed(1)+' lbs since the last scan. Objective 3 is on track.']);
+  }
+  if(num(l.tscore)>=2) n.push(['ok','Bone density T-score '+l.tscore,'Well above the young-adult mean. Your skeleton handles heavy compound loading without concern.']);
+  notes.innerHTML=n.map(function(x){
+    var c=x[0]==='calm'?'calm':(x[0]==='ok'?'ok':'');
+    return '<div class="note '+c+'"><strong>'+x[1]+'</strong>'+x[2]+'</div>';}).join('');
+
+  lineChart('lean-chart',[{v:s.map(function(x){return num(x.lean);}),c:'var(--verd)',dots:1}],'Lean mass (lbs)');
+  lineChart('and-chart',[{v:s.map(function(x){return num(x.android);}),c:'var(--verm)',dots:1}],'Android % fat');
+
+  $('scan-list').innerHTML=s.slice().reverse().map(function(x){
+    var m=[num(x.bf).toFixed(1)+'% fat',num(x.lean).toFixed(1)+' lbs lean',
+      x.android&&'Android '+x.android+'%',x.vat&&'VAT '+x.vat+' lbs'].filter(Boolean).join('  ·  ');
+    return row(x.id,K.scans,'DEXA scan',x.date,m,'editScan');}).join('');
+};
+function saveScan(){
+  if(!$('d-date').value){toast('Enter the scan date','var(--verm)');return;}
+  var d=load(K.scans), r={id:uid(),date:$('d-date').value};
+  ['mass','bf','lean','fat','bmc','android','gynoid','legs','trunk','vat','rsmi','tscore','rmr']
+    .forEach(function(k){r[k]=$('d-'+k).value;});
+  d.push(r); d.sort(function(a,b){return a.date.localeCompare(b.date);}); save(K.scans,d);
+  ['mass','bf','lean','fat','bmc','android','gynoid','legs','trunk','vat','rsmi','tscore','rmr']
+    .forEach(function(k){$('d-'+k).value='';});
+  $('d-date').value=today();
+  RENDER.scans(); toast('Scan saved');
 }
 
 /* ---------- TIMERS ---------- */
@@ -880,8 +1235,7 @@ function beep(){try{var a=new (window.AudioContext||window.webkitAudioContext)()
   o.frequency.value=880;g.gain.setValueAtTime(.25,a.currentTime);
   g.gain.exponentialRampToValueAtTime(.01,a.currentTime+.3);o.start();o.stop(a.currentTime+.3);}catch(e){}}
 function mmss(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
-function onlyOn(container,btn){var c=container.querySelectorAll('.chip');
-  for(var i=0;i<c.length;i++)c[i].classList.remove('on'); btn.classList.add('on');}
+function onlyOn(c,btn){var x=c.querySelectorAll('.chip');for(var i=0;i<x.length;i++)x[i].classList.remove('on');btn.classList.add('on');}
 
 var restLen=120,restLeft=120,restIv=null;
 function setRest(s,btn){restLen=s;onlyOn($('rest-chips'),btn);resetRest();}
@@ -889,8 +1243,8 @@ function toggleRest(){
   if(restIv){clearInterval(restIv);restIv=null;$('rest-btn').textContent='Resume';$('rest-phase').textContent='Paused';return;}
   $('rest-btn').textContent='Pause';$('rest-phase').textContent='Resting';
   restIv=setInterval(function(){restLeft--;$('rest-clock').textContent=mmss(Math.max(0,restLeft));
-    if(restLeft<=0){clearInterval(restIv);restIv=null;beep();
-      $('rest-phase').textContent='Go';$('rest-btn').textContent='Start';restLeft=restLen;}},1000);
+    if(restLeft<=0){clearInterval(restIv);restIv=null;beep();$('rest-phase').textContent='Go';
+      $('rest-btn').textContent='Start';restLeft=restLen;}},1000);
 }
 function resetRest(){clearInterval(restIv);restIv=null;restLeft=restLen;
   $('rest-clock').textContent=mmss(restLen);$('rest-phase').textContent='Ready';$('rest-btn').textContent='Start';}
@@ -944,9 +1298,9 @@ function toggleMob(){
     $('mob-name').textContent=MOBILITY[mStep].n;
     highlightMob();
     if(mLeft<=0){beep();mStep++;
-      if(mStep>=MOBILITY.length){clearInterval(mIv);mIv=null;
-        $('mob-phase').textContent='Complete';$('mob-name').textContent='10 minutes done';
-        $('mob-btn').textContent='Start flow';logRec('mobility','10 min');mStep=0;mLeft=0;return;}
+      if(mStep>=MOBILITY.length){clearInterval(mIv);mIv=null;$('mob-phase').textContent='Complete';
+        $('mob-name').textContent='10 minutes done';$('mob-btn').textContent='Start flow';
+        logRec('mobility','10 min');mStep=0;mLeft=0;return;}
       mLeft=MOBILITY[mStep].s;}
     mLeft--;
   }
@@ -972,53 +1326,76 @@ function saveZone2(){
   var d=load(K.rec);
   d.push({id:uid(),date:$('z-date').value||today(),kind:'zone2',detail:m+' min',min:m});
   d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.rec,d);
-  $('z-min').value=''; renderRecList(); toast('Zone 2 logged');
+  $('z-min').value=''; RENDER.recover(); toast('Zone 2 logged');
 }
 RENDER.recover=function(){
   highlightMob();
   var age=Math.floor(daysBetween(PROF.dob,today())/365.25), maxHR=220-age;
-  $('z2-hr').textContent='Your zone 2 is roughly '+Math.round(maxHR*.6)+'–'+Math.round(maxHR*.7)+' bpm. Conversational pace.';
+  $('z2-hr').textContent='Zone 2 is roughly '+Math.round(maxHR*.6)+'–'+Math.round(maxHR*.7)+' bpm. Conversational pace — you should be able to speak a full sentence.';
+  var t=today();
+  var z2=load(K.rec).filter(function(r){return r.kind==='zone2'&&daysBetween(r.date,t)<7;})
+    .reduce(function(s,r){return s+num(r.min);},0);
+  var pct=Math.min(100,z2/GOALS.z2*100);
+  $('z2-progress').innerHTML='<div class="mac-top"><span class="n">This week</span><span>'+z2+' / '+GOALS.z2+' min</span></div>'+
+    '<div class="mac-bar"><div class="mac-fill" style="width:'+pct+'%;background:'+(z2>=GOALS.z2?'var(--verd)':'var(--amber)')+'"></div></div>';
   renderRecList();
 };
 function renderRecList(){
-  var d=load(K.rec), label={zone2:'Zone 2',sauna:'Sauna',hiit:'HIIT',mobility:'Mobility'};
+  var d=load(K.rec), lbl={zone2:'Zone 2',sauna:'Sauna',hiit:'HIIT',mobility:'Mobility'};
   $('rec-list').innerHTML=d.length?d.map(function(r){
-    return row(r.id,K.rec,label[r.kind]||r.kind,r.date,r.detail,'');}).join('')
+    return row(r.id,K.rec,lbl[r.kind]||r.kind,r.date,r.detail,'');}).join('')
     :empty('≋','Nothing logged. Recovery is where the adaptation happens.');
 }
 
 /* ---------- SETUP ---------- */
 RENDER.setup=function(){
-  Object.keys(DEF_GOALS).forEach(function(k){$('g-'+k).value=GOALS[k];});
-  $('p-dob').value=PROF.dob; $('p-draw').value=PROF.draw;
-  $('p-lean').value=PROF.lean; $('p-start').value=PROF.start;
-  checkGoals(); checkLean();
+  Object.keys(DEF_GOALS).forEach(function(k){var e=$('g-'+k); if(e)e.value=GOALS[k];});
+  $('p-dob').value=PROF.dob; $('p-draw').value=PROF.draw; $('p-dexa').value=PROF.dexa;
+  $('p-start').value=PROF.start; $('p-goalbf').value=PROF.goalbf; $('p-stretchbf').value=PROF.stretchbf;
+  tdeeNote(); checkGoals(); leanNote();
 };
+function tdee(){return Math.round(GOALS.rmr*GOALS.af);}
+function tdeeNote(){
+  $('tdee-note').textContent='RMR '+GOALS.rmr+' × '+GOALS.af+' = TDEE '+tdee()+
+    ' kcal. Minus a '+GOALS.deficit+' kcal deficit → '+(tdee()-GOALS.deficit)+' kcal. '+
+    'Your RMR was measured, not estimated — recheck it at every DEXA, because it falls as you shrink.';
+}
+function autoCalc(){
+  GOALS.rmr=num($('g-rmr').value)||DEF_GOALS.rmr;
+  GOALS.af=num($('g-af').value)||DEF_GOALS.af;
+  GOALS.deficit=num($('g-deficit').value)||DEF_GOALS.deficit;
+  GOALS.kcal=tdee()-GOALS.deficit;
+  $('g-kcal').value=GOALS.kcal;
+  saveO(K.goals,GOALS); tdeeNote(); checkGoals(); toast('Calorie target set to '+GOALS.kcal);
+}
 function checkGoals(){
   var kcal=GOALS.protein*4+GOALS.carbs*4+GOALS.fat*9, diff=kcal-GOALS.kcal;
-  $('goal-check').textContent = Math.abs(diff)<=40
+  $('goal-check').textContent=Math.abs(diff)<=40
     ? 'Macros total '+kcal+' kcal — matches your target.'
     : 'Macros total '+kcal+' kcal, which is '+Math.abs(diff)+' '+(diff>0?'over':'under')+' your calorie target.';
 }
-function checkLean(){
-  var kg=PROF.lean/2.205;
-  $('lean-check').textContent='At '+PROF.lean+' lbs lean mass, the evidence range is '+
-    Math.round(kg*1.6)+'–'+Math.round(kg*2.2)+'g protein.';
+function leanNote(){
+  var ffm=ffmLbs(), kg=ffm/2.205;
+  var w15=targetWeight(num(PROF.goalbf)), w12=targetWeight(num(PROF.stretchbf));
+  $('lean-check').innerHTML='Fat-free mass '+ffm.toFixed(1)+' lbs ('+kg.toFixed(1)+' kg). Protein range '+
+    Math.round(kg*1.6)+'–'+Math.round(kg*2.2)+'g.<br>'+
+    PROF.goalbf+'% → '+w15.toFixed(0)+' lbs · '+PROF.stretchbf+'% → '+w12.toFixed(0)+' lbs (assumes zero lean loss).';
 }
 function saveGoals(){
-  Object.keys(DEF_GOALS).forEach(function(k){GOALS[k]=num($('g-'+k).value)||DEF_GOALS[k];});
-  saveO(K.goals,GOALS); checkGoals(); toast('Targets saved');
+  Object.keys(DEF_GOALS).forEach(function(k){var e=$('g-'+k); if(e)GOALS[k]=num(e.value)||DEF_GOALS[k];});
+  saveO(K.goals,GOALS); tdeeNote(); checkGoals(); toast('Targets saved');
 }
 function saveProfile(){
   PROF={dob:$('p-dob').value||DEF_PROF.dob,draw:$('p-draw').value||DEF_PROF.draw,
-    lean:num($('p-lean').value)||DEF_PROF.lean,start:$('p-start').value||DEF_PROF.start};
-  saveO(K.prof,PROF); renderStrip(); checkLean(); toast('Profile saved');
+    dexa:$('p-dexa').value||DEF_PROF.dexa,start:$('p-start').value||DEF_PROF.start,
+    goalbf:num($('p-goalbf').value)||DEF_PROF.goalbf,stretchbf:num($('p-stretchbf').value)||DEF_PROF.stretchbf};
+  saveO(K.prof,PROF); renderStrip(); leanNote(); toast('Objectives saved');
 }
 function exportData(){
-  var out={_app:'ACEPEAK v7',_exported:new Date().toISOString()};
+  var out={_app:'ACEPEAK v8',_exported:new Date().toISOString()};
   Object.keys(K).forEach(function(n){try{out[n]=JSON.parse(localStorage.getItem(K[n])||'null');}catch(e){out[n]=null;}});
   var url=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));
-  var a=document.createElement('a');a.href=url;a.download='acepeak-v7-'+today()+'.json';a.click();
+  var a=document.createElement('a');a.href=url;a.download='acepeak-v8-'+today()+'.json';a.click();
   URL.revokeObjectURL(url); toast('Backup downloaded');
 }
 function importData(input){
@@ -1026,15 +1403,14 @@ function importData(input){
   var r=new FileReader();
   r.onload=function(e){try{
     var d=JSON.parse(e.target.result), n=0;
-    Object.keys(K).forEach(function(name){
-      if(d[name]!=null){localStorage.setItem(K[name],JSON.stringify(d[name]));n++;}});
+    Object.keys(K).forEach(function(name){if(d[name]!=null){localStorage.setItem(K[name],JSON.stringify(d[name]));n++;}});
     cache.clear(); GOALS=loadO(K.goals,DEF_GOALS); PROF=loadO(K.prof,DEF_PROF);
     showTab('today'); toast('Restored '+n+' data sets');
   }catch(err){toast('That file could not be read','var(--verm)');}};
   r.readAsText(f); input.value='';
 }
 function wipeAll(){
-  confirmModal('Erase everything?','This deletes every session, meal, measurement, and lab panel on this device. Export a backup first if you want to keep it. This cannot be undone.',
+  confirmModal('Erase everything?','This deletes every session, meal, measurement, scan, and lab panel on this device. Export a backup first if you want to keep it. This cannot be undone.',
     function(){Object.keys(K).forEach(function(k){localStorage.removeItem(K[k]);});cache.clear();
       GOALS=Object.assign({},DEF_GOALS);PROF=Object.assign({},DEF_PROF);showTab('today');toast('All data erased','var(--verm)');});
 }
@@ -1045,8 +1421,7 @@ function row(id,key,title,date,meta,edit){
     '<div class="item-t">'+title+'</div><div class="item-d">'+fmtLong(date)+'</div>'+
     (meta?'<div class="item-m">'+meta+'</div>':'')+'</div><div class="acts">'+
     (edit?'<button onclick="'+edit+'('+id+')" aria-label="Edit">✎</button>':'')+
-    '<button class="del" onclick="delItem(\''+key+'\','+id+')" aria-label="Delete">✕</button>'+
-    '</div></div></div>';
+    '<button class="del" onclick="delItem(\''+key+'\','+id+')" aria-label="Delete">✕</button></div></div></div>';
 }
 function empty(ic,msg){return '<div class="empty"><div class="ei">'+ic+'</div><p>'+msg+'</p></div>';}
 function delItem(key,id){
@@ -1070,8 +1445,7 @@ function editModal(title,fields,onSave){
     '<button class="btn" id="es" style="margin:10px 0 9px">Save changes</button>'+
     '<button class="btn ghost" onclick="closeModal()">Cancel</button>';
   $('modal').classList.add('on');
-  $('es').onclick=function(){
-    var out={}; fields.forEach(function(f){out[f.k]=$('e-'+f.k).value;});
+  $('es').onclick=function(){var out={};fields.forEach(function(f){out[f.k]=$('e-'+f.k).value;});
     closeModal(); onSave(out); showTab(currentTab()); toast('Updated');};
 }
 function findAndPatch(key,id,patch){
@@ -1082,56 +1456,72 @@ function findAndPatch(key,id,patch){
 function findById(key,id){return load(key).filter(function(x){return x.id===id;})[0];}
 
 function editMeal(id){var m=findById(K.meals,id); if(!m)return;
-  editModal('Edit meal',[
-    {k:'desc',label:'Description',val:m.desc},{k:'date',label:'Date',type:'date',val:m.date},
+  editModal('Edit meal',[{k:'desc',label:'Description',val:m.desc},{k:'date',label:'Date',type:'date',val:m.date},
     {k:'p',label:'Protein (g)',type:'number',val:m.p},{k:'c',label:'Carbs (g)',type:'number',val:m.c},
     {k:'f',label:'Fat (g)',type:'number',val:m.f},{k:'sf',label:'Saturated fat (g)',type:'number',val:m.sf},
-    {k:'sard',label:'Sardine tins',type:'number',val:m.sard},{k:'alc',label:'Alcoholic drinks',type:'number',val:m.alc}
-  ],function(o){findAndPatch(K.meals,id,{desc:o.desc,date:o.date,p:num(o.p),c:num(o.c),f:num(o.f),
-    sf:num(o.sf),sard:num(o.sard),alc:num(o.alc)});});}
+    {k:'sard',label:'Sardine tins',type:'number',val:m.sard},{k:'alc',label:'Alcoholic drinks',type:'number',val:m.alc}],
+    function(o){findAndPatch(K.meals,id,{desc:o.desc,date:o.date,p:num(o.p),c:num(o.c),f:num(o.f),sf:num(o.sf),sard:num(o.sard),alc:num(o.alc)});});}
 
 function editSession(id){var s=findById(K.sessions,id); if(!s)return;
-  editModal('Edit session',[
-    {k:'type',label:'Session',val:s.type},{k:'date',label:'Date',type:'date',val:s.date},
+  editModal('Edit session',[{k:'type',label:'Session',val:s.type},{k:'date',label:'Date',type:'date',val:s.date},
     {k:'dur',label:'Duration (min)',type:'number',val:s.dur},{k:'rpe',label:'RPE',type:'number',val:s.rpe},
-    {k:'energy',label:'Energy',type:'number',val:s.energy},{k:'note',label:'Notes',val:s.note}
-  ],function(o){findAndPatch(K.sessions,id,o);});}
+    {k:'energy',label:'Energy',type:'number',val:s.energy},{k:'note',label:'Notes',val:s.note}],
+    function(o){findAndPatch(K.sessions,id,o);});}
 
 function editLift(id){var l=findById(K.lifts,id); if(!l)return;
-  editModal('Edit lift',[
-    {k:'lift',label:'Lift',val:l.lift},{k:'date',label:'Date',type:'date',val:l.date},
+  editModal('Edit lift',[{k:'lift',label:'Lift',val:l.lift},{k:'date',label:'Date',type:'date',val:l.date},
     {k:'weight',label:'Weight (lbs)',type:'number',val:l.weight},{k:'sets',label:'Sets',type:'number',val:l.sets},
-    {k:'reps',label:'Reps',type:'number',val:l.reps},{k:'rir',label:'RIR',type:'number',val:l.rir}
-  ],function(o){findAndPatch(K.lifts,id,o);});}
+    {k:'reps',label:'Reps',type:'number',val:l.reps},{k:'rir',label:'RIR',type:'number',val:l.rir}],
+    function(o){findAndPatch(K.lifts,id,o);});}
 
 function editBody(id){var b=findById(K.body,id); if(!b)return;
-  editModal('Edit measurement',[
-    {k:'date',label:'Date',type:'date',val:b.date},
+  editModal('Edit measurement',[{k:'date',label:'Date',type:'date',val:b.date},
     {k:'weight',label:'Weight (lbs)',type:'number',step:'0.1',val:b.weight},
-    {k:'waist',label:'Waist (in)',type:'number',step:'0.25',val:b.waist},
+    {k:'steps',label:'Steps',type:'number',val:b.steps},
     {k:'sleep',label:'Sleep (hrs)',type:'number',step:'0.1',val:b.sleep},
-    {k:'note',label:'Notes',val:b.note}
-  ],function(o){findAndPatch(K.body,id,o);});}
+    {k:'waist',label:'Waist (in)',type:'number',step:'0.25',val:b.waist},
+    {k:'note',label:'Notes',val:b.note}],
+    function(o){findAndPatch(K.body,id,o);});}
 
 function editLab(id){var l=findById(K.labs,id); if(!l)return;
-  editModal('Edit panel',[
-    {k:'date',label:'Draw date',type:'date',val:l.date},{k:'lab',label:'Lab',val:l.lab},
+  editModal('Edit panel',[{k:'date',label:'Draw date',type:'date',val:l.date},{k:'lab',label:'Lab',val:l.lab},
     {k:'glucose',label:'Glucose',type:'number',step:'0.1',val:l.glucose},
     {k:'insulin',label:'Insulin',type:'number',step:'0.1',val:l.insulin},
     {k:'hba1c',label:'HbA1c',type:'number',step:'0.01',val:l.hba1c},
     {k:'trig',label:'Triglycerides',type:'number',val:l.trig},{k:'hdl',label:'HDL',type:'number',val:l.hdl},
     {k:'ldl',label:'LDL',type:'number',val:l.ldl},{k:'chol',label:'Total cholesterol',type:'number',val:l.chol},
     {k:'apob',label:'ApoB',type:'number',val:l.apob},{k:'test',label:'Testosterone',type:'number',val:l.test},
-    {k:'crp',label:'hs-CRP',type:'number',step:'0.1',val:l.crp}
-  ],function(o){findAndPatch(K.labs,id,o);});}
+    {k:'crp',label:'hs-CRP',type:'number',step:'0.1',val:l.crp}],
+    function(o){findAndPatch(K.labs,id,o);});}
+
+function editScan(id){var s=findById(K.scans,id); if(!s)return;
+  editModal('Edit scan',[{k:'date',label:'Scan date',type:'date',val:s.date},
+    {k:'mass',label:'Total mass (lbs)',type:'number',step:'0.1',val:s.mass},
+    {k:'bf',label:'Body fat %',type:'number',step:'0.1',val:s.bf},
+    {k:'lean',label:'Lean (lbs)',type:'number',step:'0.1',val:s.lean},
+    {k:'fat',label:'Fat (lbs)',type:'number',step:'0.1',val:s.fat},
+    {k:'bmc',label:'BMC (lbs)',type:'number',step:'0.1',val:s.bmc},
+    {k:'android',label:'Android %fat',type:'number',step:'0.1',val:s.android},
+    {k:'gynoid',label:'Gynoid %fat',type:'number',step:'0.1',val:s.gynoid},
+    {k:'legs',label:'Legs %fat',type:'number',step:'0.1',val:s.legs},
+    {k:'trunk',label:'Trunk %fat',type:'number',step:'0.1',val:s.trunk},
+    {k:'vat',label:'VAT (lbs)',type:'number',step:'0.1',val:s.vat},
+    {k:'rsmi',label:'RSMI',type:'number',step:'0.01',val:s.rsmi},
+    {k:'tscore',label:'BMD T-score',type:'number',step:'0.1',val:s.tscore},
+    {k:'rmr',label:'RMR',type:'number',val:s.rmr}],
+    function(o){findAndPatch(K.scans,id,o);});}
 
 /* ---------- BOOT ---------- */
 (function init(){
   var t=today();
-  ['s-date','l-date','m-date','b-date','bl-date','z-date'].forEach(function(id){var e=$(id);if(e)e.value=t;});
+  ['s-date','l-date','m-date','b-date','bl-date','z-date','d-date'].forEach(function(id){var e=$(id);if(e)e.value=t;});
   if(!localStorage.getItem(K.labs)){
     save(K.labs,[{id:uid(),date:'2026-04-15',lab:'Labcorp',glucose:'99',insulin:'24.9',hba1c:'',
       trig:'635',hdl:'30',ldl:'279',chol:'467',apob:'',test:'264',crp:''}]);
+  }
+  if(!localStorage.getItem(K.scans)){
+    save(K.scans,[{id:uid(),date:'2026-06-26',mass:'265.2',bf:'29.8',lean:'179.9',fat:'76.6',bmc:'8.7',
+      android:'40.9',gynoid:'28.9',legs:'22.2',trunk:'37.2',vat:'',rsmi:'12.18',tscore:'2.7',rmr:'2098'}]);
   }
   renderStrip(); showTab('today');
 })();
