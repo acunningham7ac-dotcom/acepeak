@@ -877,16 +877,20 @@ function lineChart(elId,series,label){
 }
 
 /* ---------- MACRO BARS ---------- */
-function macroBars(p,c,f){
+function macroBars(p,c,f,sf){
   var kcal=p*4+c*4+f*9;
-  function bar(name,val,goal,color){
+  function bar(name,val,goal,color,over){
     var pct=Math.min(100,goal?val/goal*100:0);
-    return '<div class="mac"><div class="mac-top"><span class="n">'+name+'</span><span>'+
-      Math.round(val)+' / '+goal+'</span></div><div class="mac-bar"><div class="mac-fill" style="width:'+
-      pct+'%;background:'+color+'"></div></div></div>';
+    var col = over&&val>goal ? 'var(--bad)' : color;
+    return '<div class="mac"><div class="mac-top"><span class="n">'+name+'</span><span'+
+      (over&&val>goal?' style="color:var(--bad)"':'')+'>'+
+      Math.round(val)+' / '+goal+(over&&val>goal?' — over':'')+'</span></div>'+
+      '<div class="mac-bar"><div class="mac-fill" style="width:'+pct+'%;background:'+col+'"></div></div></div>';
   }
   return bar('Protein',p,GOALS.protein,'var(--good)')+bar('Carbs',c,GOALS.carbs,'var(--accent)')+
-    bar('Fat',f,GOALS.fat,'var(--accent)')+bar('Calories',kcal,GOALS.kcal,'var(--bone)');
+    bar('Fat',f,GOALS.fat,'var(--accent)')+
+    (sf!==undefined?bar('Saturated fat',sf,GOALS.satfat,'var(--good)',true):'')+
+    bar('Calories',kcal,GOALS.kcal,'var(--bone)');
 }
 
 /* ---------- OBJECTIVES ---------- */
@@ -1109,7 +1113,7 @@ RENDER.fuel=function(){
   $('fuel-date').textContent=fmtLong(today());
   var tm=load(K.meals).filter(function(m){return m.date===today();});
   function sum(f){return tm.reduce(function(s,m){return s+num(m[f]);},0);}
-  $('fuel-macros').innerHTML=macroBars(sum('p'),sum('c'),sum('f'));
+  $('fuel-macros').innerHTML=macroBars(sum('p'),sum('c'),sum('f'),sum('sf'));
 
   var sfUsed=sum('sf'), sfLeft=GOALS.satfat-sfUsed;
   var sfCol=sfLeft<0?'var(--bad)':(sfLeft<4?'var(--warn)':'var(--good)');
