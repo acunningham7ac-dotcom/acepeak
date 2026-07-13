@@ -759,13 +759,24 @@ var MOBILITY=[{n:'Cat–cow',s:45},{n:'90/90 hip switch',s:60},{n:'Couch stretch
  {n:'Dead hang',s:45},{n:'Deep squat hold',s:60}];
 
 var TEMPLATES=[
- {n:'Sardine bowl',d:'2 tins sardines in olive oil, 3 eggs, 2 cups spinach',p:54,c:4,f:38,sf:9,sard:2},
- {n:'Sirloin & asparagus',d:'8 oz top sirloin, 1 lb asparagus, 1 tbsp olive oil',p:52,c:8,f:22,sf:7,sard:0},
- {n:'Thigh skillet',d:'8 oz chicken thigh, zucchini + peppers, olive oil',p:46,c:10,f:26,sf:7,sard:0},
- {n:'Beef & broccoli',d:'8 oz 93/7 ground beef, 3 cups broccoli, olive oil',p:50,c:12,f:24,sf:8,sard:0},
- {n:'Egg scramble',d:'4 whole eggs + 4 whites, 2 cups spinach',p:40,c:4,f:24,sf:7,sard:0},
- {n:'Sardine snack',d:'1 tin sardines in olive oil',p:23,c:0,f:11,sf:2,sard:1}
+ // Heavy — anchor meals, higher sat fat. Best earlier in the day.
+ {n:'Sardine bowl',d:'2 tins sardines in olive oil, 3 eggs, 2 cups spinach',p:54,c:4,f:38,sf:9,sard:2,g:'heavy'},
+ {n:'Sirloin & asparagus',d:'8 oz top sirloin, 1 lb asparagus, 1 tbsp olive oil',p:52,c:8,f:22,sf:7,sard:0,g:'heavy'},
+ {n:'Thigh skillet',d:'8 oz chicken thigh, zucchini + peppers, olive oil',p:46,c:10,f:26,sf:7,sard:0,g:'heavy'},
+ {n:'Beef & broccoli',d:'8 oz 93/7 ground beef, 3 cups broccoli, olive oil',p:50,c:12,f:24,sf:8,sard:0,g:'heavy'},
+ {n:'Egg scramble',d:'4 whole eggs + 4 whites, 2 cups spinach',p:40,c:4,f:24,sf:7,sard:0,g:'heavy'},
+ // Lean closers — high protein, near-zero sat fat. Finish the day here.
+ {n:'Chicken breast + greens',d:'8 oz chicken breast, big green salad, 1 tbsp olive oil',p:52,c:6,f:9,sf:2,sard:0,g:'lean'},
+ {n:'White fish plate',d:'8 oz cod or tilapia, asparagus, lemon, 1 tsp olive oil',p:45,c:5,f:6,sf:1,sard:0,g:'lean'},
+ {n:'Shrimp & greens',d:'8 oz shrimp, 3 cups spinach, garlic, 1 tsp olive oil',p:48,c:6,f:5,sf:1,sard:0,g:'lean'},
+ {n:'Egg-white omelet',d:'6 egg whites, spinach, peppers, salsa',p:22,c:5,f:1,sf:0,sard:0,g:'lean'},
+ {n:'Sardine snack',d:'1 tin sardines in olive oil',p:23,c:0,f:11,sf:2,sard:1,g:'lean'},
+ // Smoothie — quick breakfast or lean closer.
+ {n:'ACEPEAK smoothie',d:'1¼ scoop whey isolate, 1 cup almond milk, 2 cups spinach, ½ cup frozen berries, 1 tbsp flax, 1 tbsp chia',p:36,c:14,f:7,sf:1,sard:0,g:'smoothie'}
 ];
+var TGROUPS=[['heavy','Heavy — anchor meals','Higher saturated fat. Best earlier in the day.'],
+ ['lean','Lean closers','High protein, near-zero saturated fat. Finish the day here.'],
+ ['smoothie','Smoothie','Quick breakfast or a lean closer in a hurry.']];
 
 var MARKERS=[
  {k:'trig',n:'Triglycerides',u:'mg/dL',scale:250,good:[0,150],warn:[150,200],severe:500},
@@ -1099,11 +1110,33 @@ RENDER.fuel=function(){
   var tm=load(K.meals).filter(function(m){return m.date===today();});
   function sum(f){return tm.reduce(function(s,m){return s+num(m[f]);},0);}
   $('fuel-macros').innerHTML=macroBars(sum('p'),sum('c'),sum('f'));
-  $('templates').innerHTML=TEMPLATES.map(function(t,i){
-    return '<div class="item" onclick="logTemplate('+i+')" style="cursor:pointer"><div class="item-hd">'+
-      '<div style="flex:1"><div class="item-t">'+t.n+'</div><div class="item-d">'+t.d+'</div>'+
-      '<div class="item-m">'+t.p+'P · '+t.c+'C · '+t.f+'F · '+t.sf+'g sat · '+(t.p*4+t.c*4+t.f*9)+' kcal</div></div>'+
-      '<div class="acts"><button>+</button></div></div></div>';}).join('');
+
+  var sfUsed=sum('sf'), sfLeft=GOALS.satfat-sfUsed;
+  var sfCol=sfLeft<0?'var(--bad)':(sfLeft<4?'var(--warn)':'var(--good)');
+  var banner='<div class="note '+(sfLeft<0?'':'ok')+'" style="margin-bottom:14px">'+
+    '<strong style="color:'+sfCol+'">Saturated fat — '+
+    (sfLeft<0?Math.abs(sfLeft).toFixed(0)+'g over cap':sfLeft.toFixed(0)+'g of '+GOALS.satfat+'g left')+'</strong>'+
+    (sfLeft<0?'Over for the day. Finish on a lean closer with 0–1g and you\'ll still land close.'
+      :sfLeft<4?'Tight. Stick to lean closers from here — the heavy meals will push you over.'
+      :'Room for one more meal. A heavy anchor still fits, or keep it lean.')+'</div>';
+
+  var html=banner;
+  TGROUPS.forEach(function(gr){
+    var items=TEMPLATES.map(function(t,i){return {t:t,i:i};}).filter(function(x){return x.t.g===gr[0];});
+    if(!items.length)return;
+    html+='<div class="eyebrow" style="margin:18px 0 10px">'+gr[1]+'</div>'+
+      '<div class="obj-eta" style="margin:-6px 0 10px">'+gr[2]+'</div>';
+    html+=items.map(function(x){
+      var t=x.t, fits=t.sf<=Math.max(0,sfLeft);
+      var dot=t.g==='heavy'?(fits?'var(--warn)':'var(--bad)'):'var(--good)';
+      return '<div class="item" onclick="logTemplate('+x.i+')" style="cursor:pointer">'+
+        '<div class="item-hd"><div style="flex:1">'+
+        '<div class="item-t"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+dot+';margin-right:7px;vertical-align:middle"></span>'+t.n+'</div>'+
+        '<div class="item-d">'+t.d+'</div>'+
+        '<div class="item-m">'+t.p+'P · '+t.c+'C · '+t.f+'F · <b style="color:'+(t.sf<=2?'var(--good)':t.sf>=7?'var(--warn)':'var(--bone)')+'">'+t.sf+'g sat</b> · '+(t.p*4+t.c*4+t.f*9)+' kcal</div></div>'+
+        '<div class="acts"><button>+</button></div></div></div>';}).join('');
+  });
+  $('templates').innerHTML=html;
   renderMealList();
 };
 function logTemplate(i){
