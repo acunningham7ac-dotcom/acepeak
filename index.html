@@ -717,7 +717,18 @@ var DEF_PROF={dob:'1978-05-23',draw:'2026-08-15',dexa:'2026-09-18',start:'2026-0
               goalbf:15,stretchbf:12};
 var GOALS=loadO(K.goals,DEF_GOALS), PROF=loadO(K.prof,DEF_PROF);
 
-function today(){return new Date().toISOString().slice(0,10);}
+// Local calendar date (not UTC). Fixes dates rolling over in the evening.
+// Uses America/Denver so it's correct regardless of device timezone.
+function today(){
+  try{
+    var p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Denver',
+      year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+    if(/^\d{4}-\d{2}-\d{2}$/.test(p))return p;
+  }catch(e){}
+  // Fallback: device-local date built from local components (still not UTC)
+  var d=new Date(), z=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());
+}
 function fmtLong(d){if(!d)return'—';return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function fmtShort(d){if(!d)return'—';return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});}
 function daysBetween(a,b){return Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5);}
