@@ -355,6 +355,20 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
   </div>
   <div class="eyebrow">Meal templates — tap to log</div>
   <div class="card"><div id="templates"></div></div>
+
+  <div class="eyebrow">Speak or type what you ate</div>
+  <div class="card">
+    <div style="display:flex;gap:8px;margin-bottom:11px">
+      <input id="q-text" placeholder="8 oz ribeye, asparagus, olive oil" style="flex:1">
+      <button class="btn" id="q-mic" onclick="startVoice()" style="width:52px;flex-shrink:0;font-size:18px;padding:0">🎙</button>
+    </div>
+    <button class="btn ghost" onclick="parseQuick()">Parse it</button>
+    <div class="cap" style="margin:11px 0 0;text-align:center;line-height:1.7" id="q-hint">
+      Matches against your foods — no network, works offline. Say quantities like "8 oz", "2 eggs", "1 cup".
+    </div>
+    <div id="q-result"></div>
+  </div>
+
   <div class="eyebrow">Log a custom meal</div>
   <div class="card">
     <div class="row"><div><label>Description</label><input id="m-desc" placeholder="8 oz sirloin + asparagus"></div></div>
@@ -1118,6 +1132,153 @@ function renderLiftList(){
       (e?'  ·  e1RM '+Math.round(e):'');
     return row(l.id,K.lifts,l.lift,l.date,m,'editLift');}).join('')
     :empty('◈',"No lifts logged. Pick a core lift above and record today's top set.");
+}
+
+/* ---------- FOOD DATABASE (per unit, your foods) ---------- */
+/* macros are per the stated unit; qty multiplies them. sat = saturated fat */
+var FOODS=[
+ // proteins — priced per ounce unless noted
+ {k:'ribeye',      names:['ribeye','rib eye'],            unit:'oz',per:{p:7,c:0,f:7.5,sf:3}},
+ {k:'sirloin',     names:['sirloin','top sirloin','steak'],unit:'oz',per:{p:6.5,c:0,f:2.8,sf:1.1}},
+ {k:'groundbeef',  names:['ground beef','93/7','burger','hamburger'],unit:'oz',per:{p:6.3,c:0,f:3,sf:1}},
+ {k:'chickthigh',  names:['chicken thigh','thigh','thighs'],unit:'oz',per:{p:5.8,c:0,f:3.3,sf:0.9}},
+ {k:'chickbreast', names:['chicken breast','chicken','breast'],unit:'oz',per:{p:6.5,c:0,f:1.1,sf:0.3}},
+ {k:'whitefish',   names:['cod','tilapia','white fish','whitefish','fish'],unit:'oz',per:{p:5.6,c:0,f:0.7,sf:0.1}},
+ {k:'salmon',      names:['salmon'],                      unit:'oz',per:{p:6.3,c:0,f:4,sf:0.9}},
+ {k:'shrimp',      names:['shrimp','prawns'],             unit:'oz',per:{p:6,c:0.2,f:0.3,sf:0.1}},
+ {k:'sardines',    names:['sardine','sardines','tin of sardines'],unit:'tin',per:{p:23,c:0,f:11,sf:2},sard:1},
+ {k:'egg',         names:['egg','eggs','whole egg'],      unit:'egg',per:{p:6,c:0.4,f:5,sf:1.6}},
+ {k:'eggwhite',    names:['egg white','egg whites','white'],unit:'white',per:{p:3.6,c:0.2,f:0.1,sf:0}},
+ {k:'steakshake',  names:['steak shake','protein powder','protein scoop','scoop','protein'],unit:'scoop',per:{p:27,c:3,f:2.5,sf:0.5}},
+ {k:'wheyiso',     names:['whey','whey isolate','isolate'],unit:'scoop',per:{p:25,c:2,f:1,sf:0.3}},
+ // fats
+ {k:'oliveoil',    names:['olive oil','evoo','oil'],      unit:'tbsp',per:{p:0,c:0,f:14,sf:2}},
+ {k:'almondbutter',names:['almond butter'],               unit:'tbsp',per:{p:3.5,c:3,f:9,sf:1}},
+ {k:'avocado',     names:['avocado'],                     unit:'whole',per:{p:2,c:9,f:15,sf:2.1}},
+ {k:'flax',        names:['flax','flaxseed','ground flax'],unit:'tbsp',per:{p:1.3,c:2,f:3,sf:0.3}},
+ {k:'chia',        names:['chia','chia seeds'],           unit:'tbsp',per:{p:2,c:5,f:4,sf:0.4}},
+ // veg / greens — negligible-ish, per cup
+ {k:'spinach',     names:['spinach'],                     unit:'cup',per:{p:1,c:1,f:0,sf:0}},
+ {k:'broccoli',    names:['broccoli'],                    unit:'cup',per:{p:2.6,c:6,f:0.3,sf:0}},
+ {k:'asparagus',   names:['asparagus'],                   unit:'cup',per:{p:3,c:5,f:0.2,sf:0}},
+ {k:'greens',      names:['greens','salad','mixed greens','lettuce'],unit:'cup',per:{p:0.5,c:1,f:0,sf:0}},
+ {k:'zucchini',    names:['zucchini','courgette'],        unit:'cup',per:{p:1.5,c:4,f:0.3,sf:0}},
+ {k:'peppers',     names:['pepper','peppers','bell pepper'],unit:'cup',per:{p:1,c:6,f:0.3,sf:0}},
+ {k:'cabbage',     names:['cabbage'],                     unit:'cup',per:{p:1,c:5,f:0,sf:0}},
+ {k:'brussels',    names:['brussels','brussel sprouts','brussels sprouts'],unit:'cup',per:{p:3,c:8,f:0.3,sf:0}},
+ // fruit / misc
+ {k:'blueberries', names:['blueberries','blueberry','berries','mixed berries'],unit:'cup',per:{p:1,c:21,f:0.5,sf:0}},
+ {k:'almondmilk',  names:['almond milk','almondmilk'],    unit:'cup',per:{p:1,c:1,f:2.5,sf:0}},
+ {k:'fiberplus',   names:['fiber plus','fiber+','fiber','momentous fiber'],unit:'serving',per:{p:1,c:5,f:0,sf:0}}
+];
+// word->number for spoken quantities
+var NUMW={a:1,an:1,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,
+  half:0.5,'a half':0.5,quarter:0.25,couple:2,'few':3};
+// unit synonyms -> canonical
+var UNITW={oz:'oz',ounce:'oz',ounces:'oz',lb:'lb',lbs:'lb',pound:'lb',pounds:'lb',
+  cup:'cup',cups:'cup',tbsp:'tbsp',tablespoon:'tbsp',tablespoons:'tbsp',tsp:'tsp',teaspoon:'tsp',
+  scoop:'scoop',scoops:'scoop',tin:'tin',tins:'tin',can:'tin',cans:'tin',
+  handful:'handful',handfuls:'handful',serving:'serving',servings:'serving',
+  egg:'egg',eggs:'egg',white:'white',whites:'white',whole:'whole'};
+
+function findFood(phrase){
+  phrase=phrase.toLowerCase();
+  var best=null,bestLen=0;
+  FOODS.forEach(function(f){
+    f.names.forEach(function(nm){
+      if(phrase.indexOf(nm)>=0 && nm.length>bestLen){best=f;bestLen=nm.length;}
+    });
+  });
+  return best;
+}
+// convert a spoken qty+unit into a multiplier of the food's base unit
+function qtyToUnits(qty,unit,food){
+  var base=food.unit;
+  if(unit==='lb'&&base==='oz')return qty*16;
+  if(unit==='handful'&&(base==='cup'))return qty*0.6; // ~a handful of berries
+  if(unit===base||!unit)return qty;
+  // if they said "oz" for a per-egg/per-scoop food, just treat qty as count
+  return qty;
+}
+function parseText(text){
+  var items=[], warnings=[];
+  // split on commas, "and", "with", "plus", newlines
+  var parts=text.toLowerCase().replace(/\band\b|\bwith\b|\bplus\b/g,',').split(/[,\n]+/);
+  parts.forEach(function(seg){
+    seg=seg.trim(); if(!seg)return;
+    var food=findFood(seg);
+    if(!food){ if(seg.length>2)warnings.push(seg); return; }
+    // quantity: leading number (digit or word) + optional unit
+    var qty=1,unit='';
+    var mNum=seg.match(/(\d+(?:\.\d+)?)/);
+    var mFrac=seg.match(/(\d+)\s*\/\s*(\d+)/);
+    if(mFrac)qty=parseFloat(mFrac[1])/parseFloat(mFrac[2]);
+    else if(mNum)qty=parseFloat(mNum[1]);
+    else { for(var w in NUMW){ if(new RegExp('\\b'+w+'\\b').test(seg)){qty=NUMW[w];break;} } }
+    for(var u in UNITW){ if(new RegExp('\\b'+u+'\\b').test(seg)){unit=UNITW[u];break;} }
+    var units=qtyToUnits(qty,unit,food);
+    items.push({food:food,units:units,label:seg});
+  });
+  return {items:items,warnings:warnings};
+}
+function sumItems(items){
+  var t={p:0,c:0,f:0,sf:0,sard:0};
+  items.forEach(function(it){
+    t.p+=it.food.per.p*it.units; t.c+=it.food.per.c*it.units;
+    t.f+=it.food.per.f*it.units; t.sf+=it.food.per.sf*it.units;
+    if(it.food.sard)t.sard+=it.food.sard*it.units;
+  });
+  return t;
+}
+
+var lastParse=null;
+function parseQuick(){
+  var text=$('q-text').value.trim();
+  if(!text){toast('Say or type what you ate','var(--bad)');return;}
+  var r=parseText(text), t=sumItems(r.items);
+  lastParse={text:text,totals:t,items:r.items};
+  var rows=r.items.map(function(it){
+    return '<div class="ex"><div class="exn">'+it.label+'</div><div class="exs">'+
+      Math.round(it.food.per.p*it.units)+'P · '+Math.round(it.food.per.f*it.units)+'F</div></div>';}).join('');
+  var warn = r.warnings.length
+    ? '<div class="obj-eta" style="color:var(--warn);margin-top:8px">Didn\'t recognize: '+r.warnings.join(', ')+
+      ' — add it in the custom form below, or edit after logging.</div>' : '';
+  var fits = t.sf<=GOALS.satfat;
+  $('q-result').innerHTML='<div style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px">'+
+    (rows||'<div class="obj-eta">No foods matched. Try simpler words, or use the custom form.</div>')+
+    (r.items.length?'<div class="grid" style="margin-top:12px">'+
+      '<div class="stat"><div class="k">Protein</div><div class="v good">'+Math.round(t.p)+'</div></div>'+
+      '<div class="stat"><div class="k">Carbs</div><div class="v">'+Math.round(t.c)+'</div></div>'+
+      '<div class="stat"><div class="k">Fat</div><div class="v">'+Math.round(t.f)+'</div></div>'+
+      '<div class="stat"><div class="k">Sat fat</div><div class="v '+(fits?'good':'bad')+'">'+Math.round(t.sf)+'</div></div>'+
+      '</div>'+warn+
+      '<button class="btn" style="margin-top:12px" onclick="confirmQuick()">Confirm & log</button>'+
+      '<div class="obj-eta" style="text-align:center;margin-top:8px">Estimates from your food list. Edit anything after logging with the ✎.</div>'
+      :warn)+'</div>';
+}
+function confirmQuick(){
+  if(!lastParse||!lastParse.items.length)return;
+  var t=lastParse.totals, d=load(K.meals);
+  d.push({id:uid(),date:today(),desc:lastParse.text,p:Math.round(t.p),c:Math.round(t.c),
+    f:Math.round(t.f),sf:Math.round(t.sf),sard:Math.round(t.sard),alc:0});
+  d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.meals,d);
+  $('q-text').value=''; $('q-result').innerHTML=''; lastParse=null;
+  RENDER.fuel(); toast('Logged — edit with ✎ if needed');
+}
+function startVoice(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('Voice not supported here — type it instead','var(--bad)');$('q-text').focus();return;}
+  var rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
+  var btn=$('q-mic'); btn.textContent='●'; btn.style.background='var(--bad)';
+  $('q-hint').textContent='Listening… say what you ate.';
+  rec.onresult=function(e){
+    var text=e.results[0][0].transcript;
+    $('q-text').value=text; parseQuick();
+  };
+  rec.onerror=function(){toast('Didn\'t catch that — try again or type it','var(--warn)');};
+  rec.onend=function(){btn.textContent='🎙';btn.style.background='var(--accent)';
+    $('q-hint').textContent='Matches against your foods — no network, works offline. Say quantities like "8 oz", "2 eggs", "1 cup".';};
+  try{rec.start();}catch(e){}
 }
 
 /* ---------- FUEL ---------- */
