@@ -876,59 +876,95 @@ function applyCollapseState(){
 var CORE=['Back Squat','Deadlift','Bench Press','Overhead Press','Bent-Over Row','Leg Press'];
 
 /* p = movement pattern (drives swap suggestions); sets/reps/rest structured for the guided runner.
-   rest in seconds — compounds get more. cardio/rest items have no p. */
+   blk = 'am' (lift, before work) or 'pm' (cardio/recovery, after work).
+   bw = bodyweight/time move — runner won't demand a weight entry.
+   Core work is placed LAST on lifting days: a pre-fatigued trunk before heavy
+   squats or deadlifts is an injury risk, not a benefit. */
 var PROGRAM=[
  {day:'Monday',focus:'Push — chest, shoulders, triceps',lift:1,ex:[
-  {n:'Bench Press',s:'4 × 6 @ RIR 2',core:1,p:'horiz_push',sets:4,reps:6,rest:150},
-  {n:'Incline Dumbbell Press',s:'4 × 10',p:'horiz_push',sets:4,reps:10,rest:90},
-  {n:'Overhead Press',s:'3 × 8 @ RIR 2',core:1,p:'vert_push',sets:3,reps:8,rest:150},
-  {n:'Cable Lateral Raise',s:'3 × 15',p:'lateral',sets:3,reps:15,rest:60},
-  {n:'Overhead Cable Extension',s:'3 × 12',p:'triceps',sets:3,reps:12,rest:60},
-  {n:'Rope Pushdown',s:'3 × 15',p:'triceps',sets:3,reps:15,rest:60}]},
- {day:'Tuesday',focus:'Lower A — quads · then 20 min zone 2',lift:1,ex:[
-  {n:'Back Squat',s:'4 × 6 @ RIR 2',core:1,p:'squat',sets:4,reps:6,rest:180},
-  {n:'Leg Press',s:'3 × 10',core:1,p:'squat',sets:3,reps:10,rest:120},
-  {n:'Bulgarian Split Squat',s:'3 × 10 / leg',p:'lunge',sets:3,reps:10,rest:90},
-  {n:'Leg Extension',s:'3 × 15',p:'quad_iso',sets:3,reps:15,rest:60},
-  {n:'Standing Calf Raise',s:'4 × 12',p:'calf',sets:4,reps:12,rest:60},
-  {n:'Zone 2 — bike',s:'20 min',cardio:1}]},
+  {n:'Bench Press',s:'4 × 6 @ RIR 2',core:1,p:'horiz_push',sets:4,reps:6,rest:150,blk:'am'},
+  {n:'Incline Dumbbell Press',s:'4 × 10',p:'horiz_push',sets:4,reps:10,rest:90,blk:'am'},
+  {n:'Overhead Press',s:'3 × 8 @ RIR 2',core:1,p:'vert_push',sets:3,reps:8,rest:150,blk:'am'},
+  {n:'Cable Lateral Raise',s:'3 × 15',p:'lateral',sets:3,reps:15,rest:60,blk:'am'},
+  {n:'Overhead Cable Extension',s:'3 × 12',p:'triceps',sets:3,reps:12,rest:60,blk:'am'},
+  {n:'Rope Pushdown',s:'3 × 15',p:'triceps',sets:3,reps:15,rest:60,blk:'am'},
+  {n:'Dead Bug',s:'3 × 10 / side',p:'anti_ext',sets:3,reps:10,rest:45,bw:1,abs:1,blk:'am'},
+  {n:'Pallof Press',s:'3 × 12 / side',p:'anti_rot',sets:3,reps:12,rest:45,abs:1,blk:'am'},
+  {n:'Zone 2 walk',s:'30 min after work',cardio:1,blk:'pm'}]},
+ {day:'Tuesday',focus:'Lower A — quads',lift:1,ex:[
+  {n:'Back Squat',s:'4 × 6 @ RIR 2',core:1,p:'squat',sets:4,reps:6,rest:180,blk:'am'},
+  {n:'Leg Press',s:'3 × 10',core:1,p:'squat',sets:3,reps:10,rest:120,blk:'am'},
+  {n:'Bulgarian Split Squat',s:'3 × 10 / leg',p:'lunge',sets:3,reps:10,rest:90,blk:'am'},
+  {n:'Leg Extension',s:'3 × 15',p:'quad_iso',sets:3,reps:15,rest:60,blk:'am'},
+  {n:'Standing Calf Raise',s:'4 × 12',p:'calf',sets:4,reps:12,rest:60,blk:'am'},
+  {n:'Suitcase Carry',s:'3 × 40 yd / side',p:'carry',sets:3,reps:40,rest:60,abs:1,blk:'am'},
+  {n:'Zone 2 — bike',s:'25 min after work',cardio:1,blk:'pm'}]},
  {day:'Wednesday',focus:'Recovery — the day that lowers triglycerides',ex:[
-  {n:'Zone 2 walk or bike',s:'50 min',cardio:1},{n:'Mobility flow',s:'10 min',cardio:1},{n:'Sauna',s:'20 min',cardio:1}]},
+  {n:'Easy walk',s:'15 min, optional',cardio:1,blk:'am'},
+  {n:'Zone 2 walk or bike',s:'50 min',cardio:1,blk:'pm'},
+  {n:'Mobility flow',s:'10 min',cardio:1,blk:'pm'},
+  {n:'Sauna',s:'20 min',cardio:1,blk:'pm'}]},
  {day:'Thursday',focus:'Pull — back, rear delts, biceps',lift:1,ex:[
-  {n:'Bent-Over Row',s:'4 × 6 @ RIR 2',core:1,p:'horiz_pull',sets:4,reps:6,rest:150},
-  {n:'Lat Pulldown',s:'3 × 10',p:'vert_pull',sets:3,reps:10,rest:90},
-  {n:'Chest-Supported Row',s:'3 × 12',p:'horiz_pull',sets:3,reps:12,rest:90},
-  {n:'Face Pull',s:'3 × 15',p:'rear_delt',sets:3,reps:15,rest:60},
-  {n:'EZ Bar Curl',s:'3 × 10',p:'biceps',sets:3,reps:10,rest:60},
-  {n:'Hammer Curl',s:'3 × 12',p:'biceps',sets:3,reps:12,rest:60}]},
- {day:'Friday',focus:'Lower B — posterior chain · HIIT finisher',lift:1,ex:[
-  {n:'Deadlift',s:'3 × 5 @ RIR 2',core:1,p:'hinge',sets:3,reps:5,rest:180},
-  {n:'Romanian Deadlift',s:'3 × 8',p:'hinge',sets:3,reps:8,rest:120},
-  {n:'Seated Leg Curl',s:'3 × 12',p:'ham_iso',sets:3,reps:12,rest:60},
-  {n:'Hip Thrust',s:'3 × 10',p:'hinge',sets:3,reps:10,rest:90},
-  {n:'HIIT — bike or rower',s:'8 × 30s / 90s',cardio:1}]},
+  {n:'Bent-Over Row',s:'4 × 6 @ RIR 2',core:1,p:'horiz_pull',sets:4,reps:6,rest:150,blk:'am'},
+  {n:'Lat Pulldown',s:'3 × 10',p:'vert_pull',sets:3,reps:10,rest:90,blk:'am'},
+  {n:'Chest-Supported Row',s:'3 × 12',p:'horiz_pull',sets:3,reps:12,rest:90,blk:'am'},
+  {n:'Face Pull',s:'3 × 15',p:'rear_delt',sets:3,reps:15,rest:60,blk:'am'},
+  {n:'EZ Bar Curl',s:'3 × 10',p:'biceps',sets:3,reps:10,rest:60,blk:'am'},
+  {n:'Hammer Curl',s:'3 × 12',p:'biceps',sets:3,reps:12,rest:60,blk:'am'},
+  {n:'Side Plank',s:'3 × 40s / side',p:'anti_lat',sets:3,reps:40,rest:45,bw:1,abs:1,blk:'am'},
+  {n:'Hanging Knee Raise',s:'3 × 12',p:'flexion',sets:3,reps:12,rest:60,bw:1,abs:1,blk:'am'},
+  {n:'Zone 2 walk',s:'30 min after work',cardio:1,blk:'pm'}]},
+ {day:'Friday',focus:'Lower B — posterior chain',lift:1,ex:[
+  {n:'Deadlift',s:'3 × 5 @ RIR 2',core:1,p:'hinge',sets:3,reps:5,rest:180,blk:'am'},
+  {n:'Romanian Deadlift',s:'3 × 8',p:'hinge',sets:3,reps:8,rest:120,blk:'am'},
+  {n:'Seated Leg Curl',s:'3 × 12',p:'ham_iso',sets:3,reps:12,rest:60,blk:'am'},
+  {n:'Hip Thrust',s:'3 × 10',p:'hinge',sets:3,reps:10,rest:90,blk:'am'},
+  {n:'Farmer Carry',s:'3 × 50 yd',p:'carry',sets:3,reps:50,rest:60,abs:1,blk:'am'},
+  {n:'HIIT — bike or rower',s:'8 × 30s / 90s',cardio:1,blk:'pm'},
+  {n:'Sauna',s:'20 min, optional',cardio:1,blk:'pm'}]},
  {day:'Saturday',focus:'Long zone 2 — the biggest lever you have',ex:[
-  {n:'Zone 2 walk or bike',s:'70 min',cardio:1},{n:'Mobility flow',s:'10 min',cardio:1},{n:'Sauna',s:'20 min',cardio:1}]},
+  {n:'Zone 2 walk or bike',s:'70 min',cardio:1,blk:'am'},
+  {n:'Mobility flow',s:'10 min',cardio:1,blk:'pm'},
+  {n:'Sauna',s:'20 min',cardio:1,blk:'pm'}]},
  {day:'Sunday',focus:'Full rest — cook the week, weigh in',ex:[
-  {n:'No training',s:'—',cardio:1},{n:'Batch cook',s:'4 meals × 5 days',cardio:1},{n:'Weekly weigh-in',s:'Morning, fasted',cardio:1}]}
+  {n:'Weekly weigh-in',s:'Morning, fasted',cardio:1,blk:'am'},
+  {n:'No training',s:'—',cardio:1,blk:'am'},
+  {n:'Batch cook',s:'4 meals × 5 days',cardio:1,blk:'pm'}]}
 ];
 
-/* Swap suggestions by movement pattern — full gym plus no-equipment fallbacks. */
+/* Swap suggestions by movement pattern — full gym, dumbbell-only, and
+   no-equipment fallbacks so a busy rack or a hotel room never stops you. */
 var ALTS={
- horiz_push:['Bench Press','Incline Dumbbell Press','Machine Chest Press','Dumbbell Floor Press','Push-Up','Weighted Push-Up'],
- vert_push:['Overhead Press','Dumbbell Shoulder Press','Machine Shoulder Press','Arnold Press','Pike Push-Up'],
- horiz_pull:['Bent-Over Row','Chest-Supported Row','Seated Cable Row','Dumbbell Row','Inverted Row'],
- vert_pull:['Lat Pulldown','Pull-Up','Assisted Pull-Up','Straight-Arm Pulldown'],
- squat:['Back Squat','Front Squat','Leg Press','Hack Squat','Goblet Squat','Bodyweight Squat'],
- hinge:['Deadlift','Romanian Deadlift','Hip Thrust','Trap-Bar Deadlift','Kettlebell Swing','Back Extension'],
- lunge:['Bulgarian Split Squat','Walking Lunge','Reverse Lunge','Step-Up','Split Squat'],
- lateral:['Cable Lateral Raise','Dumbbell Lateral Raise','Machine Lateral Raise'],
- rear_delt:['Face Pull','Reverse Pec Deck','Bent-Over Reverse Fly'],
- triceps:['Overhead Cable Extension','Rope Pushdown','Skull Crusher','Dumbbell Kickback','Close-Grip Push-Up'],
- biceps:['EZ Bar Curl','Hammer Curl','Dumbbell Curl','Cable Curl','Preacher Curl'],
- quad_iso:['Leg Extension','Sissy Squat'],
- ham_iso:['Seated Leg Curl','Lying Leg Curl','Nordic Curl'],
- calf:['Standing Calf Raise','Seated Calf Raise','Leg Press Calf Raise']
+ horiz_push:['Bench Press','Incline Barbell Press','Incline Dumbbell Press','Flat Dumbbell Press','Machine Chest Press',
+   'Dumbbell Floor Press','Smith Machine Bench','Cable Chest Press','Pec Deck','Dumbbell Fly','Push-Up','Weighted Push-Up','Deficit Push-Up'],
+ vert_push:['Overhead Press','Seated Barbell Press','Dumbbell Shoulder Press','Seated Dumbbell Press','Machine Shoulder Press',
+   'Arnold Press','Landmine Press','Push Press','Pike Push-Up','Handstand Hold'],
+ horiz_pull:['Bent-Over Row','Pendlay Row','Chest-Supported Row','Seated Cable Row','Dumbbell Row','T-Bar Row',
+   'Machine Row','Landmine Row','Inverted Row','Band Row'],
+ vert_pull:['Lat Pulldown','Pull-Up','Chin-Up','Assisted Pull-Up','Neutral-Grip Pulldown','Single-Arm Pulldown',
+   'Straight-Arm Pulldown','Band Pulldown'],
+ squat:['Back Squat','Front Squat','Leg Press','Hack Squat','Safety-Bar Squat','Smith Machine Squat',
+   'Goblet Squat','Belt Squat','Bodyweight Squat','Wall Sit'],
+ hinge:['Deadlift','Romanian Deadlift','Trap-Bar Deadlift','Sumo Deadlift','Hip Thrust','Glute Bridge',
+   'Good Morning','Kettlebell Swing','Cable Pull-Through','Back Extension','Single-Leg RDL'],
+ lunge:['Bulgarian Split Squat','Walking Lunge','Reverse Lunge','Forward Lunge','Step-Up','Split Squat',
+   'Lateral Lunge','Curtsy Lunge'],
+ lateral:['Cable Lateral Raise','Dumbbell Lateral Raise','Machine Lateral Raise','Leaning Lateral Raise',
+   'Upright Row','Band Lateral Raise'],
+ rear_delt:['Face Pull','Reverse Pec Deck','Bent-Over Reverse Fly','Cable Rear Delt Fly','Band Pull-Apart'],
+ triceps:['Overhead Cable Extension','Rope Pushdown','Straight-Bar Pushdown','Skull Crusher','Dumbbell Kickback',
+   'Overhead Dumbbell Extension','Dip','Bench Dip','Close-Grip Bench','Close-Grip Push-Up'],
+ biceps:['EZ Bar Curl','Barbell Curl','Hammer Curl','Dumbbell Curl','Incline Dumbbell Curl','Cable Curl',
+   'Preacher Curl','Concentration Curl','Chin-Up'],
+ quad_iso:['Leg Extension','Sissy Squat','Reverse Nordic','Spanish Squat'],
+ ham_iso:['Seated Leg Curl','Lying Leg Curl','Standing Leg Curl','Nordic Curl','Stability Ball Curl'],
+ calf:['Standing Calf Raise','Seated Calf Raise','Leg Press Calf Raise','Single-Leg Calf Raise','Donkey Calf Raise'],
+ /* core patterns */
+ anti_ext:['Dead Bug','Plank','Ab Wheel Rollout','Body Saw','Stability Ball Rollout','Hollow Body Hold','Long-Lever Plank'],
+ anti_rot:['Pallof Press','Half-Kneeling Pallof','Bird Dog','Renegade Row','Landmine Rotation','Band Anti-Rotation Hold'],
+ anti_lat:['Side Plank','Suitcase Carry','Copenhagen Plank','Dumbbell Side Bend','Side Plank Reach-Through'],
+ flexion:['Hanging Knee Raise','Hanging Leg Raise','Cable Crunch','Reverse Crunch','Decline Sit-Up','V-Up','Toes-to-Bar'],
+ carry:['Farmer Carry','Suitcase Carry','Front-Rack Carry','Overhead Carry','Trap-Bar Carry','Sandbag Carry']
 };
 
 var MOBILITY=[{n:'Cat–cow',s:45},{n:'90/90 hip switch',s:60},{n:'Couch stretch — left',s:45},
@@ -1133,9 +1169,7 @@ RENDER.today=function(){
   var t=today(), p=PROGRAM[(new Date(t+'T12:00:00').getDay()+6)%7];
   $('plan-day').textContent=p.day;
   $('plan-focus').textContent=p.focus;
-  $('plan-detail').innerHTML=p.ex.map(function(e){
-    return '<div class="ex"><div class="exn"><b>'+e.n+'</b>'+(e.core?' <span class="core">CORE</span>':'')+
-      '</div><div class="exs">'+e.s+'</div></div>';}).join('');
+  $('plan-detail').innerHTML=planBlocks(p);
 
   var a=[], labs=load(K.labs), meals=load(K.meals);
   if(!labs.length||num(labs[labs.length-1].trig)>=500)
@@ -1420,11 +1454,12 @@ RENDER.train=function(){
     return '<button class="chip '+(c===activeCore?'on':'')+'" onclick="pickCore(\''+c+'\')">'+c+'</button>';}).join('');
   renderLiftChart();
   $('program').innerHTML=PROGRAM.map(function(p){
+    var lifts=p.ex.filter(function(e){return !e.cardio&&e.blk!=='pm';});
+    var mins=lifts.length?estimateMins(lifts):0;
     return '<div class="day"><div class="day-hd" onclick="this.nextElementSibling.classList.toggle(\'open\')">'+
-      '<div><div class="dn">'+p.day+'</div><div class="dt">'+p.focus+'</div></div><span style="color:var(--mute)">▾</span></div>'+
-      '<div class="day-bd">'+p.ex.map(function(e){
-        return '<div class="ex"><div class="exn"><b>'+e.n+'</b>'+(e.core?' <span class="core">CORE</span>':'')+
-          '</div><div class="exs">'+e.s+'</div></div>';}).join('')+'</div></div>';}).join('');
+      '<div><div class="dn">'+p.day+'</div><div class="dt">'+p.focus+(mins?'  ·  ~'+mins+' min AM':'')+'</div></div>'+
+      '<span style="color:var(--mute)">▾</span></div>'+
+      '<div class="day-bd">'+planBlocks(p)+'</div></div>';}).join('');
   renderSessionList(); renderLiftList();
   if(WK)renderRunner(); else {$('runner').innerHTML='';$('train-start').style.display='';populateDayPicker();}
 };
@@ -1464,8 +1499,9 @@ function populateDayPicker(){
   var ti=todayIdx();
   sel.innerHTML=runnableDays().map(function(x){
     var isToday=x.i===ti;
+    var mins=estimateMins(x.d.ex.filter(function(e){return !e.cardio&&e.blk!=='pm';}));
     return '<option value="'+x.i+'"'+(isToday?' selected':'')+'>'+
-      x.d.day+' — '+x.d.focus.split('—')[0].trim()+(isToday?' (today)':'')+'</option>';}).join('');
+      x.d.day+' — '+x.d.focus.split('—')[0].trim()+' · ~'+mins+' min'+(isToday?' (today)':'')+'</option>';}).join('');
   onDayPick();
 }
 function onDayPick(){
@@ -1478,37 +1514,74 @@ function startWorkout(){
   var sel=$('start-day');
   var idx = sel && sel.value!=='' ? num(sel.value) : todayIdx();
   var day=PROGRAM[idx];
-  var strength=day.ex.filter(function(e){return !e.cardio;});
+  var strength=day.ex.filter(function(e){return !e.cardio && e.blk!=='pm';});
   if(!strength.length){toast('That day has no lifting — pick a training day','var(--warn)');return;}
   var deload=(Math.floor(daysBetween(PROF.start,today())/7)+1)%6===0;
   var offDay = idx!==todayIdx();
   WK={day:day.day,focus:day.focus,deload:deload,offDay:offDay,started:Date.now(),ex:strength.map(function(e){
-    var last=lastWeightFor(e.n);
-    var rec = deload ? null : overloadRec(e.n,e.p,e.reps,last);
-    var w = deload ? (last?Math.round(last.w*0.6):'') : (rec?rec.w:(last?last.w:''));
+    var last=e.bw?null:lastWeightFor(e.n);
+    var rec = (deload||e.bw) ? null : overloadRec(e.n,e.p,e.reps,last);
+    var w = e.bw ? '' : (deload ? (last?Math.round(last.w*0.6):'') : (rec?rec.w:(last?last.w:'')));
     var sets=[]; for(var i=0;i<(e.sets||3);i++)sets.push({w:w,r:e.reps||'',done:false});
-    return {n:e.n,p:e.p,core:e.core,target:e.s,rest:e.rest||90,sets:sets,last:last,rec:rec};
+    return {n:e.n,p:e.p,core:e.core,abs:e.abs,bw:e.bw,target:e.s,rest:e.rest||90,sets:sets,last:last,rec:rec};
   })};
   renderRunner();
+}
+/* Render a day's plan split into AM (lift) and PM (cardio/recovery) blocks. */
+function planBlocks(p){
+  var am=p.ex.filter(function(e){return e.blk!=='pm';});
+  var pm=p.ex.filter(function(e){return e.blk==='pm';});
+  function rows(list){
+    return list.map(function(e){
+      var badge = e.core?' <span class="core">KEY</span>':(e.abs?' <span class="core" style="color:var(--warn)">TRUNK</span>':'');
+      return '<div class="ex"><div class="exn"><b>'+e.n+'</b>'+badge+
+        '</div><div class="exs">'+e.s+'</div></div>';}).join('');
+  }
+  function head(label,list,note){
+    if(!list.length)return '';
+    var lifts=list.filter(function(e){return !e.cardio;});
+    var mins=lifts.length?estimateMins(lifts):0;
+    return '<div style="display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 6px">'+
+      '<span style="font-family:var(--data);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)">'+label+'</span>'+
+      '<span style="font-family:var(--data);font-size:9px;color:var(--mute)">'+(mins?'~'+mins+' min':note||'')+'</span></div>'+
+      rows(list);
+  }
+  var out=head('Before work',am,'')+head('After work',pm,'');
+  return out||rows(p.ex);
+}
+/* Rough session length: work time per set (~40s, carries ~50s) + rest between. */
+function estimateMins(exList){
+  var sec=0;
+  exList.forEach(function(e){
+    var n=e.sets||3, work=(e.p==='carry'?50:40);
+    sec += n*work + (n-1)*(e.rest||90);
+    sec += 45; // setup/transition between exercises
+  });
+  return Math.round(sec/60);
 }
 function renderRunner(){
   if(!WK){$('runner').innerHTML='';$('train-start').style.display='';return;}
   $('train-start').style.display='none';
   var totalSets=0,doneSets=0;
   WK.ex.forEach(function(e){e.sets.forEach(function(s){totalSets++;if(s.done)doneSets++;});});
+  var remaining=estimateMins(WK.ex.filter(function(e){return !e.sets.every(function(s){return s.done;});}));
   var html='<div class="run-bar"><div><div class="rn" style="font-family:var(--disp);font-size:var(--h2)">'+WK.day+'</div>'+
-    '<div class="rp">'+doneSets+' / '+totalSets+' sets'+(WK.deload?' · DELOAD 60%':'')+(WK.offDay?' · make-up':'')+'</div></div>'+
+    '<div class="rp">'+doneSets+' / '+totalSets+' sets'+(remaining>0?' · ~'+remaining+' min left':'')+
+    (WK.deload?' · DELOAD 60%':'')+(WK.offDay?' · make-up':'')+'</div></div>'+
     '<button class="btn ghost" style="width:auto;padding:9px 14px" onclick="finishWorkout()">Finish</button></div>';
 
   WK.ex.forEach(function(e,ei){
     var exDone=e.sets.every(function(s){return s.done;});
+    var badge = e.core?'<span class="core">KEY</span>':(e.abs?'<span class="core" style="color:var(--warn)">TRUNK</span>':'');
     html+='<div class="run-ex'+(exDone?' done':'')+'">'+
-      '<div class="run-hd"><div><div class="rn">'+e.n+(e.core?'<span class="core">CORE</span>':'')+'</div>'+
-      '<div class="rt">'+e.target+(e.last?'  ·  last '+e.last.w+'×'+e.last.r:'  ·  first time')+
+      '<div class="run-hd"><div><div class="rn">'+e.n+badge+'</div>'+
+      '<div class="rt">'+e.target+
+      (e.bw?'  ·  bodyweight':(e.last?'  ·  last '+e.last.w+'×'+e.last.r:'  ·  first time'))+
       (e.rec&&e.rec.up?'  ·  <span style="color:var(--good)">▲ '+e.rec.why+'</span>':(e.rec?'  ·  <span style="color:var(--warn)">'+e.rec.why+'</span>':''))+
       '</div></div>'+
       '<button class="run-swap" onclick="swapMove('+ei+')">Swap</button></div>'+
-      '<div class="run-sets"><div class="set-head"><span></span><span>Weight</span><span>Reps</span><span>Done</span></div>';
+      '<div class="run-sets"><div class="set-head"><span></span><span>'+(e.bw?'Load (opt)':'Weight')+'</span><span>'+
+      (e.p==='carry'?'Yards':(e.p==='anti_lat'||e.p==='anti_ext'?'Reps/sec':'Reps'))+'</span><span>Done</span></div>';
     e.sets.forEach(function(s,si){
       html+='<div class="set-row'+(s.done?' done':'')+'">'+
         '<div class="sl">'+(si+1)+'</div>'+
@@ -1523,14 +1596,15 @@ function renderRunner(){
 }
 function setField(ei,si,f,v){WK.ex[ei].sets[si][f]=v;}
 function toggleSet(ei,si){
-  var s=WK.ex[ei].sets[si];
+  var e=WK.ex[ei], s=e.sets[si];
   s.done=!s.done;
   if(s.done){
-    if(s.w===''||s.w==null){toast('Enter the weight first','var(--warn)');s.done=false;renderRunner();return;}
-    // auto-advance weight to next set if blank
-    var nx=WK.ex[ei].sets[si+1];
+    // bodyweight/time moves don't need a load — reps (or seconds) is enough
+    if(!e.bw && (s.w===''||s.w==null)){toast('Enter the weight first','var(--warn)');s.done=false;renderRunner();return;}
+    // auto-advance to next set if blank
+    var nx=e.sets[si+1];
     if(nx&&(nx.w===''||nx.w==null)){nx.w=s.w;nx.r=s.r;}
-    startRunnerRest(WK.ex[ei].rest);
+    startRunnerRest(e.rest);
   }
   renderRunner();
 }
