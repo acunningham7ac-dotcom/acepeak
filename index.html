@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#12100E">
 <title>ACEPEAK — Protocol</title>
+<link rel="manifest" href='data:application/manifest+json,{"name":"ACEPEAK","short_name":"ACEPEAK","start_url":"./index.html","display":"standalone","background_color":"%23080A0D","theme_color":"%23080A0D","icons":[]}'>
+<script>
+/* Offline support. Registers only over https/localhost; silently no-ops otherwise. */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(){/* sw.js not uploaded yet — app still works online */});
+  });
+}
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:wght@300;400;600&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -226,6 +235,11 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 .set-row.done input{opacity:.6;}
 .set-head{display:grid;grid-template-columns:26px 1fr 1fr 42px;gap:8px;margin-top:4px;}
 .set-head span{font-family:var(--data);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);text-align:center;}
+.warmup{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:9px 0 4px;}
+.warmup .wl{font-family:var(--data);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-right:2px;}
+.wchip{background:var(--raise);border:1px solid var(--line);border-radius:2px;color:var(--mute);
+  font-family:var(--data);font-size:10px;padding:5px 9px;cursor:pointer;}
+.wchip:active{border-color:var(--accent);color:var(--accent);}
 .run-bar{position:sticky;top:0;z-index:30;background:var(--slate);border:1px solid var(--line);border-radius:3px;
   padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
 .run-bar .rp{font-family:var(--data);font-size:11px;color:var(--accent);}
@@ -263,6 +277,15 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 .theme.on .tn{color:var(--accent);}
 .theme .td{font-size:10px;color:var(--mute);margin-top:4px;line-height:1.35;}
 .legend i{display:inline-block;width:9px;height:2px;margin-right:4px;vertical-align:middle;}
+
+.fast-clock{text-align:center;padding:16px 0 12px}
+.fast-clock .fk{font-family:var(--data);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--mute)}
+.fast-clock .fv{font-family:var(--disp);font-size:44px;line-height:1.05;margin:4px 0 2px;letter-spacing:.02em}
+.fast-clock .fs{font-family:var(--data);font-size:10px;color:var(--mute)}
+.fast-bar{height:7px;border-radius:4px;background:var(--line);overflow:hidden;margin:4px 0 7px}
+.fast-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.fast-ends{display:flex;justify-content:space-between;font-family:var(--data);font-size:9px;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:14px}
 </style>
 </head>
 <body>
@@ -310,6 +333,18 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
       <div id="water-dots" style="display:flex;flex-wrap:wrap;gap:5px"></div>
       <div class="s" style="font-family:var(--data);font-size:8px;color:var(--mute);margin-top:8px;text-align:center" id="water-note"></div>
     </div>
+  </div>
+
+  <div class="card" id="card-niggle" style="display:none">
+    <h2>Flagged</h2>
+    <div class="cap">Training around it</div>
+    <div id="niggle-today"></div>
+  </div>
+
+  <div class="card" id="card-fast" style="display:none">
+    <h2>Eating window</h2>
+    <div class="cap" id="fast-plan">&mdash;</div>
+    <div id="fast-body"></div>
   </div>
 
   <div class="card collapsible collapsed" id="card-objectives">
@@ -643,6 +678,24 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 
 <!-- RECOVER -->
 <section class="tab" id="t-recover">
+  <div class="eyebrow">Niggles — flag what hurts</div>
+  <div class="card">
+    <div class="row">
+      <div><label>Area</label><select id="ng-area"></select></div>
+    </div>
+    <div class="row">
+      <div><label>Note (optional)</label><input id="ng-note" placeholder="swelling, no clear cause"></div>
+    </div>
+    <button class="btn" onclick="addNiggle()">Flag it</button>
+    <div class="cap" style="margin:12px 0 0;line-height:1.7">
+      While an area is flagged the runner holds loads on the patterns that load it
+      and marks them in the session. Clear it when the area settles — progression resumes.
+      This is a training adjustment, not a diagnosis. Persistent swelling, locking,
+      giving way, or numbness means get it looked at.
+    </div>
+    <div id="niggle-list" style="margin-top:14px"></div>
+  </div>
+
   <div class="eyebrow">Interval timer</div>
   <div class="card">
     <div class="timer">
@@ -766,6 +819,25 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
     <div class="cap" style="margin:12px 0 0;text-align:center" id="goal-check">—</div>
   </div>
 
+  <div class="eyebrow">Eating window</div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div><label style="margin:0">Use an eating window</label>
+        <div class="cap" style="margin:2px 0 0">Adds the fasting card to Today</div></div>
+      <button class="btn ghost" id="fast-toggle" style="width:auto;padding:8px 18px" onclick="toggleFast()">Off</button>
+    </div>
+    <div class="row c3">
+      <div><label>Training day (h)</label><input type="number" step="0.5" id="f-train"></div>
+      <div><label>Rest day (h)</label><input type="number" step="0.5" id="f-rest"></div>
+      <div><label>Sunday (h)</label><input type="number" step="0.5" id="f-sun"></div>
+    </div>
+    <button class="btn" onclick="saveFast()">Save window</button>
+    <div class="cap" style="margin:12px 0 0;line-height:1.7">
+      Training days run longer so protein lands in more feedings. Sunday is the tight one.
+      Don't drop below 6h — anything that needs food has to fit inside the window.
+    </div>
+  </div>
+
   <div class="eyebrow">Objectives</div>
   <div class="card">
     <div class="row c2">
@@ -827,7 +899,8 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 <script>
 /* ---------- STORAGE ---------- */
 var K={sessions:'ap8_s',lifts:'ap8_l',body:'ap8_b',labs:'ap8_bl',meals:'ap8_m',rec:'ap8_r',
-        scans:'ap8_dx',goals:'ap8_g',prof:'ap8_p',foods:'ap8_food',water:'ap8_water',photos:'ap8_photos'};
+        scans:'ap8_dx',goals:'ap8_g',prof:'ap8_p',foods:'ap8_food',water:'ap8_water',photos:'ap8_photos',
+        fast:'ap8_fast',niggle:'ap8_niggle'};
 var cache=new Map();
 function load(k){if(cache.has(k))return cache.get(k);var d;try{d=JSON.parse(localStorage.getItem(k)||'[]');}catch(e){d=[];}cache.set(k,d);return d;}
 function save(k,d){localStorage.setItem(k,JSON.stringify(d));cache.set(k,d);}
@@ -839,6 +912,8 @@ var DEF_GOALS={rmr:2098,af:1.40,deficit:600,kcal:2350,protein:190,carbs:80,fat:1
 var DEF_PROF={dob:'1978-05-23',draw:'2026-08-15',dexa:'2026-09-18',start:'2026-07-08',
               goalbf:15,stretchbf:12};
 var GOALS=loadO(K.goals,DEF_GOALS), PROF=loadO(K.prof,DEF_PROF);
+var DEF_FAST={on:false,train:10,rest:8,sun:6};
+var FAST=loadO('ap8_fastcfg',DEF_FAST);
 
 // Local calendar date (not UTC). Fixes dates rolling over in the evening.
 // Uses America/Denver so it's correct regardless of device timezone.
@@ -1250,7 +1325,7 @@ RENDER.today=function(){
     $('w-pct').className='v '+(rate.pct>GOALS.maxrate?'bad':'good');
   }else{$('w-rate').textContent='—';$('w-pct').textContent='—';}
 
-  renderWater(); renderWeekReview(); renderReadinessStrip(); applyCollapseState();
+  renderWater(); renderFast(); renderNiggleToday(); renderWeekReview(); renderReadinessStrip(); applyCollapseState();
 };
 
 /* ---------- WATER ---------- */
@@ -1265,6 +1340,233 @@ function addWater(delta){
   rec.count=Math.max(0,num(rec.count)+delta);
   save(K.water,d); renderWater();
 }
+/* ================= Niggles — training around a flagged body area =================
+   A flagged area suppresses progression on the movement patterns that load it.
+   The point is not to stop training; it's to stop the runner cheerfully
+   suggesting +10 lbs on the exact thing that's angry. */
+var NIGGLE_AREAS={
+  knee:{n:'Knee',pat:['squat','lunge','quad_iso','calf'],
+    safe:'Hinge patterns, upper body, and machine work that keeps the knee out of loaded flexion.'},
+  lowback:{n:'Lower back',pat:['hinge','squat','carry','ham_iso'],
+    safe:'Seated and supported pressing. Keep anti-extension core work \u2014 it helps here.'},
+  shoulder:{n:'Shoulder',pat:['vert_push','horiz_push','lateral'],
+    safe:'Pulling patterns and lower body. Stop anything that pinches overhead.'},
+  elbow:{n:'Elbow / wrist',pat:['triceps','biceps','horiz_push'],
+    safe:'Lower body and machine work. Straps let you keep pulling.'},
+  hip:{n:'Hip / groin',pat:['squat','lunge','hinge','ham_iso'],
+    safe:'Upper body is untouched. Keep walking if it is painless.'},
+  upback:{n:'Neck / upper back',pat:['vert_push','rear_delt','carry'],
+    safe:'Horizontal pressing and lower body, as long as bracing is comfortable.'}
+};
+function activeNiggles(){return load(K.niggle).filter(function(x){return !x.cleared;});}
+function flaggedPatterns(){
+  var out={};
+  activeNiggles().forEach(function(x){
+    var a=NIGGLE_AREAS[x.area]; if(!a)return;
+    a.pat.forEach(function(pt){out[pt]=a.n;});
+  });
+  return out;
+}
+/* Never raises a load — holds, or keeps whatever the layoff logic already cut. */
+function applyNiggle(rec,last,areaName){
+  if(!last||!last.w)return rec;
+  var w=(rec&&rec.w!=null)?Math.min(num(rec.w),num(last.w)):num(last.w);
+  return {w:w,up:false,flag:true,
+    why:areaName+' flagged \u2014 holding at '+w+'. Skip or swap it if it aggravates.'};
+}
+function addNiggle(){
+  var area=$('ng-area').value, note=$('ng-note').value.trim();
+  if(!area){toast('Pick an area','var(--warn)');return;}
+  var d=load(K.niggle);
+  if(d.some(function(x){return !x.cleared&&x.area===area;})){toast('That area is already flagged','var(--warn)');return;}
+  d.push({id:uid(),date:today(),area:area,note:note,cleared:''});
+  d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.niggle,d);
+  $('ng-note').value=''; $('ng-area').value='';
+  renderNiggles(); renderNiggleToday(); toast(NIGGLE_AREAS[area].n+' flagged');
+}
+function clearNiggle(id){
+  var d=load(K.niggle), r=d.filter(function(x){return x.id===id;})[0];
+  if(!r)return;
+  r.cleared=today(); save(K.niggle,d);
+  renderNiggles(); renderNiggleToday(); toast('Cleared \u2014 progression resumes');
+}
+function delNiggle(id){
+  save(K.niggle,load(K.niggle).filter(function(x){return x.id!==id;}));
+  renderNiggles(); renderNiggleToday(); toast('Deleted');
+}
+function niggleDays(r){return daysBetween(r.date,r.cleared||today());}
+function renderNiggleToday(){
+  var el=$('card-niggle'); if(!el)return;
+  var act=activeNiggles();
+  if(!act.length){el.style.display='none';return;}
+  el.style.display='';
+  $('niggle-today').innerHTML=act.map(function(r){
+    var a=NIGGLE_AREAS[r.area]||{n:r.area,safe:''};
+    var d=niggleDays(r);
+    return '<div class="note"><strong>'+a.n+' \u2014 day '+(d+1)+'</strong>'+
+      (r.note?r.note+' ':'')+a.safe+'</div>';
+  }).join('')+
+  '<div class="cap" style="text-align:center;margin-top:2px">Loads are held on affected patterns. Clear it in Recover when it settles.</div>';
+}
+function renderNiggles(){
+  var box=$('niggle-list'); if(!box)return;
+  var sel=$('ng-area');
+  if(sel&&!sel.options.length){
+    sel.innerHTML='<option value="">Select an area\u2026</option>'+
+      Object.keys(NIGGLE_AREAS).map(function(k){
+        return '<option value="'+k+'">'+NIGGLE_AREAS[k].n+'</option>';}).join('');
+  }
+  var d=load(K.niggle);
+  if(!d.length){box.innerHTML='<div class="cap" style="text-align:center;padding:12px 0">Nothing flagged. Good.</div>';return;}
+  box.innerHTML=d.map(function(r){
+    var a=NIGGLE_AREAS[r.area]||{n:r.area,pat:[]};
+    var days=niggleDays(r);
+    return '<div class="item"><div class="item-hd"><div style="flex:1">'+
+      '<div class="item-t">'+a.n+(r.cleared?'':' <span class="core" style="color:var(--warn)">ACTIVE</span>')+'</div>'+
+      '<div class="item-m">'+fmtShort(r.date)+
+        (r.cleared?' \u2192 '+fmtShort(r.cleared)+' \u00b7 '+days+' day'+(days===1?'':'s'):' \u00b7 day '+(days+1))+
+        (r.note?' \u00b7 '+r.note:'')+'</div></div>'+
+      '<div class="acts">'+(r.cleared?'':'<button onclick="clearNiggle('+r.id+')">\u2713</button>')+
+      '<button onclick="delNiggle('+r.id+')">\u2715</button></div></div></div>';
+  }).join('');
+}
+
+/* ================= Fasting / eating window ================= */
+function nowHM(){
+  try{var v=new Intl.DateTimeFormat('en-GB',{timeZone:'America/Denver',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
+    if(/^\d{2}:\d{2}$/.test(v))return v;}catch(e){}
+  var d=new Date(),z=function(n){return String(n).padStart(2,'0');};
+  return z(d.getHours())+':'+z(d.getMinutes());
+}
+function hmToMin(hm){if(!hm)return null;var q=String(hm).split(':');return num(q[0])*60+num(q[1]);}
+function minToHM(m){m=((m%1440)+1440)%1440;var z=function(n){return String(n).padStart(2,'0');};return z(Math.floor(m/60))+':'+z(m%60);}
+function fmtHM12(hm){var m=hmToMin(hm);if(m==null)return '\u2014';
+  var h=Math.floor(m/60),mi=m%60,ap=h<12?'AM':'PM',h12=(h%12===0)?12:h%12;
+  return h12+':'+String(mi).padStart(2,'0')+' '+ap;}
+function shiftDate(d,n){var x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);
+  var z=function(v){return String(v).padStart(2,'0');};
+  return x.getFullYear()+'-'+z(x.getMonth()+1)+'-'+z(x.getDate());}
+
+/* Is this date a lifting day in the program? */
+function isLiftDay(date){
+  var idx=(new Date(date+'T12:00:00').getDay()+6)%7, day=PROGRAM[idx];
+  return !!(day&&day.ex.some(function(e){return !e.cardio&&e.blk!=='pm';}));
+}
+/* Window length in hours: Sunday reset < rest day < training day */
+function fastLenFor(date){
+  var dow=new Date(date+'T12:00:00').getDay();
+  if(dow===0)return num(FAST.sun)||6;
+  return isLiftDay(date)?(num(FAST.train)||10):(num(FAST.rest)||8);
+}
+function fastLabelFor(date){
+  var dow=new Date(date+'T12:00:00').getDay();
+  if(dow===0)return 'Sunday reset';
+  return isLiftDay(date)?'Training day':'Rest day';
+}
+function fastRec(date){return load(K.fast).filter(function(x){return x.date===date;})[0]||null;}
+function fastSet(date,fields){
+  var d=load(K.fast), r=d.filter(function(x){return x.date===date;})[0];
+  if(!r){r={date:date,open:'',last:''};d.push(r);}
+  for(var k in fields)if(fields.hasOwnProperty(k))r[k]=fields[k];
+  d.sort(function(a,b){return b.date.localeCompare(a.date);});
+  save(K.fast,d); return r;
+}
+/* Called on every meal log: opens the window if needed, always moves the last-meal mark. */
+function fastTouch(){
+  if(!FAST.on)return;
+  var t=nowHM(), r=fastRec(today());
+  fastSet(today(), (r&&r.open)?{last:t}:{open:t,last:t});
+}
+function fastOpen(){fastSet(today(),{open:nowHM(),last:nowHM()});renderFast();toast('Window open');}
+function fastClose(){
+  var r=fastRec(today());
+  if(!r||!r.open){toast('Window isn\'t open yet','var(--warn)');return;}
+  fastSet(today(),{last:nowHM()});renderFast();toast('Kitchen closed');
+}
+/* Hours since the last recorded meal on any prior day. */
+function fastedHours(){
+  var d=load(K.fast).filter(function(x){return x.date<today()&&x.last;})
+    .sort(function(a,b){return b.date.localeCompare(a.date);});
+  if(!d.length)return null;
+  var mins=daysBetween(d[0].date,today())*1440+hmToMin(nowHM())-hmToMin(d[0].last);
+  return mins>0?mins/60:null;
+}
+/* Consecutive days the actual window fit inside the planned one (30 min grace). */
+function fastStreak(){
+  var n=0, cur=today(), i;
+  for(i=0;i<400;i++){
+    var r=fastRec(cur);
+    if(!r||!r.open||!r.last){if(cur===today()){cur=shiftDate(cur,-1);continue;}break;}
+    var actual=(hmToMin(r.last)-hmToMin(r.open))/60;
+    if(actual<=fastLenFor(cur)+0.5)n++;else break;
+    cur=shiftDate(cur,-1);
+  }
+  return n;
+}
+function fastFeedings(len){return Math.max(2,Math.round(len/2.5));}
+
+function toggleFast(){
+  FAST.on=!FAST.on; saveO('ap8_fastcfg',FAST);
+  renderFastSettings(); renderFast();
+  toast(FAST.on?'Eating window on':'Eating window off');
+}
+function saveFast(){
+  var tr=num($('f-train').value), rs=num($('f-rest').value), su=num($('f-sun').value);
+  if(tr<4||rs<4||su<4){toast('Windows under 4h aren\'t safe with your meds','var(--bad)');return;}
+  FAST.train=tr||10; FAST.rest=rs||8; FAST.sun=su||6;
+  saveO('ap8_fastcfg',FAST); renderFastSettings(); renderFast(); toast('Window saved');
+}
+function renderFastSettings(){
+  var b=$('fast-toggle'); if(!b)return;
+  b.textContent=FAST.on?'On':'Off';
+  b.style.color=FAST.on?'var(--good)':'';
+  $('f-train').value=FAST.train; $('f-rest').value=FAST.rest; $('f-sun').value=FAST.sun;
+}
+function renderFast(){
+  var card=$('card-fast'); if(!card)return;
+  if(!FAST.on){card.style.display='none';return;}
+  card.style.display='';
+  var t=today(), len=fastLenFor(t), r=fastRec(t), nowM=hmToMin(nowHM());
+  $('fast-plan').textContent=fastLabelFor(t)+' \u00b7 '+len+'-hour window';
+  var h='';
+  if(!r||!r.open){
+    var fh=fastedHours();
+    h+='<div class="fast-clock"><div class="fk">Fasting</div>'+
+       '<div class="fv">'+(fh!=null?fh.toFixed(1)+'h':'\u2014')+'</div>'+
+       '<div class="fs">'+(fh!=null?'since your last meal':'no prior meal recorded')+'</div></div>';
+    h+='<button class="btn" onclick="fastOpen()">Open window now</button>'+
+       '<div class="cap" style="margin-top:10px;text-align:center">Logging any meal opens it automatically.</div>';
+  }else{
+    var openM=hmToMin(r.open), closeM=openM+len*60, left=closeM-nowM;
+    var pct=Math.max(0,Math.min(100,((nowM-openM)/(len*60))*100));
+    if(left>0){
+      h+='<div class="fast-clock"><div class="fk">Window open</div>'+
+         '<div class="fv">'+Math.floor(left/60)+'h '+(left%60)+'m</div>'+
+         '<div class="fs">until '+fmtHM12(minToHM(closeM))+'</div></div>';
+    }else{
+      var over=-left;
+      h+='<div class="fast-clock"><div class="fk" style="color:var(--bad)">Window closed</div>'+
+         '<div class="fv" style="color:var(--bad)">'+Math.floor(over/60)+'h '+(over%60)+'m</div>'+
+         '<div class="fs">past '+fmtHM12(minToHM(closeM))+'</div></div>';
+    }
+    h+='<div class="fast-bar"><div class="fast-fill" style="width:'+pct.toFixed(1)+'%;background:'+
+       (left>0?'var(--accent)':'var(--bad)')+'"></div></div>'+
+       '<div class="fast-ends"><span>Opened '+fmtHM12(r.open)+'</span><span>Closes '+fmtHM12(minToHM(closeM))+'</span></div>';
+    if(left>0&&left<=90)
+      h+='<div class="note"><strong>'+left+' min left</strong>Last call. Take anything that needs food with this meal.</div>';
+    h+='<button class="btn ghost" onclick="fastClose()">Close window now</button>';
+  }
+  var feeds=fastFeedings(len), tgt=num(GOALS.protein)||190, per=Math.round(tgt/feeds);
+  var col=per>60?'var(--bad)':(per>50?'var(--warn)':'var(--good)');
+  h+='<div class="grid" style="margin-top:14px">'+
+    '<div class="stat"><div class="k">Feedings</div><div class="v">'+feeds+'</div><div class="s">in '+len+'h</div></div>'+
+    '<div class="stat"><div class="k">Protein each</div><div class="v" style="color:'+col+'">'+per+'g</div><div class="s">of '+tgt+'g</div></div>'+
+    '<div class="stat"><div class="k">Streak</div><div class="v">'+fastStreak()+'</div><div class="s">days on window</div></div></div>';
+  if(per>60)
+    h+='<div class="note"><strong>Doses are getting large</strong>'+per+'g per feeding is past the range that absorbs well at your age. Widen the window or accept a slightly lower total.</div>';
+  $('fast-body').innerHTML=h;
+}
+
 function renderWater(){
   var n=waterToday(), goal=GOALS.water||10;
   $('water-count').textContent=n+' / '+goal;
@@ -1443,9 +1745,17 @@ var activeCore=CORE[0];
 function pickCore(c){activeCore=c;RENDER.train();}
 RENDER.train=function(){
   var wk=Math.floor(daysBetween(PROF.start,today())/7)+1;
-  $('deload-note').innerHTML = (wk%6===0)
+  var _act=activeNiggles();
+  var _ngNote=_act.length?'<div class="note"><strong>'+
+    _act.map(function(r){return (NIGGLE_AREAS[r.area]||{n:r.area}).n;}).join(' + ')+
+    ' flagged</strong>Loads are held on the affected patterns and marked in the runner. '+
+    'Skip anything that argues back.</div>':'';
+  var _lay=layoffPlan(daysSinceLift());
+  var _layNote=_lay?'<div class="note"><strong>'+_lay.label+' \u2014 ease back in</strong>'+_lay.why+
+    ' The runner will drop your suggested loads automatically. Stop at RIR '+_lay.rir+'.</div>':'';
+  $('deload-note').innerHTML = _ngNote + _layNote + ((wk%6===0)
     ? '<div class="note calm"><strong>Deload week — week '+wk+'</strong>Cut every working set to 60% of normal load and stop 4 reps short. Keep zone 2 and sauna unchanged. You are 48, in a deficit, with testosterone at 264. Recovery is the constraint, not stimulus.</div>'
-    : '<div class="note ok"><strong>Week '+wk+' · deload in '+(6-wk%6)+' week'+((6-wk%6)===1?'':'s')+'</strong>Every sixth week, drop to 60% load and stop 4 reps short of failure. Hold RIR 2 the rest of the time. Never train to failure in a deficit.</div>';
+    : '<div class="note ok"><strong>Week '+wk+' · deload in '+(6-wk%6)+' week'+((6-wk%6)===1?'':'s')+'</strong>Every sixth week, drop to 60% load and stop 4 reps short of failure. Hold RIR 2 the rest of the time. Never train to failure in a deficit.</div>');
 
   $('s-type').innerHTML=PROGRAM.map(function(p){
     return '<option>'+p.day+' — '+p.focus.split('—')[0].trim()+'</option>';}).join('')+
@@ -1475,6 +1785,34 @@ function lastWeightFor(name){
 /* Progressive overload: given last session and the target reps for this move,
    recommend the next load. Increments scale to the movement pattern — big for
    lower-body compounds, small for upper isolation. Holds if reps were missed. */
+/* Days since the most recent logged lift of any kind. */
+function daysSinceLift(){
+  var d=load(K.lifts).filter(function(l){return l.weight;})
+    .sort(function(a,b){return b.date.localeCompare(a.date);});
+  return d.length?daysBetween(d[0].date,today()):null;
+}
+/* Returning from time off: strength holds far longer than tendons and coordination do.
+   The multiplier is deliberately conservative — one easy session costs nothing,
+   one overreached session costs three weeks. */
+function layoffPlan(days){
+  if(days==null||days<=3)return null;
+  if(days<=7)return {mult:1,hold:true,rir:'2\u20133',label:days+' days off',
+    why:'Strength holds fine across a week. Repeat your last weight \u2014 no jump this session.'};
+  if(days<=14)return {mult:0.90,rir:'3\u20134',label:days+' days off',
+    why:'Strength is mostly intact; connective tissue and coordination are not. Back off 10% and stop well short.'};
+  if(days<=28)return {mult:0.85,rir:'3\u20134',label:days+' days off',
+    why:'Three weeks-plus. Start 15% down and rebuild across two or three sessions.'};
+  return {mult:0.75,rir:'4',label:days+' days off',
+    why:'Long layoff. Treat this as re-entry \u2014 25% down, full range, rebuild deliberately.'};
+}
+/* Rewrite a progression suggestion for someone coming back from time off. */
+function applyLayoff(rec,last,lay){
+  if(!lay||!last||!last.w)return rec;
+  var w=lay.hold?num(last.w):Math.round(num(last.w)*lay.mult/5)*5;
+  return {w:w,up:false,lay:true,
+    why:lay.label+' \u2014 '+(lay.hold?'repeat '+num(last.w)+', no increase':
+      Math.round((1-lay.mult)*100)+'% under your last, RIR '+lay.rir)};
+}
 function overloadRec(exName,pattern,targetReps,last){
   if(!last||!last.w)return null;
   // increment by pattern
@@ -1518,12 +1856,17 @@ function startWorkout(){
   if(!strength.length){toast('That day has no lifting — pick a training day','var(--warn)');return;}
   var deload=(Math.floor(daysBetween(PROF.start,today())/7)+1)%6===0;
   var offDay = idx!==todayIdx();
-  WK={day:day.day,focus:day.focus,deload:deload,offDay:offDay,started:Date.now(),ex:strength.map(function(e){
+  var lay = deload ? null : layoffPlan(daysSinceLift());
+  var flags = flaggedPatterns();
+  WK={day:day.day,focus:day.focus,deload:deload,offDay:offDay,lay:lay,started:Date.now(),ex:strength.map(function(e){
     var last=e.bw?null:lastWeightFor(e.n);
     var rec = (deload||e.bw) ? null : overloadRec(e.n,e.p,e.reps,last);
+    if(!e.bw&&lay)rec=applyLayoff(rec,last,lay);
+    var flg=flags[e.p]||null;
+    if(!e.bw&&flg)rec=applyNiggle(rec,last,flg);
     var w = e.bw ? '' : (deload ? (last?Math.round(last.w*0.6):'') : (rec?rec.w:(last?last.w:'')));
     var sets=[]; for(var i=0;i<(e.sets||3);i++)sets.push({w:w,r:e.reps||'',done:false});
-    return {n:e.n,p:e.p,core:e.core,abs:e.abs,bw:e.bw,target:e.s,rest:e.rest||90,sets:sets,last:last,rec:rec};
+    return {n:e.n,p:e.p,core:e.core,abs:e.abs,bw:e.bw,flag:flg,target:e.s,rest:e.rest||90,sets:sets,last:last,rec:rec};
   })};
   renderRunner();
 }
@@ -1550,6 +1893,45 @@ function planBlocks(p){
   return out||rows(p.ex);
 }
 /* Rough session length: work time per set (~40s, carries ~50s) + rest between. */
+/* ---------- WARM-UP RAMP + PLATE MATH ---------- */
+var BAR=45, PLATES=[45,35,25,10,5,2.5];
+/* Plates per side for a barbell total. Returns null if it can't be made. */
+function plateMath(total,bar){
+  bar=bar||BAR;
+  var perSide=(num(total)-bar)/2;
+  if(perSide<0)return null;
+  if(perSide===0)return 'empty bar';
+  var out=[], left=perSide;
+  PLATES.forEach(function(p){
+    while(left>=p-0.001){out.push(p);left=Math.round((left-p)*100)/100;}
+  });
+  if(left>0.001)return out.length?out.join(' + ')+' + '+left+' short':null;
+  return out.join(' + ')+' / side';
+}
+/* Ramp to a working weight: 40 / 60 / 80%, rounded to 5, bar-first.
+   Only for loaded barbell compounds — isolation and bodyweight don't need it. */
+var RAMP_PATTERNS={squat:1,hinge:1,horiz_push:1,vert_push:1,horiz_pull:1};
+function warmupSets(pattern,working,bw){
+  if(bw||!RAMP_PATTERNS[pattern])return null;
+  var w=num(working);
+  if(!w||w<95)return null;   // light enough that the bar plus one set is plenty
+  var steps=[[0.40,5],[0.60,3],[0.80,2]];
+  var out=[{w:BAR,r:5}];
+  steps.forEach(function(s){
+    var x=Math.round(w*s[0]/5)*5;
+    if(x>BAR && x<w) out.push({w:x,r:s[1]});
+  });
+  return out.length>1?out:null;
+}
+function showPlates(total){
+  var pm=plateMath(total);
+  $('modal-box').innerHTML='<h3>'+total+' lbs</h3>'+
+    '<div class="obj-eta" style="margin-bottom:14px">45 lb bar</div>'+
+    '<div style="font-family:var(--data);font-size:17px;color:var(--accent);text-align:center;padding:16px 0;line-height:1.6">'+
+      (pm||'Can\'t be made with standard plates')+'</div>'+
+    '<button class="btn ghost" onclick="closeModal()">Close</button>';
+  $('modal').classList.add('on');
+}
 function estimateMins(exList){
   var sec=0;
   exList.forEach(function(e){
@@ -1567,20 +1949,33 @@ function renderRunner(){
   var remaining=estimateMins(WK.ex.filter(function(e){return !e.sets.every(function(s){return s.done;});}));
   var html='<div class="run-bar"><div><div class="rn" style="font-family:var(--disp);font-size:var(--h2)">'+WK.day+'</div>'+
     '<div class="rp">'+doneSets+' / '+totalSets+' sets'+(remaining>0?' · ~'+remaining+' min left':'')+
-    (WK.deload?' · DELOAD 60%':'')+(WK.offDay?' · make-up':'')+'</div></div>'+
+    (WK.deload?' · DELOAD 60%':'')+(WK.offDay?' · make-up':'')+
+    (WK.lay?' · RETURNING':'')+'</div></div>'+
     '<button class="btn ghost" style="width:auto;padding:9px 14px" onclick="finishWorkout()">Finish</button></div>';
+  if(WK.lay)html+='<div class="note"><strong>Coming back after '+WK.lay.label.replace(' off','')+' off</strong>'+
+    WK.lay.why+' Stop at RIR '+WK.lay.rir+' today. If it moves clean, step back up next session.</div>';
 
   WK.ex.forEach(function(e,ei){
     var exDone=e.sets.every(function(s){return s.done;});
     var badge = e.core?'<span class="core">KEY</span>':(e.abs?'<span class="core" style="color:var(--warn)">TRUNK</span>':'');
+    if(e.flag)badge+='<span class="core" style="color:var(--bad)">'+e.flag.toUpperCase()+'</span>';
     html+='<div class="run-ex'+(exDone?' done':'')+'">'+
       '<div class="run-hd"><div><div class="rn">'+e.n+badge+'</div>'+
       '<div class="rt">'+e.target+
       (e.bw?'  ·  bodyweight':(e.last?'  ·  last '+e.last.w+'×'+e.last.r:'  ·  first time'))+
       (e.rec&&e.rec.up?'  ·  <span style="color:var(--good)">▲ '+e.rec.why+'</span>':(e.rec?'  ·  <span style="color:var(--warn)">'+e.rec.why+'</span>':''))+
       '</div></div>'+
-      '<button class="run-swap" onclick="swapMove('+ei+')">Swap</button></div>'+
-      '<div class="run-sets"><div class="set-head"><span></span><span>'+(e.bw?'Load (opt)':'Weight')+'</span><span>'+
+      '<button class="run-swap" onclick="swapMove('+ei+')">Swap</button>'+
+      (e.flag&&!exDone?'<button class="run-swap" onclick="skipEx('+ei+')">Skip</button>':'')+'</div>'+
+      '<div class="run-sets">';
+    // warm-up ramp — guidance only, not logged
+    var wu=warmupSets(e.p,e.sets[0]&&e.sets[0].w,e.bw);
+    if(wu&&!exDone){
+      html+='<div class="warmup"><span class="wl">Warm-up</span>'+
+        wu.map(function(s){return '<button class="wchip" onclick="showPlates('+s.w+')">'+s.w+' × '+s.r+'</button>';}).join('')+
+        '</div>';
+    }
+    html+='<div class="set-head"><span></span><span>'+(e.bw?'Load (opt)':'Weight')+'</span><span>'+
       (e.p==='carry'?'Yards':(e.p==='anti_lat'||e.p==='anti_ext'?'Reps/sec':'Reps'))+'</span><span>Done</span></div>';
     e.sets.forEach(function(s,si){
       html+='<div class="set-row'+(s.done?' done':'')+'">'+
@@ -1608,6 +2003,13 @@ function toggleSet(ei,si){
   }
   renderRunner();
 }
+/* Drop a flagged exercise out of today's session entirely. Nothing gets logged for it. */
+function skipEx(ei){
+  var e=WK.ex[ei]; if(!e)return;
+  WK.ex.splice(ei,1);
+  renderRunner();
+  toast(e.n+' skipped');
+}
 function swapMove(ei){
   var e=WK.ex[ei];
   var opts=(ALTS[e.p]||[]).slice();
@@ -1629,6 +2031,9 @@ function doSwap(ei,name){
   var last=lastWeightFor(name); e.last=last;
   var targetReps=e.sets.length?num(e.sets[0].r)||num(e.target.match(/×\s*(\d+)/)?e.target.match(/×\s*(\d+)/)[1]:0):0;
   var rec = WK.deload ? null : overloadRec(name,e.p,targetReps,last);
+  if(WK.lay)rec=applyLayoff(rec,last,WK.lay);
+  var _fl=flaggedPatterns()[e.p]||null; e.flag=_fl;
+  if(_fl)rec=applyNiggle(rec,last,_fl);
   e.rec=rec;
   var w = WK.deload ? (last?Math.round(last.w*0.6):'') : (rec?rec.w:(last?last.w:''));
   e.sets.forEach(function(s){if(!s.done){s.w=w;s.r=last?last.r:s.r;}});
@@ -1926,10 +2331,10 @@ function confirmQuick(){
   if(!lastParse||!lastParse.items.length)return;
   var t=sumItems(lastParse.items), d=load(K.meals);
   d.push({id:uid(),date:today(),desc:lastParse.text||lastParse.items.map(function(x){return x.label;}).join(', '),
-    p:Math.round(t.p),c:Math.round(t.c),f:Math.round(t.f),sf:Math.round(t.sf),sard:Math.round(t.sard||0),alc:0});
+    p:Math.round(t.p),c:Math.round(t.c),f:Math.round(t.f),sf:Math.round(t.sf),sard:Math.round(t.sard||0),alc:0,t:nowHM()});
   d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.meals,d);
   $('q-text').value=''; $('q-result').innerHTML=''; lastParse=null;
-  RENDER.fuel(); toast('Logged — edit with ✎ if needed');
+  fastTouch(); RENDER.fuel(); renderFast(); toast('Logged — edit with ✎ if needed');
 }
 function startVoice(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -2003,28 +2408,29 @@ RENDER.fuel=function(){
 };
 function logTemplate(i){
   var t=TEMPLATES[i], d=load(K.meals);
-  d.push({id:uid(),date:today(),desc:t.n,p:t.p,c:t.c,f:t.f,sf:t.sf,sard:t.sard||0,alc:0});
+  d.push({id:uid(),date:today(),desc:t.n,p:t.p,c:t.c,f:t.f,sf:t.sf,sard:t.sard||0,alc:0,t:nowHM()});
   d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.meals,d);
-  RENDER.fuel(); toast(t.n+' logged');
+  fastTouch(); RENDER.fuel(); renderFast(); toast(t.n+' logged');
 }
 function relogMeal(id){
   var src=load(K.meals).filter(function(m){return m.id===id;})[0];
   if(!src)return;
   var d=load(K.meals);
   d.push({id:uid(),date:today(),desc:src.desc,p:num(src.p),c:num(src.c),f:num(src.f),
-    sf:num(src.sf),sard:num(src.sard),alc:num(src.alc)});
+    sf:num(src.sf),sard:num(src.sard),alc:num(src.alc),t:nowHM()});
   d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.meals,d);
-  RENDER.fuel(); toast(src.desc+' relogged');
+  fastTouch(); RENDER.fuel(); renderFast(); toast(src.desc+' relogged');
 }
 function saveMeal(){
   var desc=$('m-desc').value.trim();
   if(!desc){toast('Describe the meal','var(--bad)');return;}
   var d=load(K.meals);
   d.push({id:uid(),date:$('m-date').value||today(),desc:desc,p:num($('m-p').value),c:num($('m-c').value),
-    f:num($('m-f').value),sf:num($('m-sf').value),sard:num($('m-sard').value),alc:num($('m-alc').value)});
+    f:num($('m-f').value),sf:num($('m-sf').value),sard:num($('m-sard').value),alc:num($('m-alc').value),t:nowHM()});
   d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.meals,d);
   ['m-desc','m-p','m-c','m-f','m-sf','m-sard','m-alc'].forEach(function(i){$(i).value='';});
-  RENDER.fuel(); toast('Meal logged');
+  if(($('m-date').value||today())===today())fastTouch();
+  RENDER.fuel(); renderFast(); toast('Meal logged');
 }
 var showAllMeals=false;
 function toggleAllMeals(){showAllMeals=!showAllMeals;renderMealList();}
@@ -2382,6 +2788,7 @@ function saveZone2(){
   $('z-min').value=''; RENDER.recover(); toast('Zone 2 logged');
 }
 RENDER.recover=function(){
+  renderNiggles();
   highlightMob();
   var age=Math.floor(daysBetween(PROF.dob,today())/365.25), maxHR=220-age;
   $('z2-hr').textContent='Zone 2 is roughly '+Math.round(maxHR*.6)+'–'+Math.round(maxHR*.7)+' bpm. Conversational pace — you should be able to speak a full sentence.';
@@ -2405,7 +2812,7 @@ RENDER.setup=function(){
   Object.keys(DEF_GOALS).forEach(function(k){var e=$('g-'+k); if(e)e.value=GOALS[k];});
   $('p-dob').value=PROF.dob; $('p-draw').value=PROF.draw; $('p-dexa').value=PROF.dexa;
   $('p-start').value=PROF.start; $('p-goalbf').value=PROF.goalbf; $('p-stretchbf').value=PROF.stretchbf;
-  tdeeNote(); checkGoals(); leanNote(); markTheme(); renderMyFoods();
+  tdeeNote(); checkGoals(); leanNote(); markTheme(); renderMyFoods(); renderFastSettings();
 };
 function renderMyFoods(){
   var lib=load(K.foods);
@@ -2464,6 +2871,7 @@ function exportData(){
   Object.keys(K).forEach(function(n){
     if(n==='photos')return; // photos excluded — large; export separately
     try{out[n]=JSON.parse(localStorage.getItem(K[n])||'null');}catch(e){out[n]=null;}});
+  try{out.fastcfg=JSON.parse(localStorage.getItem('ap8_fastcfg')||'null');}catch(e){out.fastcfg=null;}
   var url=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));
   var a=document.createElement('a');a.href=url;a.download='acepeak-v8-'+today()+'.json';a.click();
   URL.revokeObjectURL(url);
@@ -2484,7 +2892,9 @@ function importData(input){
   r.onload=function(e){try{
     var d=JSON.parse(e.target.result), n=0;
     Object.keys(K).forEach(function(name){if(d[name]!=null){localStorage.setItem(K[name],JSON.stringify(d[name]));n++;}});
+    if(d.fastcfg!=null){localStorage.setItem('ap8_fastcfg',JSON.stringify(d.fastcfg));n++;}
     cache.clear(); GOALS=loadO(K.goals,DEF_GOALS); PROF=loadO(K.prof,DEF_PROF);
+    FAST=loadO('ap8_fastcfg',DEF_FAST);
     showTab('today'); toast('Restored '+n+' data sets');
   }catch(err){toast('That file could not be read','var(--bad)');}};
   r.readAsText(f); input.value='';
@@ -2629,6 +3039,8 @@ function markTheme(){
       android:'40.9',gynoid:'28.9',legs:'22.2',trunk:'37.2',vat:'',rsmi:'12.18',tscore:'2.7',rmr:'2098'}]);
   }
   renderStrip(); showTab('today');
+  // keep the window clock honest without a full re-render
+  setInterval(function(){if(FAST.on&&currentTab()==='today')renderFast();},30000);
 })();
 </script>
 </body>
