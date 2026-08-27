@@ -1522,6 +1522,43 @@ function renderFastSettings(){
   b.style.color=FAST.on?'var(--good)':'';
   $('f-train').value=FAST.train; $('f-rest').value=FAST.rest; $('f-sun').value=FAST.sun;
 }
+/* Manual correction for a missed tap. Any date, either end of the window. */
+function editFastTimes(date){
+  date=date||today();
+  var r=fastRec(date)||{open:'',last:''};
+  $('modal-box').innerHTML='<h3>Eating window</h3>'+
+    '<div class="obj-eta" style="margin-bottom:12px">Fix a missed tap. Clear a field to unset it.</div>'+
+    '<div class="row"><div><label>Date</label>'+
+      '<input type="date" id="fx-date" value="'+date+'" onchange="editFastTimes(this.value)"></div></div>'+
+    '<div class="row c2">'+
+      '<div><label>Opened</label><input type="time" id="fx-open" value="'+(r.open||'')+'" onchange="fxNote()"></div>'+
+      '<div><label>Last meal</label><input type="time" id="fx-last" value="'+(r.last||'')+'" onchange="fxNote()"></div>'+
+    '</div>'+
+    '<div class="cap" id="fx-note" style="margin:0 0 14px;text-align:center">\u2014</div>'+
+    '<button class="btn" onclick="saveFastTimes()">Save</button>'+
+    '<button class="btn ghost" onclick="closeModal()" style="margin-top:6px">Cancel</button>';
+  $('modal').classList.add('on');
+  fxNote();
+}
+function fxNote(){
+  var el=$('fx-note'); if(!el)return;
+  var d=$('fx-date').value||today(), o=$('fx-open').value, l=$('fx-last').value;
+  var plan=fastLenFor(d), head=fastLabelFor(d)+' \u00b7 '+plan+'h planned';
+  if(!o||!l){el.innerHTML=head;return;}
+  var h=(hmToMin(l)-hmToMin(o))/60;
+  el.innerHTML=head+' \u00b7 '+h.toFixed(1)+'h actual '+
+    (h<0?'<span style="color:var(--bad)">\u2014 last meal is before the open</span>'
+     :h<=plan+0.5?'<span style="color:var(--good)">\u2713 within</span>'
+     :'<span style="color:var(--bad)">over by '+(h-plan).toFixed(1)+'h</span>');
+}
+function saveFastTimes(){
+  var d=$('fx-date').value||today(), o=$('fx-open').value, l=$('fx-last').value;
+  if(l&&!o){toast('Set an open time first','var(--warn)');return;}
+  if(o&&l&&hmToMin(l)<hmToMin(o)){toast('Last meal is before the window opened','var(--bad)');return;}
+  fastSet(d,{open:o,last:l});
+  closeModal(); renderFast();
+  toast(d===today()?'Window updated':'Updated '+fmtShort(d));
+}
 function renderFast(){
   var card=$('card-fast'); if(!card)return;
   if(!FAST.on){card.style.display='none';return;}
@@ -1535,6 +1572,7 @@ function renderFast(){
        '<div class="fv">'+(fh!=null?fh.toFixed(1)+'h':'\u2014')+'</div>'+
        '<div class="fs">'+(fh!=null?'since your last meal':'no prior meal recorded')+'</div></div>';
     h+='<button class="btn" onclick="fastOpen()">Open window now</button>'+
+       '<button class="btn ghost" onclick="editFastTimes()" style="margin-top:6px">Edit times</button>'+
        '<div class="cap" style="margin-top:10px;text-align:center">Logging any meal opens it automatically.</div>';
   }else{
     var openM=hmToMin(r.open), closeM=openM+len*60, left=closeM-nowM;
@@ -1554,7 +1592,8 @@ function renderFast(){
        '<div class="fast-ends"><span>Opened '+fmtHM12(r.open)+'</span><span>Closes '+fmtHM12(minToHM(closeM))+'</span></div>';
     if(left>0&&left<=90)
       h+='<div class="note"><strong>'+left+' min left</strong>Last call. Take anything that needs food with this meal.</div>';
-    h+='<button class="btn ghost" onclick="fastClose()">Close window now</button>';
+    h+='<button class="btn ghost" onclick="fastClose()">Close window now</button>'+
+       '<button class="btn ghost" onclick="editFastTimes()" style="margin-top:6px">Edit times</button>';
   }
   var feeds=fastFeedings(len), tgt=num(GOALS.protein)||190, per=Math.round(tgt/feeds);
   var col=per>60?'var(--bad)':(per>50?'var(--warn)':'var(--good)');
