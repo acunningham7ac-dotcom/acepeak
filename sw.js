@@ -4,7 +4,7 @@
        when you have signal, and the gym basement still opens the app.
      - Fonts/static: cache-first. They never change.
    Bump CACHE_V when you want to force-clear old caches. */
-var CACHE_V = 'acepeak-v4';
+var CACHE_V = 'acepeak-v7';
 var SHELL = ['./', './index.html'];
 
 self.addEventListener('install', function (e) {

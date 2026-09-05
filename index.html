@@ -335,6 +335,12 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
     </div>
   </div>
 
+  <div class="card" id="card-tz" style="display:none">
+    <h2>Tirzepatide</h2>
+    <div class="cap">Dose, tolerance, and rate of loss</div>
+    <div id="tz-today"></div>
+  </div>
+
   <div class="card" id="card-niggle" style="display:none">
     <h2>Flagged</h2>
     <div class="cap">Training around it</div>
@@ -470,6 +476,9 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
     <div id="fuel-macros"></div>
   </div>
   <div class="eyebrow">Meal templates — tap to log</div>
+  <div class="eyebrow">This week's order</div>
+  <div class="card"><div id="tier-advice"></div></div>
+
   <div class="card"><div id="templates"></div></div>
 
   <div class="eyebrow">Speak or type what you ate</div>
@@ -678,6 +687,43 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 
 <!-- RECOVER -->
 <section class="tab" id="t-recover">
+  <div class="eyebrow">Tirzepatide</div>
+  <div class="card">
+    <div class="row c3">
+      <div><label>Date</label><input type="date" id="tz-date"></div>
+      <div><label>Dose</label><select id="tz-dose"></select></div>
+      <div><label>Site</label><select id="tz-site"></select></div>
+    </div>
+    <div class="row"><div><label>Note (optional)</label><input id="tz-note" placeholder="how the last week went"></div></div>
+    <button class="btn" onclick="logInjection()">Log injection</button>
+    <div class="cap" style="margin:12px 0 0;line-height:1.7">
+      Same day each week. Rotate sites. At least 72 hours between doses — miss by more
+      than four days and skip that week rather than doubling up.
+    </div>
+    <div id="tz-list" style="margin-top:14px"></div>
+  </div>
+
+  <div class="eyebrow">How you tolerated today</div>
+  <div class="card">
+    <div class="row c3">
+      <div><label>Nausea</label><select id="sd-nausea">
+        <option value="0">None</option><option value="1">Mild</option>
+        <option value="2">Moderate</option><option value="3">Rough</option></select></div>
+      <div><label>Gut</label><select id="sd-gi">
+        <option value="0">Normal</option><option value="1">Mild</option>
+        <option value="2">Moderate</option><option value="3">Rough</option></select></div>
+      <div><label>Appetite loss</label><select id="sd-appetite">
+        <option value="0">Normal</option><option value="1">Mild</option>
+        <option value="2">Marked</option><option value="3">Can barely eat</option></select></div>
+    </div>
+    <button class="btn ghost" onclick="logSide()">Save check-in</button>
+    <div class="cap" style="margin:12px 0 0;line-height:1.7">
+      Logged against your injection day, so after a few weeks you will see whether a step up
+      actually costs you more than the last one did.
+    </div>
+    <div id="side-list" style="margin-top:14px"></div>
+  </div>
+
   <div class="eyebrow">Niggles — flag what hurts</div>
   <div class="card">
     <div class="row">
@@ -801,7 +847,8 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
   <div class="eyebrow">Macro targets — edit freely</div>
   <div class="card">
     <div class="row c3">
-      <div><label>Protein (g)</label><input type="number" id="g-protein"></div>
+      <div><label>Protein target (g)</label><input type="number" id="g-protein"></div>
+      <div><label>Protein floor (g)</label><input type="number" id="g-pfloor"></div>
       <div><label>Carbs (g)</label><input type="number" id="g-carbs"></div>
       <div><label>Fat (g)</label><input type="number" id="g-fat"></div>
     </div>
@@ -817,6 +864,15 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
     </div>
     <button class="btn" onclick="saveGoals()">Save targets</button>
     <div class="cap" style="margin:12px 0 0;text-align:center" id="goal-check">—</div>
+  </div>
+
+  <div class="eyebrow">Meal history</div>
+  <div class="card">
+    <button class="btn ghost" onclick="clearMeals()">Clear logged meals</button>
+    <div class="cap" style="margin:12px 0 0;line-height:1.7">
+      Wipes every logged meal so you start clean on the new plan. Templates, saved foods,
+      labs, scans, and training are untouched. Export a backup first &mdash; this cannot be undone.
+    </div>
   </div>
 
   <div class="eyebrow">Eating window</div>
@@ -900,14 +956,14 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 /* ---------- STORAGE ---------- */
 var K={sessions:'ap8_s',lifts:'ap8_l',body:'ap8_b',labs:'ap8_bl',meals:'ap8_m',rec:'ap8_r',
         scans:'ap8_dx',goals:'ap8_g',prof:'ap8_p',foods:'ap8_food',water:'ap8_water',photos:'ap8_photos',
-        fast:'ap8_fast',niggle:'ap8_niggle'};
+        fast:'ap8_fast',niggle:'ap8_niggle',inject:'ap8_inject',side:'ap8_side',tpl:'ap8_tpl'};
 var cache=new Map();
 function load(k){if(cache.has(k))return cache.get(k);var d;try{d=JSON.parse(localStorage.getItem(k)||'[]');}catch(e){d=[];}cache.set(k,d);return d;}
 function save(k,d){localStorage.setItem(k,JSON.stringify(d));cache.set(k,d);}
 function loadO(k,def){try{var v=JSON.parse(localStorage.getItem(k));return v&&typeof v==='object'?Object.assign({},def,v):Object.assign({},def);}catch(e){return Object.assign({},def);}}
 function saveO(k,d){localStorage.setItem(k,JSON.stringify(d));}
 
-var DEF_GOALS={rmr:2098,af:1.40,deficit:600,kcal:2350,protein:190,carbs:80,fat:140,
+var DEF_GOALS={rmr:2098,af:1.40,deficit:600,kcal:2350,protein:190,pfloor:125,carbs:80,fat:140,
                satfat:25,sardines:5,steps:8000,z2:180,maxrate:1.0,water:10};
 var DEF_PROF={dob:'1978-05-23',draw:'2026-08-15',dexa:'2026-09-18',start:'2026-07-08',
               goalbf:15,stretchbf:12};
@@ -1047,25 +1103,32 @@ var MOBILITY=[{n:'Cat–cow',s:45},{n:'90/90 hip switch',s:60},{n:'Couch stretch
  {n:'Dead hang',s:45},{n:'Deep squat hold',s:60}];
 
 var TEMPLATES=[
- // Heavy — anchor meals, higher sat fat. Best earlier in the day.
- {n:'Sardine bowl',d:'2 tins sardines in olive oil, 3 eggs, 2 cups spinach',p:54,c:4,f:38,sf:9,sard:2,g:'heavy'},
- {n:'Sirloin & asparagus',d:'8 oz top sirloin, 1 lb asparagus, 1 tbsp olive oil',p:52,c:8,f:22,sf:7,sard:0,g:'heavy'},
- {n:'Thigh skillet',d:'8 oz chicken thigh, zucchini + peppers, olive oil',p:46,c:10,f:26,sf:7,sard:0,g:'heavy'},
- {n:'Beef & broccoli',d:'8 oz 93/7 ground beef, 3 cups broccoli, olive oil',p:50,c:12,f:24,sf:8,sard:0,g:'heavy'},
- {n:'Egg scramble',d:'4 whole eggs + 4 whites, 2 cups spinach',p:40,c:4,f:24,sf:7,sard:0,g:'heavy'},
- // Lean closers — high protein, near-zero sat fat. Finish the day here.
- {n:'Chicken breast + greens',d:'8 oz chicken breast, big green salad, 1 tbsp olive oil',p:52,c:6,f:9,sf:2,sard:0,g:'lean'},
- {n:'White fish plate',d:'8 oz cod or tilapia, asparagus, lemon, 1 tsp olive oil',p:45,c:5,f:6,sf:1,sard:0,g:'lean'},
- {n:'Shrimp & greens',d:'8 oz shrimp, 3 cups spinach, garlic, 1 tsp olive oil',p:48,c:6,f:5,sf:1,sard:0,g:'lean'},
- {n:'Egg-white omelet',d:'6 egg whites, spinach, peppers, salsa',p:22,c:5,f:1,sf:0,sard:0,g:'lean'},
- {n:'Sardine snack',d:'1 tin sardines in olive oil',p:23,c:0,f:11,sf:2,sard:1,g:'lean'},
- // Smoothie — quick breakfast or lean closer.
- {n:'ACEPEAK smoothie',d:'1¼ scoop whey isolate, 1 cup almond milk, 2 cups spinach, ½ cup frozen berries, 1 tbsp flax, 1 tbsp chia',p:36,c:14,f:7,sf:1,sard:0,g:'smoothie'},
- {n:'Steak Shake smoothie',d:'1 scoop Steak Shake banana crème*, 2 handfuls blueberries, 1 serving Momentous Fiber+, 1 tbsp almond butter, 2 cups spinach, 5g creatine, water + ice · *sub any 25–30g protein if out',p:34,c:43,f:12,sf:2,sard:0,g:'smoothie'}
+ // Rough days — lowest fat, small volume, easy to keep down. Injection day + 48h after.
+ {n:'Greek yogurt + whey',d:'1 cup nonfat Greek yogurt, \u00bd scoop whey isolate, cinnamon',p:40,c:10,f:1,sf:0,sard:0,g:'rough'},
+ {n:'Plain protein shake',d:'1\u00bd scoop whey isolate in water \u2014 sip over 20 min',p:38,c:3,f:1,sf:0,sard:0,g:'rough'},
+ {n:'Chicken & rice broth',d:'4 oz shredded chicken breast, \u00bd cup white rice, bone broth',p:28,c:22,f:3,sf:1,sard:0,g:'rough'},
+ {n:'Cottage cheese + fruit',d:'1 cup low-fat cottage cheese, \u00bd banana or applesauce',p:28,c:16,f:2,sf:1,sard:0,g:'rough'},
+ // Steady days — lean protein, simple starch, cooked veg. The default plate now.
+ {n:'Chicken breast + rice',d:'6 oz chicken breast, \u00be cup jasmine rice, cooked zucchini',p:42,c:35,f:5,sf:1,sard:0,g:'steady'},
+ {n:'White fish + potato',d:'7 oz cod or tilapia, 1 medium potato, green beans',p:42,c:30,f:4,sf:1,sard:0,g:'steady'},
+ {n:'Shrimp bowl',d:'7 oz shrimp, \u00be cup rice, cooked spinach, lemon',p:42,c:34,f:3,sf:1,sard:0,g:'steady'},
+ {n:'Turkey + sweet potato',d:'6 oz 99% lean ground turkey, 1 medium sweet potato',p:40,c:26,f:3,sf:1,sard:0,g:'steady'},
+ {n:'Egg-white omelet + toast',d:'6 egg whites, spinach, 1 slice sourdough',p:27,c:16,f:2,sf:0,sard:0,g:'steady'},
+ {n:'Chicken breast + greens',d:'8 oz chicken breast, big green salad, 1 tsp olive oil',p:52,c:6,f:6,sf:1,sard:0,g:'steady'},
+ // Liquid protein — when solid food is unappealing, this is how protein still lands.
+ {n:'ACEPEAK smoothie',d:'1\u00bc scoop whey isolate, 1 cup almond milk, 2 cups spinach, \u00bd cup frozen berries, 1 tbsp flax, 1 tbsp chia',p:36,c:14,f:7,sf:1,sard:0,g:'smoothie'},
+ {n:'Steak Shake smoothie',d:'1 scoop Steak Shake banana cr\u00e8me*, 2 handfuls blueberries, 1 serving Momentous Fiber+, 1 tbsp almond butter, 2 cups spinach, 5g creatine, water + ice \u00b7 *sub any 25\u201330g protein if out',p:34,c:43,f:12,sf:2,sard:0,g:'smoothie'},
+ {n:'Simple recovery shake',d:'1 scoop whey isolate, \u00bd banana, 1 cup almond milk, ice',p:32,c:24,f:3,sf:1,sard:0,g:'smoothie'},
+ // Higher fat — good days only. Fat slows gastric emptying further.
+ {n:'Salmon + rice',d:'6 oz salmon, \u00be cup rice, asparagus',p:42,c:30,f:14,sf:3,sard:0,g:'anchor'},
+ {n:'Sardine bowl',d:'2 tins sardines in olive oil, 3 eggs, 2 cups spinach',p:54,c:4,f:38,sf:9,sard:2,g:'anchor'},
+ {n:'Sirloin & asparagus',d:'8 oz top sirloin, 1 lb asparagus, 1 tbsp olive oil',p:52,c:8,f:22,sf:7,sard:0,g:'anchor'},
+ {n:'Thigh skillet',d:'8 oz chicken thigh, zucchini + peppers, olive oil',p:46,c:10,f:26,sf:7,sard:0,g:'anchor'}
 ];
-var TGROUPS=[['heavy','Heavy — anchor meals','Higher saturated fat. Best earlier in the day.'],
- ['lean','Lean closers','High protein, near-zero saturated fat. Finish the day here.'],
- ['smoothie','Smoothie','Quick breakfast or a lean closer in a hurry.']];
+var TGROUPS=[['rough','When it\u2019s rough','Lowest fat, small volume, easy to keep down. Injection day and the two after.'],
+ ['steady','Steady days','Lean protein, simple starch, cooked veg. This is the default plate now.'],
+ ['smoothie','Liquid protein','When solid food is unappealing, this is how protein still lands. Sip slowly.'],
+ ['anchor','Higher fat \u2014 good days only','Fat slows gastric emptying further. Save these for when you feel normal, earlier in the day.']];
 
 var MARKERS=[
  {k:'trig',n:'Triglycerides',u:'mg/dL',scale:250,good:[0,150],warn:[150,200],severe:500},
@@ -1176,10 +1239,28 @@ function macroBars(p,c,f,sf){
       Math.round(val)+' / '+goal+(over&&val>goal?' — over':'')+'</span></div>'+
       '<div class="mac-bar"><div class="mac-fill" style="width:'+pct+'%;background:'+col+'"></div></div></div>';
   }
-  return bar('Protein',p,GOALS.protein,'var(--good)')+bar('Carbs',c,GOALS.carbs,'var(--accent)')+
+  return proteinBar(p)+bar('Carbs',c,GOALS.carbs,'var(--accent)')+
     bar('Fat',f,GOALS.fat,'var(--accent)')+
     (sf!==undefined?bar('Saturated fat',sf,GOALS.satfat,'var(--good)',true):'')+
     bar('Calories',kcal,GOALS.kcal,'var(--bone)');
+}
+
+/* Protein is now a floor to defend, not a ceiling to approach.
+   Under the floor is the failure mode that costs muscle on a GLP-1. */
+function proteinBar(p){
+  var floor=num(GOALS.pfloor)||125, tgt=num(GOALS.protein)||190;
+  var pct=Math.min(100,tgt?p/tgt*100:0), fpct=tgt?Math.min(100,floor/tgt*100):0;
+  var col = p<floor ? 'var(--bad)' : (p<tgt ? 'var(--warn)' : 'var(--good)');
+  var msg = p<floor ? Math.round(floor-p)+'g under floor'
+          : p<tgt   ? Math.round(tgt-p)+'g to target'
+                    : 'target met';
+  return '<div class="mac"><div class="mac-top"><span class="n">Protein</span>'+
+    '<span style="color:'+col+'">'+Math.round(p)+' / '+tgt+' \u00b7 '+msg+'</span></div>'+
+    '<div class="mac-bar" style="position:relative">'+
+      '<div class="mac-fill" style="width:'+pct+'%;background:'+col+'"></div>'+
+      '<div style="position:absolute;top:-2px;bottom:-2px;left:'+fpct+'%;width:2px;background:var(--bone);opacity:.85"></div>'+
+    '</div>'+
+    '<div class="cap" style="margin-top:3px;font-size:9px">floor '+floor+'g \u00b7 target '+tgt+'g</div></div>';
 }
 
 /* ---------- OBJECTIVES ---------- */
@@ -1325,7 +1406,7 @@ RENDER.today=function(){
     $('w-pct').className='v '+(rate.pct>GOALS.maxrate?'bad':'good');
   }else{$('w-rate').textContent='—';$('w-pct').textContent='—';}
 
-  renderWater(); renderFast(); renderNiggleToday(); renderWeekReview(); renderReadinessStrip(); applyCollapseState();
+  renderWater(); renderFast(); renderTZToday(); renderNiggleToday(); renderWeekReview(); renderReadinessStrip(); applyCollapseState();
 };
 
 /* ---------- WATER ---------- */
@@ -1340,6 +1421,332 @@ function addWater(delta){
   rec.count=Math.max(0,num(rec.count)+delta);
   save(K.water,d); renderWater();
 }
+var FEDUP=[
+ {n:'Mediterranean Pasta Salad',d:'FedUp LEAN · 180g · 293mg sodium',p:38,c:25,f:8,sf:1,sard:0,g:'rough'},
+ {n:'Hot Honey Chicken Tacos',d:'FedUp LEAN · 215g · 451mg sodium',p:36,c:36,f:6,sf:1,sard:0,g:'rough'},
+ {n:'Sweet Orange Chicken',d:'FedUp LEAN · 249g · 399mg sodium',p:36,c:34,f:3,sf:1,sard:0,g:'rough'},
+ {n:'Creamy Chicken Taco Soup',d:'FedUp LEAN · 263g · 495mg sodium',p:39,c:16,f:3,sf:1,sard:0,g:'rough'},
+ {n:'Chicken Tinga Tacos',d:'FedUp LEAN · 265g · 353mg sodium',p:29,c:35,f:5,sf:2,sard:0,g:'rough'},
+ {n:'Southwest Chicken Wrap',d:'FedUp LEAN · 269g · 722mg sodium',p:44,c:27,f:5,sf:1,sard:0,g:'rough'},
+ {n:'Creamy Lemon Chicken Pasta',d:'FedUp LEAN · 274g · 399mg sodium',p:39,c:38,f:6,sf:2,sard:0,g:'rough'},
+ {n:'Spicy Chicken Queso Wrap',d:'FedUp LEAN · 283g · 780mg sodium',p:40,c:36,f:6,sf:2,sard:0,g:'rough'},
+ {n:'Buffalo Chicken Salad',d:'FedUp ACTIVE · 486g · 757mg sodium',p:67,c:42,f:8,sf:3,sard:0,g:'steady'},
+ {n:'Grilled Chicken w/ Cheesy Rice & Green Beans',d:'FedUp ACTIVE · 419g · 670mg sodium',p:65,c:42,f:8,sf:3,sard:0,g:'steady'},
+ {n:'Chicken Bacon Avocado Crepe',d:'FedUp ACTIVE · 360g · 537mg sodium',p:65,c:24,f:12,sf:3,sard:0,g:'steady'},
+ {n:'Grilled Chicken Alfredo',d:'FedUp ACTIVE · 442g · 675mg sodium',p:64,c:47,f:10,sf:3,sard:0,g:'steady'},
+ {n:'Grilled Chicken Asparagus Rice Bowl',d:'FedUp ACTIVE · 416g · 432mg sodium',p:62,c:39,f:6,sf:2,sard:0,g:'steady'},
+ {n:'Grilled Chicken Taco Salad',d:'FedUp ACTIVE · 495g · 449mg sodium',p:60,c:55,f:5,sf:1,sard:0,g:'steady'},
+ {n:'Raspberry Mandarin Coconut Chicken Salad',d:'FedUp ACTIVE · 398g · 206mg sodium',p:59,c:33,f:12,sf:3,sard:0,g:'steady'},
+ {n:'Sweet BBQ Chicken Wrap with Grilled Peppers',d:'FedUp ACTIVE · 334g · 721mg sodium',p:58,c:39,f:6,sf:1,sard:0,g:'steady'},
+ {n:'Watermelon Grape Salad',d:'FedUp ACTIVE · 376g · 165mg sodium',p:58,c:28,f:10,sf:3,sard:0,g:'steady'},
+ {n:'Berry Balsamic & Grilled Chicken Salad',d:'FedUp ACTIVE · 326g · 159mg sodium',p:58,c:24,f:11,sf:2,sard:0,g:'steady'},
+ {n:'BBQ Chicken with Rice & Vegetables',d:'FedUp ACTIVE · 467g · 480mg sodium',p:57,c:49,f:4,sf:1,sard:0,g:'steady'},
+ {n:'Vegetable Medley With Grilled Chicken & Rose',d:'FedUp ACTIVE · 419g · 272mg sodium',p:57,c:37,f:6,sf:3,sard:0,g:'steady'},
+ {n:'Harvest Grain Bowl',d:'FedUp ACTIVE · 371g · 208mg sodium',p:57,c:44,f:10,sf:2,sard:0,g:'steady'},
+ {n:'Mediterranean Pasta Salad',d:'FedUp ACTIVE · 244g · 353mg sodium',p:56,c:33,f:10,sf:2,sard:0,g:'steady'},
+ {n:'Hot Honey Chicken Bowl',d:'FedUp ACTIVE · 384g · 315mg sodium',p:57,c:43,f:17,sf:3,sard:0,g:'anchor'},
+ {n:'Balsamic Chicken w/ Tomato Salad and Brown R',d:'FedUp ACTIVE · 412g · 372mg sodium',p:56,c:46,f:16,sf:3,sard:0,g:'anchor'},
+ {n:'Balsamic Chicken w/ Peach Salsa and Brown Ri',d:'FedUp ACTIVE · 427g · 352mg sodium',p:51,c:51,f:15,sf:3,sard:0,g:'anchor'},
+ {n:'Teriyaki Chicken Crispy Rice Salad',d:'FedUp ACTIVE · 419g · 1078mg sodium',p:54,c:34,f:19,sf:3,sard:0,g:'anchor'},
+ {n:'Chicken Spring Roll Bowl',d:'FedUp ACTIVE · 356g · 942mg sodium',p:48,c:40,f:15,sf:3,sard:0,g:'anchor'},
+ {n:'Chimichurri Chicken  w/ Cuban Black Beans & ',d:'FedUp ACTIVE · 380g · 205mg sodium',p:58,c:35,f:20,sf:3,sard:0,g:'anchor'}
+];
+
+/* ================= Weekly portion-tier advice =================
+   Buy weekly, not monthly: on a GLP-1 the constraint changes faster than a
+   month. The question each week is not "what should I eat" but "what will I
+   actually finish" — a LEAN meal eaten beats an ACTIVE meal half-abandoned. */
+var TIERS={
+  lean:  {n:'LEAN',   p:38,f:9, kcal:357,g:332},
+  active:{n:'ACTIVE', p:50,f:10,kcal:463,g:414},
+  bulk:  {n:'BULK',   p:52,f:12,kcal:518,g:449}
+};
+/* Protein performance over the trailing week. */
+function weekProtein(){
+  var d=load(K.meals), floor=num(GOALS.pfloor)||125, days={}, i;
+  for(i=0;i<7;i++)days[shiftDate(today(),-i)]=0;
+  d.forEach(function(m){if(days.hasOwnProperty(m.date))days[m.date]+=num(m.p);});
+  var vals=Object.keys(days).map(function(k){return days[k];}).filter(function(v,ix){
+    return ix>0||v>0; });               // ignore an unfinished today
+  if(!vals.length)return null;
+  var avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+  var under=vals.filter(function(v){return v<floor;}).length;
+  return {avg:avg, under:under, n:vals.length, floor:floor};
+}
+/* Tolerance over the trailing week: 0 none .. 3 rough. */
+function weekSide(){
+  var cut=shiftDate(today(),-7);
+  var d=load(K.side).filter(function(x){return x.date>cut;});
+  if(!d.length)return null;
+  var mean=function(k){return d.reduce(function(a,b){return a+num(b[k]);},0)/d.length;};
+  return {n:d.length, nausea:mean('nausea'), gi:mean('gi'), appetite:mean('appetite')};
+}
+/* Priority order matters: what you can finish outranks what you'd like to eat. */
+function tierAdvice(){
+  var wp=weekProtein(), ws=weekSide(), rg=rateGuard(), esc=escalation();
+  var why=[], tier='active', conf='steady';
+  if(esc){
+    tier='lean'; conf='escalating';
+    why.push('You stepped up to '+esc.to+' mg '+esc.since+' day'+(esc.since===1?'':'s')+' ago. '+
+      'Appetite drops hardest right after a bump \u2014 smaller portions get finished.');
+  } else if(ws&&(ws.appetite>=2||ws.nausea>=2)){
+    tier='lean'; conf='low tolerance';
+    why.push('Appetite loss averaged '+ws.appetite.toFixed(1)+'/3 and nausea '+ws.nausea.toFixed(1)+'/3 this week. '+
+      'A LEAN meal you finish beats an ACTIVE meal you abandon halfway.');
+  } else if(wp&&wp.under>=3&&(!ws||ws.appetite<1)){
+    tier='bulk'; conf='under-eating';
+    why.push('Protein came in under your '+wp.floor+'g floor on '+wp.under+' of '+wp.n+' days, '+
+      'but appetite has been fine. Bigger portions are the simplest fix.');
+  } else if(rg&&rg.over){
+    tier='bulk'; conf='losing too fast';
+    why.push('You are dropping '+rg.pct.toFixed(1)+'% per week against a '+rg.cap+'% cap. '+
+      'More food, not less \u2014 past that rate more of what comes off is lean.');
+  } else if(wp&&wp.avg>=num(GOALS.protein)*0.95){
+    tier='active'; conf='dialed in';
+    why.push('Protein averaged '+Math.round(wp.avg)+'g against a '+GOALS.protein+'g target. '+
+      'Nothing to fix \u2014 hold the portion you are on.');
+  } else {
+    why.push(wp?('Protein averaged '+Math.round(wp.avg)+'g. ACTIVE is the efficient tier \u2014 '+
+      'BULK costs 55 more calories for 2 more grams.')
+      :'Not enough logged yet to tune this. ACTIVE is the sensible starting portion.');
+  }
+  // How many to order: cover two meals a day, adjusted for what the tier delivers.
+  var t=TIERS[tier], tgt=num(GOALS.protein)||190;
+  var perDay=Math.max(1,Math.min(3,Math.round((tgt*0.55)/t.p)));
+  var count=perDay*7;
+  return {tier:tier, T:t, why:why, conf:conf, count:count, perDay:perDay,
+          wp:wp, ws:ws, rg:rg, esc:esc};
+}
+function renderTierAdvice(){
+  var el=$('tier-advice'); if(!el)return;
+  var a=tierAdvice(), t=a.T;
+  var col=a.tier==='lean'?'var(--warn)':a.tier==='bulk'?'var(--accent)':'var(--good)';
+  var h='<div style="text-align:center;padding:14px 0 10px">'+
+    '<div class="cap">Order this week</div>'+
+    '<div style="font-family:var(--disp);font-size:40px;line-height:1.05;color:'+col+'">'+t.n+'</div>'+
+    '<div class="cap">'+a.count+' meals \u00b7 about '+a.perDay+' a day</div></div>';
+  h+='<div class="grid">'+
+    '<div class="stat"><div class="k">Per meal</div><div class="v">'+t.p+'g</div><div class="s">protein</div></div>'+
+    '<div class="stat"><div class="k">Fat</div><div class="v">'+t.f+'g</div><div class="s">median</div></div>'+
+    '<div class="stat"><div class="k">Portion</div><div class="v">'+t.g+'</div><div class="s">grams</div></div></div>';
+  a.why.forEach(function(w){h+='<div class="note"><strong>Why '+t.n+'</strong>'+w+'</div>';});
+  h+='<div class="cap" style="margin-top:10px;line-height:1.7">'+
+    (a.wp?'Last '+a.wp.n+' days: '+Math.round(a.wp.avg)+'g protein average, '+a.wp.under+' under floor. ':'')+
+    (a.ws?'Tolerance logged '+a.ws.n+' day'+(a.ws.n===1?'':'s')+'. ':'No tolerance check-ins this week. ')+
+    (a.rg?'Losing '+a.rg.pct.toFixed(1)+'%/wk.':'Not enough weigh-ins for a rate yet.')+
+    '</div>';
+  el.innerHTML=h;
+}
+
+/* ================= Custom meal templates =================
+   Built-in templates are mine; these are yours. Menus rotate, so anything
+   hardcoded goes stale — this is the part that keeps working. */
+function customTpls(){return load(K.tpl);}
+/* Built-ins plus yours, in one list. Custom entries carry an id. */
+function allTpls(){
+  return TEMPLATES.map(function(t,i){return {t:t,key:'b'+i};})
+    .concat(customTpls().map(function(t){return {t:t,key:'c'+t.id};}));
+}
+function tplByKey(k){
+  if(k.charAt(0)==='b')return TEMPLATES[num(k.slice(1))];
+  var c=customTpls().filter(function(x){return String(x.id)===k.slice(1);})[0];
+  return c||null;
+}
+function editTpl(key){
+  var t=key?tplByKey(key):null;
+  var groups=TGROUPS.map(function(g){
+    return '<option value="'+g[0]+'"'+(t&&t.g===g[0]?' selected':'')+'>'+g[1]+'</option>';}).join('');
+  $('modal-box').innerHTML='<h3>'+(t?'Edit meal':'New meal')+'</h3>'+
+    '<div class="row"><div><label>Name</label><input id="tp-n" value="'+(t?String(t.n).replace(/"/g,'&quot;'):'')+'"></div></div>'+
+    '<div class="row"><div><label>Description</label><input id="tp-d" value="'+(t?String(t.d).replace(/"/g,'&quot;'):'')+'"></div></div>'+
+    '<div class="row c2"><div><label>Group</label><select id="tp-g">'+groups+'</select></div>'+
+      '<div><label>Protein g</label><input type="number" id="tp-p" value="'+(t?t.p:'')+'"></div></div>'+
+    '<div class="row c3">'+
+      '<div><label>Carbs g</label><input type="number" id="tp-c" value="'+(t?t.c:'')+'"></div>'+
+      '<div><label>Fat g</label><input type="number" id="tp-f" value="'+(t?t.f:'')+'"></div>'+
+      '<div><label>Sat fat g</label><input type="number" id="tp-sf" value="'+(t?t.sf:'')+'"></div></div>'+
+    '<div class="cap" id="tp-note" style="margin:0 0 14px;text-align:center">\u2014</div>'+
+    '<button class="btn" onclick="saveTpl('+(key&&key.charAt(0)==='c'?"'"+key+"'":'null')+')">Save</button>'+
+    (key&&key.charAt(0)==='c'?'<button class="btn ghost" style="margin-top:6px" onclick="delTpl(\''+key+'\')">Delete</button>':'')+
+    '<button class="btn ghost" onclick="closeModal()" style="margin-top:6px">Cancel</button>';
+  ['tp-p','tp-c','tp-f','tp-sf'].forEach(function(id){
+    var e=$(id); if(e)e.addEventListener('input',tplNote);});
+  $('modal').classList.add('on'); tplNote();
+}
+function tplNote(){
+  var el=$('tp-note'); if(!el)return;
+  var pr=num($('tp-p').value),c=num($('tp-c').value),f=num($('tp-f').value),sf=num($('tp-sf').value);
+  var kcal=pr*4+c*4+f*9;
+  var flag = f>=20?'<span style="color:var(--bad)">heavy \u2014 rough after an injection</span>'
+           : f>=15?'<span style="color:var(--warn)">moderate fat</span>'
+           : '<span style="color:var(--good)">easy on the gut</span>';
+  el.innerHTML=Math.round(kcal)+' kcal \u00b7 '+(kcal?Math.round(pr*4/kcal*100):0)+'% protein \u00b7 '+
+    sf+'g sat ('+Math.round(sf/(num(GOALS.satfat)||25)*100)+'% of cap) \u00b7 '+flag;
+}
+function saveTpl(key){
+  var nme=$('tp-n').value.trim();
+  if(!nme){toast('Name it','var(--warn)');return;}
+  var rec={n:nme,d:$('tp-d').value.trim(),g:$('tp-g').value,
+    p:num($('tp-p').value),c:num($('tp-c').value),f:num($('tp-f').value),sf:num($('tp-sf').value),sard:0};
+  var d=customTpls();
+  if(key){
+    var ex=d.filter(function(x){return String(x.id)===key.slice(1);})[0];
+    if(ex){for(var k in rec)ex[k]=rec[k];}
+  }else{ rec.id=uid(); d.push(rec); }
+  save(K.tpl,d); closeModal(); RENDER.fuel(); toast('Saved');
+}
+function delTpl(key){
+  save(K.tpl,customTpls().filter(function(x){return String(x.id)!==key.slice(1);}));
+  closeModal(); RENDER.fuel(); toast('Deleted');
+}
+/* One-tap load of the meals that scored best against your fat, sat-fat and protein limits. */
+function loadFedUp(){
+  var d=customTpls(), have={};
+  d.forEach(function(x){have[x.n]=1;});
+  var added=0;
+  FEDUP.forEach(function(t){
+    if(have[t.n])return;
+    var c={}; for(var k in t)c[k]=t[k];
+    c.id=uid(); d.push(c); added++;
+  });
+  save(K.tpl,d); RENDER.fuel();
+  toast(added?added+' meals added':'Already loaded');
+}
+function clearCustomTpls(){
+  save(K.tpl,[]); RENDER.fuel(); toast('Custom meals cleared');
+}
+
+/* ================= Tirzepatide — injections, escalation, tolerance =================
+   Weekly dose. Side effects cluster in the 48h after, and spike after every step up.
+   The app's job: keep protein defended, hold training expectations during escalation,
+   and flag weight coming off faster than muscle can survive. */
+var TZ_DOSES=[2.5,5,7.5,10,12.5,15];
+var TZ_SITES=['Abdomen L','Abdomen R','Thigh L','Thigh R'];
+
+function injections(){return load(K.inject).sort(function(a,b){return b.date.localeCompare(a.date);});}
+function lastInjection(){return injections()[0]||null;}
+function nextSite(){
+  var l=lastInjection(); if(!l)return TZ_SITES[0];
+  var i=TZ_SITES.indexOf(l.site);
+  return TZ_SITES[(i+1)%TZ_SITES.length];
+}
+/* Days since the most recent dose, and days until the next weekly one. */
+function injectStatus(){
+  var l=lastInjection(); if(!l)return null;
+  var since=daysBetween(l.date,today());
+  return {last:l, since:since, due:7-since};
+}
+/* An escalation is a dose higher than the one before it. The week after is the rough one. */
+function escalation(){
+  var d=injections();
+  if(d.length<2)return null;
+  if(num(d[0].dose)<=num(d[1].dose))return null;
+  var since=daysBetween(d[0].date,today());
+  return since<=7?{from:num(d[1].dose),to:num(d[0].dose),since:since}:null;
+}
+function logInjection(){
+  var dose=num($('tz-dose').value), site=$('tz-site').value, date=$('tz-date').value||today();
+  if(!dose){toast('Pick a dose','var(--warn)');return;}
+  var d=load(K.inject);
+  if(d.some(function(x){return x.date===date;})){toast('Already logged for that date','var(--warn)');return;}
+  var prev=d.sort(function(a,b){return b.date.localeCompare(a.date);})[0];
+  if(prev&&daysBetween(prev.date,date)<3&&daysBetween(prev.date,date)>=0){
+    toast('Less than 72h since the last dose','var(--bad)');return;
+  }
+  d.push({id:uid(),date:date,dose:dose,site:site,note:$('tz-note').value.trim()});
+  d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.inject,d);
+  $('tz-note').value='';
+  RENDER.recover(); renderTZToday(); toast(dose+' mg logged');
+}
+function delInjection(id){
+  save(K.inject,load(K.inject).filter(function(x){return x.id!==id;}));
+  RENDER.recover(); renderTZToday(); toast('Deleted');
+}
+/* Daily tolerance check-in: 0 none, 1 mild, 2 moderate, 3 rough. */
+function logSide(){
+  var d=load(K.side).filter(function(x){return x.date!==today();});
+  d.push({id:uid(),date:today(),nausea:num($('sd-nausea').value),
+    gi:num($('sd-gi').value),appetite:num($('sd-appetite').value)});
+  d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.side,d);
+  renderSideLog(); toast('Logged');
+}
+function sideToday(){return load(K.side).filter(function(x){return x.date===today();})[0]||null;}
+
+/* Weight falling faster than the cap means the ratio of fat to lean is getting worse. */
+function rateGuard(){
+  var r=lossRate(); if(!r)return null;
+  var cap=num(GOALS.maxrate)||1.0;
+  return {pct:r.pct, perWeek:r.perWeek, cap:cap, over:r.pct>cap};
+}
+function renderTZToday(){
+  var el=$('card-tz'); if(!el)return;
+  var st=injectStatus(), esc=escalation(), rg=rateGuard();
+  if(!st&&!rg){el.style.display='none';return;}
+  el.style.display='';
+  var h='';
+  if(st){
+    var dueTxt = st.due>0 ? 'Next dose in '+st.due+' day'+(st.due===1?'':'s')
+               : st.due===0 ? 'Dose due today' : Math.abs(st.due)+' day'+(Math.abs(st.due)===1?'':'s')+' overdue';
+    h+='<div class="grid">'+
+      '<div class="stat"><div class="k">Current dose</div><div class="v">'+st.last.dose+'</div><div class="s">mg weekly</div></div>'+
+      '<div class="stat"><div class="k">Day</div><div class="v">'+st.since+'</div><div class="s">since injection</div></div>'+
+      '<div class="stat"><div class="k">Next site</div><div class="v" style="font-size:15px">'+nextSite().split(' ')[0]+'</div><div class="s">'+nextSite()+'</div></div></div>'+
+      '<div class="cap" style="text-align:center;margin-top:8px">'+dueTxt+'</div>';
+  }
+  if(esc){
+    h+='<div class="note"><strong>Escalation week \u2014 '+esc.from+' \u2192 '+esc.to+' mg</strong>'+
+      'Side effects spike after a step up. Protein floor first, training loads held, window widened. '+
+      'Expect strength to dip for a few days \u2014 that is food intake, not detraining.</div>';
+  }
+  if(st&&st.since<=2&&!esc){
+    h+='<div class="note ok"><strong>Injection window</strong>The next 48 hours are usually the roughest. '+
+      'Lean on the rough-day meals, keep fluids up, and skip the sauna.</div>';
+  }
+  if(rg&&rg.over){
+    h+='<div class="note"><strong>Losing '+rg.pct.toFixed(1)+'% per week</strong>'+
+      'Above your '+rg.cap+'% cap ('+rg.perWeek.toFixed(1)+' lbs/wk). Faster is not better \u2014 past this rate '+
+      'more of what comes off is lean. Eat to the protein floor and add calories before cutting further.</div>';
+  }
+  $('tz-today').innerHTML=h;
+}
+function renderSideLog(){
+  var box=$('side-list'); if(!box)return;
+  var t=sideToday();
+  ['nausea','gi','appetite'].forEach(function(k){
+    var e=$('sd-'+k); if(e)e.value=t?String(t[k]):'0';
+  });
+  var d=load(K.side).slice(0,10);
+  box.innerHTML=d.length?d.map(function(r){
+    var worst=Math.max(r.nausea,r.gi,r.appetite);
+    var col=worst>=3?'var(--bad)':worst===2?'var(--warn)':'var(--good)';
+    return '<div class="item"><div class="item-hd"><div style="flex:1">'+
+      '<div class="item-t" style="color:'+col+'">'+fmtShort(r.date)+'</div>'+
+      '<div class="item-m">nausea '+r.nausea+' \u00b7 gut '+r.gi+' \u00b7 appetite loss '+r.appetite+'</div></div></div></div>';
+  }).join(''):'<div class="cap" style="text-align:center;padding:10px 0">No check-ins yet.</div>';
+}
+function renderInjections(){
+  var box=$('tz-list'); if(!box)return;
+  var sel=$('tz-dose');
+  if(sel&&!sel.options.length){
+    sel.innerHTML=TZ_DOSES.map(function(d){return '<option value="'+d+'">'+d+' mg</option>';}).join('');
+    var l=lastInjection(); if(l)sel.value=String(l.dose);
+  }
+  var ss=$('tz-site');
+  if(ss&&!ss.options.length){
+    ss.innerHTML=TZ_SITES.map(function(x){return '<option value="'+x+'">'+x+'</option>';}).join('');
+    ss.value=nextSite();
+  }
+  if($('tz-date')&&!$('tz-date').value)$('tz-date').value=today();
+  var d=injections();
+  box.innerHTML=d.length?d.map(function(r,i){
+    var prev=d[i+1], up=prev&&num(r.dose)>num(prev.dose);
+    return '<div class="item"><div class="item-hd"><div style="flex:1">'+
+      '<div class="item-t">'+r.dose+' mg'+(up?' <span class="core" style="color:var(--warn)">STEP UP</span>':'')+'</div>'+
+      '<div class="item-m">'+fmtShort(r.date)+' \u00b7 '+r.site+(r.note?' \u00b7 '+r.note:'')+'</div></div>'+
+      '<div class="acts"><button onclick="delInjection('+r.id+')">\u2715</button></div></div></div>';
+  }).join(''):'<div class="cap" style="text-align:center;padding:10px 0">No injections logged yet.</div>';
+}
+
 /* ================= Niggles — training around a flagged body area =================
    A flagged area suppresses progression on the movement patterns that load it.
    The point is not to stop training; it's to stop the runner cheerfully
@@ -1455,10 +1862,15 @@ function isLiftDay(date){
 /* Window length in hours: Sunday reset < rest day < training day */
 function fastLenFor(date){
   var dow=new Date(date+'T12:00:00').getDay();
-  if(dow===0)return num(FAST.sun)||6;
-  return isLiftDay(date)?(num(FAST.train)||10):(num(FAST.rest)||8);
+  var base = dow===0 ? (num(FAST.sun)||6)
+           : isLiftDay(date)?(num(FAST.train)||10):(num(FAST.rest)||8);
+  // During an escalation week appetite suppression does the window's job for you.
+  // Compressing on top of it is how protein gets missed.
+  if(date===today()&&escalation())base=Math.max(base,12);
+  return base;
 }
 function fastLabelFor(date){
+  if(date===today()&&escalation())return 'Escalation week \u2014 widened';
   var dow=new Date(date+'T12:00:00').getDay();
   if(dow===0)return 'Sunday reset';
   return isLiftDay(date)?'Training day':'Rest day';
@@ -1505,6 +1917,20 @@ function fastStreak(){
 }
 function fastFeedings(len){return Math.max(2,Math.round(len/2.5));}
 
+function clearMeals(){
+  var nMeals=load(K.meals).length;
+  if(!nMeals){toast('Nothing to clear');return;}
+  $('modal-box').innerHTML='<h3>Clear '+nMeals+' logged meal'+(nMeals===1?'':'s')+'?</h3>'+
+    '<div class="obj-eta" style="margin-bottom:14px">This wipes your meal log only. '+
+    'Saved foods, templates, labs, scans, and training stay. There is no undo.</div>'+
+    '<button class="btn" onclick="doClearMeals()">Yes, clear them</button>'+
+    '<button class="btn ghost" onclick="closeModal()" style="margin-top:6px">Cancel</button>';
+  $('modal').classList.add('on');
+}
+function doClearMeals(){
+  save(K.meals,[]); closeModal(); cache.clear();
+  RENDER.fuel(); toast('Meal log cleared');
+}
 function toggleFast(){
   FAST.on=!FAST.on; saveO('ap8_fastcfg',FAST);
   renderFastSettings(); renderFast();
@@ -1896,11 +2322,14 @@ function startWorkout(){
   var deload=(Math.floor(daysBetween(PROF.start,today())/7)+1)%6===0;
   var offDay = idx!==todayIdx();
   var lay = deload ? null : layoffPlan(daysSinceLift());
+  var esc = deload ? null : escalation();
   var flags = flaggedPatterns();
-  WK={day:day.day,focus:day.focus,deload:deload,offDay:offDay,lay:lay,started:Date.now(),ex:strength.map(function(e){
+  WK={day:day.day,focus:day.focus,deload:deload,offDay:offDay,lay:lay,esc:esc,started:Date.now(),ex:strength.map(function(e){
     var last=e.bw?null:lastWeightFor(e.n);
     var rec = (deload||e.bw) ? null : overloadRec(e.n,e.p,e.reps,last);
     if(!e.bw&&lay)rec=applyLayoff(rec,last,lay);
+    if(!e.bw&&esc&&last&&last.w&&rec&&num(rec.w)>num(last.w))
+      rec={w:num(last.w),up:false,why:'Escalation week \u2014 holding at '+num(last.w)+'. Push again once intake is back.'};
     var flg=flags[e.p]||null;
     if(!e.bw&&flg)rec=applyNiggle(rec,last,flg);
     var w = e.bw ? '' : (deload ? (last?Math.round(last.w*0.6):'') : (rec?rec.w:(last?last.w:'')));
@@ -1989,8 +2418,11 @@ function renderRunner(){
   var html='<div class="run-bar"><div><div class="rn" style="font-family:var(--disp);font-size:var(--h2)">'+WK.day+'</div>'+
     '<div class="rp">'+doneSets+' / '+totalSets+' sets'+(remaining>0?' · ~'+remaining+' min left':'')+
     (WK.deload?' · DELOAD 60%':'')+(WK.offDay?' · make-up':'')+
-    (WK.lay?' · RETURNING':'')+'</div></div>'+
+    (WK.lay?' · RETURNING':'')+(WK.esc?' · ESCALATION':'')+'</div></div>'+
     '<button class="btn ghost" style="width:auto;padding:9px 14px" onclick="finishWorkout()">Finish</button></div>';
+  if(WK.esc)html+='<div class="note"><strong>Escalation week \u2014 '+WK.esc.from+' \u2192 '+WK.esc.to+' mg</strong>'+
+    'Loads are held, not progressed. Strength tracks food intake, and yours is down this week. '+
+    'Hit the sets, skip the ego.</div>';
   if(WK.lay)html+='<div class="note"><strong>Coming back after '+WK.lay.label.replace(' off','')+' off</strong>'+
     WK.lay.why+' Stop at RIR '+WK.lay.rir+' today. If it moves clean, step back up next session.</div>';
 
@@ -2428,25 +2860,34 @@ RENDER.fuel=function(){
   }
 
   TGROUPS.forEach(function(gr){
-    var items=TEMPLATES.map(function(t,i){return {t:t,i:i};}).filter(function(x){return x.t.g===gr[0];});
+    var items=allTpls().filter(function(x){return x.t.g===gr[0];});
     if(!items.length)return;
     html+='<div class="eyebrow" style="margin:18px 0 10px">'+gr[1]+'</div>'+
       '<div class="obj-eta" style="margin:-6px 0 10px">'+gr[2]+'</div>';
     html+=items.map(function(x){
       var t=x.t, fits=t.sf<=Math.max(0,sfLeft);
-      var dot=t.g==='heavy'?(fits?'var(--warn)':'var(--bad)'):'var(--good)';
-      return '<div class="item" onclick="logTemplate('+x.i+')" style="cursor:pointer">'+
-        '<div class="item-hd"><div style="flex:1">'+
+      var dot=t.g==='anchor'?(fits?'var(--warn)':'var(--bad)'):'var(--good)';
+      var mine=x.key.charAt(0)==='c';
+      return '<div class="item" style="cursor:pointer">'+
+        '<div class="item-hd"><div style="flex:1" onclick="logTemplate(\''+x.key+'\')">'+
         '<div class="item-t"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+dot+';margin-right:7px;vertical-align:middle"></span>'+t.n+'</div>'+
         '<div class="item-d">'+t.d+'</div>'+
         '<div class="item-m">'+t.p+'P · '+t.c+'C · '+t.f+'F · <b style="color:'+(t.sf<=2?'var(--good)':t.sf>=7?'var(--warn)':'var(--bone)')+'">'+t.sf+'g sat</b> · '+(t.p*4+t.c*4+t.f*9)+' kcal</div></div>'+
-        '<div class="acts"><button>+</button></div></div></div>';}).join('');
+        '<div class="acts">'+(mine?'<button onclick="editTpl(\''+x.key+'\')">\u270e</button>':'')+
+        '<button onclick="logTemplate(\''+x.key+'\')">+</button></div></div></div>';}).join('');
   });
+  renderTierAdvice();
+  html+='<div class="eyebrow" style="margin:20px 0 10px">Your meals</div>'+
+    '<button class="btn ghost" onclick="editTpl()">Add a meal</button>'+
+    '<button class="btn ghost" style="margin-top:6px" onclick="loadFedUp()">Load FedUp Kitchen picks ('+FEDUP.length+')</button>'+
+    '<div class="cap" style="margin:10px 0 0;line-height:1.7">Menus rotate. Add what you actually ordered '+
+    'and it stays until you change it. Tap \u270e on any of your own meals to edit.</div>';
   $('templates').innerHTML=html;
   renderMealList();
 };
-function logTemplate(i){
-  var t=TEMPLATES[i], d=load(K.meals);
+function logTemplate(key){
+  var t=tplByKey(key); if(!t)return;
+  var d=load(K.meals);
   d.push({id:uid(),date:today(),desc:t.n,p:t.p,c:t.c,f:t.f,sf:t.sf,sard:t.sard||0,alc:0,t:nowHM()});
   d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.meals,d);
   fastTouch(); RENDER.fuel(); renderFast(); toast(t.n+' logged');
@@ -2827,7 +3268,7 @@ function saveZone2(){
   $('z-min').value=''; RENDER.recover(); toast('Zone 2 logged');
 }
 RENDER.recover=function(){
-  renderNiggles();
+  renderInjections(); renderSideLog(); renderNiggles();
   highlightMob();
   var age=Math.floor(daysBetween(PROF.dob,today())/365.25), maxHR=220-age;
   $('z2-hr').textContent='Zone 2 is roughly '+Math.round(maxHR*.6)+'–'+Math.round(maxHR*.7)+' bpm. Conversational pace — you should be able to speak a full sentence.';
