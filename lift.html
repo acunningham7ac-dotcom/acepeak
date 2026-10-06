@@ -74,6 +74,7 @@ label{display:block;font-family:var(--data);font-size:9px;letter-spacing:.12em;
 <div id="app"></div>
 
 <div class="foot">
+  <span onclick="pullLocal()">Pull from ACEPEAK</span> ·
   <span onclick="doImport()">Import backup</span> ·
   <span onclick="doExport()">Export</span>
 </div>
@@ -265,8 +266,17 @@ function renderList(){
     }).join('')+'</div>';
   }
   if(!ex.length&&!VIEW.q){
-    h+='<div class="card"><div class="empty">Nothing logged yet.<br>'+
-       'Import your backup below, or search above to add a lift.</div></div>';
+    var fc=foundCount();
+    h+='<div class="card">';
+    if(fc){
+      h+='<div class="empty">Found <b style="color:var(--bone)">'+fc+' logged sets</b> '+
+         'from ACEPEAK on this device.</div>'+
+         '<button onclick="pullLocal()">Pull them in</button>';
+    }else{
+      h+='<div class="empty">Nothing logged yet.<br>'+
+         'Search above to add a lift, or import a backup below.</div>';
+    }
+    h+='</div>';
   }
   $('app').innerHTML=h;
   var qi=$('q');
@@ -343,6 +353,61 @@ function delSet(id){
   toast('Deleted'); render();
 }
 
+/* ---------- pull from ACEPEAK ----------
+   Same domain means same localStorage, so if ACEPEAK is sitting at index.html
+   on this origin its lift history is already readable from here. Rather than
+   hardcode a key that may have changed across versions, scan for any array
+   that looks like lift records and take what fits. */
+function scanLocal(){
+  var out=[],i,k,v;
+  for(i=0;i<localStorage.length;i++){
+    k=localStorage.key(i);
+    if(!k||k.indexOf('apl_')===0)continue;
+    try{v=JSON.parse(localStorage.getItem(k));}catch(e){continue;}
+    if(!Array.isArray(v)||!v.length)continue;
+    var rows=v.filter(function(x){
+      return x&&typeof x==='object'&&(x.lift||x.ex||x.name)&&(x.weight||x.w)&&x.date;});
+    if(rows.length)out.push({key:k,rows:rows});
+  }
+  return out;
+}
+function foundCount(){
+  return scanLocal().reduce(function(a,f){return a+f.rows.length;},0);
+}
+/* ACEPEAK logged RIR (reps left in the tank); this app uses RPE (how hard it was).
+   They run in opposite directions — RIR 2 is RPE 8 — so a straight copy would
+   turn every hard set into an easy one and hand back nonsense. */
+function toRPE(row){
+  if(row.rpe!==undefined&&row.rpe!=='')return num(row.rpe);
+  if(row.rir!==undefined&&row.rir!==null&&String(row.rir).trim()!==''){
+    // RIR 0 is failure, which is RPE 10 — not "no data". Only a blank
+    // field means unknown, and that is handled by the check above.
+    return Math.max(0,Math.min(10,10-num(row.rir)));
+  }
+  return 0;
+}
+function pullLocal(){
+  var found=scanLocal();
+  if(!found.length){
+    toast('No ACEPEAK data on this device','var(--warn)');
+    return;
+  }
+  var cur=load(K.lifts), add=0;
+  found.forEach(function(f){
+    f.rows.forEach(function(x){
+      var name=String(x.lift||x.ex||x.name).trim(), w=num(x.w||x.weight);
+      if(!name||!w)return;
+      if(cur.some(function(c){
+        return c.date===x.date&&norm(c.ex)===norm(name)&&num(c.w)===w;}))return;
+      cur.push({id:uid(),date:x.date,ex:name,w:w,reps:num(x.reps),rpe:toRPE(x)});
+      add++;
+    });
+  });
+  save(K.lifts,cur);
+  toast(add?add+' sets pulled in':'Already up to date');
+  render();
+}
+
 /* ---------- backup ---------- */
 function doExport(){
   var blob=new Blob([JSON.stringify({lifts:load(K.lifts),ex:load(K.ex),_v:1},null,1)],
@@ -364,7 +429,7 @@ $('file').addEventListener('change',function(ev){
         var date=x.date||today();
         if(cur.some(function(c){return c.date===date&&norm(c.ex)===norm(name)&&num(c.w)===num(x.w||x.weight);}))return;
         cur.push({id:uid(),date:date,ex:String(name).trim(),w:num(x.w||x.weight),
-          reps:num(x.reps),rpe:num(x.rpe||x.rir)});
+          reps:num(x.reps),rpe:toRPE(x)});
         add++;
       });
       save(K.lifts,cur);
