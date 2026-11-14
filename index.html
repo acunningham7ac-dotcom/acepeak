@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#12100E">
+<meta name="theme-color" content="#0E100D">
 <title>ACEPEAK — Protocol</title>
 <link rel="manifest" href='data:application/manifest+json,{"name":"ACEPEAK","short_name":"ACEPEAK","start_url":"./index.html","display":"standalone","background_color":"%23080A0D","theme_color":"%23080A0D","icons":[]}'>
 <script>
@@ -17,24 +17,47 @@ if('serviceWorker' in navigator){
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:wght@300;400;600&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* IGNITION — default. Cold pre-dawn steel, electric accent. */
-  --ink:#080A0D; --slate:#10141A; --raise:#1A1F27; --line:rgba(237,242,245,.10);
-  --bone:#EDF2F5; --mute:#7C8896;
-  --accent:#22D3EE; --accent-dim:rgba(34,211,238,.15);
-  --good:#4ADE80;   --good-dim:rgba(74,222,128,.15);
-  --warn:#FBBF24;   --warn-dim:rgba(251,191,36,.15);
-  --bad:#FB4E5B;    --bad-dim:rgba(251,78,91,.16);
+  /* NATION — default. Same palette as the Nation Softball Assistant:
+     red leads, camo/army green second, white type on near-black camo.
+     Values are Nation's dark-mode set, which is what survives on a dark app.
+     Nation's light-mode red (#C41E3A) and army (#4A5A2B) are NOT used here —
+     they measure 2.7:1 and 2.1:1 on these surfaces and fail WCAG AA outright.
+     The army green is lifted to #A8BF6B so it stays separable from the red
+     under deuteranopia; Nation's own #869856 sits at a 1.05x luminance ratio
+     against the red, which reads as one colour to a red-green colourblind eye. */
+  --ink:#0E100D; --slate:#181B16; --raise:#20241D; --line:rgba(241,241,236,.11);
+  --bone:#F1F1EC; --mute:#9AA392;
+  --accent:#FF5A6C; --accent-dim:rgba(255,90,108,.15);
+  --accent-ink:#140507;
+  --good:#A8BF6B;   --good-dim:rgba(168,191,107,.15);
+  --warn:#E0A93A;   --warn-dim:rgba(224,169,58,.15);
+  --bad:#FF5A6C;    --bad-dim:rgba(255,90,108,.16);
+  --nav:rgba(14,16,13,.97);
+  --camo-base:#0A0C09; --camo-1:#232B18; --camo-2:#2F3A1F; --camo-3:#161B10;
   --disp:'Bebas Neue',Impact,sans-serif;
   --body:'Inter',system-ui,sans-serif;
   --data:'DM Mono',ui-monospace,monospace;
   --h1:42px; --h1-track:.04em; --h2:26px; --h2-track:.03em;
 }
 
+/* IGNITION — the original. Cold pre-dawn steel, electric accent. */
+[data-theme="ignition"]{
+  --ink:#080A0D; --slate:#10141A; --raise:#1A1F27; --line:rgba(237,242,245,.10);
+  --bone:#EDF2F5; --mute:#7C8896;
+  --accent:#22D3EE; --accent-dim:rgba(34,211,238,.15); --accent-ink:#04171B;
+  --good:#4ADE80;   --good-dim:rgba(74,222,128,.15);
+  --warn:#FBBF24;   --warn-dim:rgba(251,191,36,.15);
+  --bad:#FB4E5B;    --bad-dim:rgba(251,78,91,.16);
+  --nav:rgba(8,10,13,.97);
+  --disp:'Bebas Neue',Impact,sans-serif;
+}
+
 /* PULSE — same energy, violet-forward. */
 [data-theme="pulse"]{
   --ink:#0A0710; --slate:#150F1E; --raise:#201828; --line:rgba(240,235,245,.10);
   --bone:#F0EBF5; --mute:#8B7F9B;
-  --accent:#D946EF; --accent-dim:rgba(217,70,239,.15);
+  --nav:rgba(10,7,16,.97);
+  --accent:#D946EF; --accent-dim:rgba(217,70,239,.15); --accent-ink:#1A0320;
   --good:#4ADE80;   --good-dim:rgba(74,222,128,.15);
   --warn:#FBBF24;   --warn-dim:rgba(251,191,36,.15);
   --bad:#FB4E5B;    --bad-dim:rgba(251,78,91,.16);
@@ -45,7 +68,8 @@ if('serviceWorker' in navigator){
 [data-theme="oldmoney"]{
   --ink:#12100E; --slate:#1C1A17; --raise:#252220; --line:rgba(232,227,217,.10);
   --bone:#E8E3D9; --mute:#8A8378;
-  --accent:#C8860A; --accent-dim:rgba(200,134,10,.14);
+  --nav:rgba(28,26,23,.97);
+  --accent:#C8860A; --accent-dim:rgba(200,134,10,.14); --accent-ink:#1A1206;
   --good:#5E9585;   --good-dim:rgba(74,124,111,.16);
   --warn:#C8860A;   --warn-dim:rgba(200,134,10,.14);
   --bad:#D85644;    --bad-dim:rgba(179,58,43,.16);
@@ -66,7 +90,18 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 #strip .val{font-family:var(--data);font-size:13px;font-weight:500;color:var(--accent);margin-top:2px;}
 #strip .val.urgent{color:var(--bad);}
 
-header{padding:20px 16px 8px;}
+/* Camo header with a red rule under it — lifted from the Nation app's dugout
+   header. Falls back to a flat panel on themes that define no camo vars. */
+header{padding:20px 16px 14px;margin:0 0 4px;border-bottom:3px solid var(--accent);
+  background-color:var(--camo-base,transparent);
+  background-image:
+    radial-gradient(ellipse 54px 20px at  8% 24%,var(--camo-2,transparent) 58%,transparent 60%),
+    radial-gradient(ellipse 40px 24px at 28% 74%,var(--camo-1,transparent) 58%,transparent 60%),
+    radial-gradient(ellipse 62px 18px at 52% 16%,var(--camo-3,transparent) 58%,transparent 60%),
+    radial-gradient(ellipse 36px 22px at 72% 62%,var(--camo-2,transparent) 58%,transparent 60%),
+    radial-gradient(ellipse 48px 16px at 92% 30%,var(--camo-1,transparent) 58%,transparent 60%),
+    radial-gradient(ellipse 30px 18px at 42% 46%,var(--camo-3,transparent) 55%,transparent 58%),
+    radial-gradient(ellipse 44px 14px at 84% 86%,var(--camo-1,transparent) 55%,transparent 58%);}
 header h1{font-family:var(--disp);font-size:var(--h1);font-weight:400;line-height:1;letter-spacing:var(--h1-track);}
 header .sub{font-family:var(--data);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--mute);margin-top:6px;}
 
@@ -75,7 +110,7 @@ header .sub{font-family:var(--data);font-size:10px;letter-spacing:.13em;text-tra
 @keyframes fade{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:none;}}
 @media(prefers-reduced-motion:reduce){.tab.active{animation:none;}}
 
-nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(28,26,23,.97);
+nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--nav);
   backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;
   padding:6px 2px calc(6px + env(safe-area-inset-bottom));}
 nav button{flex:1;background:none;border:0;padding:7px 1px;display:flex;flex-direction:column;
@@ -157,7 +192,7 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 .row.c2{grid-template-columns:1fr 1fr;} .row.c3{grid-template-columns:1fr 1fr 1fr;}
 .row.c4{grid-template-columns:repeat(4,1fr);}
 
-.btn{background:var(--accent);color:var(--ink);border:0;border-radius:2px;padding:11px 18px;
+.btn{background:var(--accent);color:var(--accent-ink,var(--ink));border:0;border-radius:2px;padding:11px 18px;
   font-family:var(--data);font-size:11px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;
   cursor:pointer;width:100%;transition:opacity .15s;}
 .btn:active{opacity:.75;}
@@ -277,15 +312,6 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 .theme.on .tn{color:var(--accent);}
 .theme .td{font-size:10px;color:var(--mute);margin-top:4px;line-height:1.35;}
 .legend i{display:inline-block;width:9px;height:2px;margin-right:4px;vertical-align:middle;}
-
-.fast-clock{text-align:center;padding:16px 0 12px}
-.fast-clock .fk{font-family:var(--data);font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--mute)}
-.fast-clock .fv{font-family:var(--disp);font-size:44px;line-height:1.05;margin:4px 0 2px;letter-spacing:.02em}
-.fast-clock .fs{font-family:var(--data);font-size:10px;color:var(--mute)}
-.fast-bar{height:7px;border-radius:4px;background:var(--line);overflow:hidden;margin:4px 0 7px}
-.fast-fill{height:100%;border-radius:4px;transition:width .4s ease}
-.fast-ends{display:flex;justify-content:space-between;font-family:var(--data);font-size:9px;
-  letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:14px}
 </style>
 </head>
 <body>
@@ -312,45 +338,10 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
     <div id="plan-detail"></div>
   </div>
 
-  <div class="card">
-    <h2>Fuel today</h2>
-    <div class="cap">Against your targets</div>
-    <div id="today-macros"></div>
-    <div class="grid" style="margin-top:14px">
-      <div class="stat"><div class="k">Sat fat</div><div class="v" id="t-satfat">0</div><div class="s" id="t-satfat-s"></div></div>
-      <div class="stat"><div class="k">Alcohol</div><div class="v" id="t-alc">0</div><div class="s">target zero</div></div>
-      <div class="stat"><div class="k">Meals ≥30g P</div><div class="v" id="t-pmeals">0</div><div class="s">of 4</div></div>
-    </div>
-    <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div><span class="n" style="font-family:var(--data);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute)">Water</span>
-          <span id="water-count" style="font-family:var(--data);font-size:14px;margin-left:8px">0 / 10</span></div>
-        <div style="display:flex;gap:6px">
-          <button class="btn ghost" style="width:auto;padding:7px 14px" onclick="addWater(-1)">−</button>
-          <button class="btn" style="width:auto;padding:7px 16px" onclick="addWater(1)">+ Glass</button>
-        </div>
-      </div>
-      <div id="water-dots" style="display:flex;flex-wrap:wrap;gap:5px"></div>
-      <div class="s" style="font-family:var(--data);font-size:8px;color:var(--mute);margin-top:8px;text-align:center" id="water-note"></div>
-    </div>
-  </div>
-
-  <div class="card" id="card-tz" style="display:none">
-    <h2>Tirzepatide</h2>
-    <div class="cap">Dose, tolerance, and rate of loss</div>
-    <div id="tz-today"></div>
-  </div>
-
   <div class="card" id="card-niggle" style="display:none">
     <h2>Flagged</h2>
     <div class="cap">Training around it</div>
     <div id="niggle-today"></div>
-  </div>
-
-  <div class="card" id="card-fast" style="display:none">
-    <h2>Eating window</h2>
-    <div class="cap" id="fast-plan">&mdash;</div>
-    <div id="fast-body"></div>
   </div>
 
   <div class="card collapsible collapsed" id="card-objectives">
@@ -469,52 +460,6 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 </section>
 
 <!-- FUEL -->
-<section class="tab" id="t-fuel">
-  <div class="card">
-    <h2>Today's plate</h2>
-    <div class="cap" id="fuel-date">—</div>
-    <div id="fuel-macros"></div>
-  </div>
-  <div class="eyebrow">Meal templates — tap to log</div>
-  <div class="eyebrow">This week's order</div>
-  <div class="card"><div id="tier-advice"></div></div>
-
-  <div class="card"><div id="templates"></div></div>
-
-  <div class="eyebrow">Speak or type what you ate</div>
-  <div class="card">
-    <div style="display:flex;gap:8px;margin-bottom:11px">
-      <input id="q-text" placeholder="8 oz ribeye, asparagus, olive oil" style="flex:1">
-      <button class="btn" id="q-mic" onclick="startVoice()" style="width:52px;flex-shrink:0;font-size:18px;padding:0">🎙</button>
-    </div>
-    <button class="btn ghost" onclick="parseQuick()">Parse it</button>
-    <div class="cap" style="margin:11px 0 0;text-align:center;line-height:1.7" id="q-hint">
-      Matches against your foods — no network, works offline. Say quantities like "8 oz", "2 eggs", "1 cup".
-    </div>
-    <div id="q-result"></div>
-  </div>
-
-  <div class="eyebrow">Log a custom meal</div>
-  <div class="card">
-    <div class="row"><div><label>Description</label><input id="m-desc" placeholder="8 oz sirloin + asparagus"></div></div>
-    <div class="row c4">
-      <div><label>Protein</label><input type="number" id="m-p" placeholder="g"></div>
-      <div><label>Carbs</label><input type="number" id="m-c" placeholder="g"></div>
-      <div><label>Fat</label><input type="number" id="m-f" placeholder="g"></div>
-      <div><label>Sat fat</label><input type="number" id="m-sf" placeholder="g"></div>
-    </div>
-    <div class="row c3">
-      <div><label>Date</label><input type="date" id="m-date"></div>
-      <div><label>Sardine tins</label><input type="number" id="m-sard" placeholder="0"></div>
-      <div><label>Alcohol</label><input type="number" id="m-alc" placeholder="0"></div>
-    </div>
-    <button class="btn" onclick="saveMeal()">Log meal</button>
-  </div>
-  <div class="eyebrow">Meal log</div>
-  <div id="meal-list"></div>
-</section>
-
-<!-- BODY -->
 <section class="tab" id="t-body">
   <div class="note calm">
     <strong>Your scale measures one thing honestly</strong>
@@ -687,43 +632,6 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 
 <!-- RECOVER -->
 <section class="tab" id="t-recover">
-  <div class="eyebrow">Tirzepatide</div>
-  <div class="card">
-    <div class="row c3">
-      <div><label>Date</label><input type="date" id="tz-date"></div>
-      <div><label>Dose</label><select id="tz-dose"></select></div>
-      <div><label>Site</label><select id="tz-site"></select></div>
-    </div>
-    <div class="row"><div><label>Note (optional)</label><input id="tz-note" placeholder="how the last week went"></div></div>
-    <button class="btn" onclick="logInjection()">Log injection</button>
-    <div class="cap" style="margin:12px 0 0;line-height:1.7">
-      Same day each week. Rotate sites. At least 72 hours between doses — miss by more
-      than four days and skip that week rather than doubling up.
-    </div>
-    <div id="tz-list" style="margin-top:14px"></div>
-  </div>
-
-  <div class="eyebrow">How you tolerated today</div>
-  <div class="card">
-    <div class="row c3">
-      <div><label>Nausea</label><select id="sd-nausea">
-        <option value="0">None</option><option value="1">Mild</option>
-        <option value="2">Moderate</option><option value="3">Rough</option></select></div>
-      <div><label>Gut</label><select id="sd-gi">
-        <option value="0">Normal</option><option value="1">Mild</option>
-        <option value="2">Moderate</option><option value="3">Rough</option></select></div>
-      <div><label>Appetite loss</label><select id="sd-appetite">
-        <option value="0">Normal</option><option value="1">Mild</option>
-        <option value="2">Marked</option><option value="3">Can barely eat</option></select></div>
-    </div>
-    <button class="btn ghost" onclick="logSide()">Save check-in</button>
-    <div class="cap" style="margin:12px 0 0;line-height:1.7">
-      Logged against your injection day, so after a few weeks you will see whether a step up
-      actually costs you more than the last one did.
-    </div>
-    <div id="side-list" style="margin-top:14px"></div>
-  </div>
-
   <div class="eyebrow">Niggles — flag what hurts</div>
   <div class="card">
     <div class="row">
@@ -814,6 +722,10 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
   <div class="eyebrow">Theme</div>
   <div class="card">
     <div class="themes">
+      <div class="theme" data-t="nation" onclick="setTheme('nation')">
+        <div class="sw"><i style="background:#0E100D;border:1px solid #2E3429"></i><i style="background:#FF5A6C"></i><i style="background:#A8BF6B"></i></div>
+        <div class="tn">Nation</div><div class="td">Red, camo, white</div>
+      </div>
       <div class="theme" data-t="ignition" onclick="setTheme('ignition')">
         <div class="sw"><i style="background:#080A0D;border:1px solid #2a3038"></i><i style="background:#22D3EE"></i><i style="background:#4ADE80"></i></div>
         <div class="tn">Ignition</div><div class="td">Pre-dawn steel</div>
@@ -844,54 +756,15 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
     <div class="cap" style="text-align:center;line-height:1.7" id="tdee-note">—</div>
   </div>
 
-  <div class="eyebrow">Macro targets — edit freely</div>
+  <div class="eyebrow">Activity targets</div>
   <div class="card">
     <div class="row c3">
-      <div><label>Protein target (g)</label><input type="number" id="g-protein"></div>
-      <div><label>Protein floor (g)</label><input type="number" id="g-pfloor"></div>
-      <div><label>Carbs (g)</label><input type="number" id="g-carbs"></div>
-      <div><label>Fat (g)</label><input type="number" id="g-fat"></div>
-    </div>
-    <div class="row c3">
-      <div><label>Sat fat cap</label><input type="number" id="g-satfat"></div>
-      <div><label>Sardines / wk</label><input type="number" id="g-sardines"></div>
       <div><label>Step floor</label><input type="number" id="g-steps"></div>
-    </div>
-    <div class="row c3">
       <div><label>Zone 2 min / wk</label><input type="number" id="g-z2"></div>
       <div><label>Max loss %BW/wk</label><input type="number" step="0.1" id="g-maxrate"></div>
-      <div><label>Water / day</label><input type="number" id="g-water"></div>
     </div>
     <button class="btn" onclick="saveGoals()">Save targets</button>
     <div class="cap" style="margin:12px 0 0;text-align:center" id="goal-check">—</div>
-  </div>
-
-  <div class="eyebrow">Meal history</div>
-  <div class="card">
-    <button class="btn ghost" onclick="clearMeals()">Clear logged meals</button>
-    <div class="cap" style="margin:12px 0 0;line-height:1.7">
-      Wipes every logged meal so you start clean on the new plan. Templates, saved foods,
-      labs, scans, and training are untouched. Export a backup first &mdash; this cannot be undone.
-    </div>
-  </div>
-
-  <div class="eyebrow">Eating window</div>
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div><label style="margin:0">Use an eating window</label>
-        <div class="cap" style="margin:2px 0 0">Adds the fasting card to Today</div></div>
-      <button class="btn ghost" id="fast-toggle" style="width:auto;padding:8px 18px" onclick="toggleFast()">Off</button>
-    </div>
-    <div class="row c3">
-      <div><label>Training day (h)</label><input type="number" step="0.5" id="f-train"></div>
-      <div><label>Rest day (h)</label><input type="number" step="0.5" id="f-rest"></div>
-      <div><label>Sunday (h)</label><input type="number" step="0.5" id="f-sun"></div>
-    </div>
-    <button class="btn" onclick="saveFast()">Save window</button>
-    <div class="cap" style="margin:12px 0 0;line-height:1.7">
-      Training days run longer so protein lands in more feedings. Sunday is the tight one.
-      Don't drop below 6h — anything that needs food has to fit inside the window.
-    </div>
   </div>
 
   <div class="eyebrow">Objectives</div>
@@ -910,11 +783,6 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
     </div>
     <button class="btn" onclick="saveProfile()">Save objectives</button>
     <div class="cap" style="margin:12px 0 0;text-align:center;line-height:1.7" id="lean-check">—</div>
-  </div>
-
-  <div class="eyebrow">My foods — learned as you log</div>
-  <div class="card">
-    <div id="myfoods"></div>
   </div>
 
   <div class="eyebrow">Your data</div>
@@ -941,7 +809,6 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 <nav>
   <button class="on" data-tab="today"><span class="ic">◈</span><span class="tx">Today</span></button>
   <button data-tab="train"><span class="ic">▲</span><span class="tx">Train</span></button>
-  <button data-tab="fuel"><span class="ic">●</span><span class="tx">Fuel</span></button>
   <button data-tab="body"><span class="ic">◐</span><span class="tx">Body</span></button>
   <button data-tab="labs"><span class="ic">◉</span><span class="tx">Labs</span></button>
   <button data-tab="scans"><span class="ic">⬢</span><span class="tx">Scans</span></button>
@@ -954,22 +821,18 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 
 <script>
 /* ---------- STORAGE ---------- */
-var K={sessions:'ap8_s',lifts:'ap8_l',body:'ap8_b',labs:'ap8_bl',meals:'ap8_m',rec:'ap8_r',
-        scans:'ap8_dx',goals:'ap8_g',prof:'ap8_p',foods:'ap8_food',water:'ap8_water',photos:'ap8_photos',
-        fast:'ap8_fast',niggle:'ap8_niggle',inject:'ap8_inject',side:'ap8_side',tpl:'ap8_tpl'};
+var K={sessions:'ap8_s',lifts:'ap8_l',body:'ap8_b',labs:'ap8_bl',rec:'ap8_r',
+        scans:'ap8_dx',goals:'ap8_g',prof:'ap8_p',photos:'ap8_photos',niggle:'ap8_niggle'};
 var cache=new Map();
 function load(k){if(cache.has(k))return cache.get(k);var d;try{d=JSON.parse(localStorage.getItem(k)||'[]');}catch(e){d=[];}cache.set(k,d);return d;}
 function save(k,d){localStorage.setItem(k,JSON.stringify(d));cache.set(k,d);}
 function loadO(k,def){try{var v=JSON.parse(localStorage.getItem(k));return v&&typeof v==='object'?Object.assign({},def,v):Object.assign({},def);}catch(e){return Object.assign({},def);}}
 function saveO(k,d){localStorage.setItem(k,JSON.stringify(d));}
 
-var DEF_GOALS={rmr:2098,af:1.40,deficit:600,kcal:2350,protein:190,pfloor:125,carbs:80,fat:140,
-               satfat:25,sardines:5,steps:8000,z2:180,maxrate:1.0,water:10};
+var DEF_GOALS={rmr:2098,af:1.40,deficit:600,kcal:2350,steps:8000,z2:180,maxrate:1.0};
 var DEF_PROF={dob:'1978-05-23',draw:'2026-08-15',dexa:'2026-09-18',start:'2026-07-08',
               goalbf:15,stretchbf:12};
 var GOALS=loadO(K.goals,DEF_GOALS), PROF=loadO(K.prof,DEF_PROF);
-var DEF_FAST={on:false,train:10,rest:8,sun:6};
-var FAST=loadO('ap8_fastcfg',DEF_FAST);
 
 // Local calendar date (not UTC). Fixes dates rolling over in the evening.
 // Uses America/Denver so it's correct regardless of device timezone.
@@ -1102,33 +965,6 @@ var MOBILITY=[{n:'Cat–cow',s:45},{n:'90/90 hip switch',s:60},{n:'Couch stretch
  {n:'Couch stretch — right',s:45},{n:'Thoracic opener',s:60},{n:'Ankle rock',s:45},
  {n:'Dead hang',s:45},{n:'Deep squat hold',s:60}];
 
-var TEMPLATES=[
- // Rough days — lowest fat, small volume, easy to keep down. Injection day + 48h after.
- {n:'Greek yogurt + whey',d:'1 cup nonfat Greek yogurt, \u00bd scoop whey isolate, cinnamon',p:40,c:10,f:1,sf:0,sard:0,g:'rough'},
- {n:'Plain protein shake',d:'1\u00bd scoop whey isolate in water \u2014 sip over 20 min',p:38,c:3,f:1,sf:0,sard:0,g:'rough'},
- {n:'Chicken & rice broth',d:'4 oz shredded chicken breast, \u00bd cup white rice, bone broth',p:28,c:22,f:3,sf:1,sard:0,g:'rough'},
- {n:'Cottage cheese + fruit',d:'1 cup low-fat cottage cheese, \u00bd banana or applesauce',p:28,c:16,f:2,sf:1,sard:0,g:'rough'},
- // Steady days — lean protein, simple starch, cooked veg. The default plate now.
- {n:'Chicken breast + rice',d:'6 oz chicken breast, \u00be cup jasmine rice, cooked zucchini',p:42,c:35,f:5,sf:1,sard:0,g:'steady'},
- {n:'White fish + potato',d:'7 oz cod or tilapia, 1 medium potato, green beans',p:42,c:30,f:4,sf:1,sard:0,g:'steady'},
- {n:'Shrimp bowl',d:'7 oz shrimp, \u00be cup rice, cooked spinach, lemon',p:42,c:34,f:3,sf:1,sard:0,g:'steady'},
- {n:'Turkey + sweet potato',d:'6 oz 99% lean ground turkey, 1 medium sweet potato',p:40,c:26,f:3,sf:1,sard:0,g:'steady'},
- {n:'Egg-white omelet + toast',d:'6 egg whites, spinach, 1 slice sourdough',p:27,c:16,f:2,sf:0,sard:0,g:'steady'},
- {n:'Chicken breast + greens',d:'8 oz chicken breast, big green salad, 1 tsp olive oil',p:52,c:6,f:6,sf:1,sard:0,g:'steady'},
- // Liquid protein — when solid food is unappealing, this is how protein still lands.
- {n:'ACEPEAK smoothie',d:'1\u00bc scoop whey isolate, 1 cup almond milk, 2 cups spinach, \u00bd cup frozen berries, 1 tbsp flax, 1 tbsp chia',p:36,c:14,f:7,sf:1,sard:0,g:'smoothie'},
- {n:'Steak Shake smoothie',d:'1 scoop Steak Shake banana cr\u00e8me*, 2 handfuls blueberries, 1 serving Momentous Fiber+, 1 tbsp almond butter, 2 cups spinach, 5g creatine, water + ice \u00b7 *sub any 25\u201330g protein if out',p:34,c:43,f:12,sf:2,sard:0,g:'smoothie'},
- {n:'Simple recovery shake',d:'1 scoop whey isolate, \u00bd banana, 1 cup almond milk, ice',p:32,c:24,f:3,sf:1,sard:0,g:'smoothie'},
- // Higher fat — good days only. Fat slows gastric emptying further.
- {n:'Salmon + rice',d:'6 oz salmon, \u00be cup rice, asparagus',p:42,c:30,f:14,sf:3,sard:0,g:'anchor'},
- {n:'Sardine bowl',d:'2 tins sardines in olive oil, 3 eggs, 2 cups spinach',p:54,c:4,f:38,sf:9,sard:2,g:'anchor'},
- {n:'Sirloin & asparagus',d:'8 oz top sirloin, 1 lb asparagus, 1 tbsp olive oil',p:52,c:8,f:22,sf:7,sard:0,g:'anchor'},
- {n:'Thigh skillet',d:'8 oz chicken thigh, zucchini + peppers, olive oil',p:46,c:10,f:26,sf:7,sard:0,g:'anchor'}
-];
-var TGROUPS=[['rough','When it\u2019s rough','Lowest fat, small volume, easy to keep down. Injection day and the two after.'],
- ['steady','Steady days','Lean protein, simple starch, cooked veg. This is the default plate now.'],
- ['smoothie','Liquid protein','When solid food is unappealing, this is how protein still lands. Sip slowly.'],
- ['anchor','Higher fat \u2014 good days only','Fat slows gastric emptying further. Save these for when you feel normal, earlier in the day.']];
 
 var MARKERS=[
  {k:'trig',n:'Triglycerides',u:'mg/dL',scale:250,good:[0,150],warn:[150,200],severe:500},
@@ -1147,7 +983,7 @@ var MARKERS=[
 
 /* ---------- NAV ---------- */
 var TITLES={today:['Today','Protocol day'],train:['Train','4 lifts · 180 min zone 2 · 1 rest'],
- fuel:['Fuel','Four foods, done right'],body:['Body','Weight and steps only'],
+ body:['Body','Weight and steps only'],
  labs:['Labs','Objective one'],scans:['Scans','Objectives two and three'],
  recover:['Recover','Where the adaptation happens'],setup:['Setup','Your numbers, your rules']};
 var RENDER={};
@@ -1228,41 +1064,6 @@ function lineChart(elId,series,label){
     '<text x="4" y="12" class="chart-lbl">'+label+'</text></svg>';
 }
 
-/* ---------- MACRO BARS ---------- */
-function macroBars(p,c,f,sf){
-  var kcal=p*4+c*4+f*9;
-  function bar(name,val,goal,color,over){
-    var pct=Math.min(100,goal?val/goal*100:0);
-    var col = over&&val>goal ? 'var(--bad)' : color;
-    return '<div class="mac"><div class="mac-top"><span class="n">'+name+'</span><span'+
-      (over&&val>goal?' style="color:var(--bad)"':'')+'>'+
-      Math.round(val)+' / '+goal+(over&&val>goal?' — over':'')+'</span></div>'+
-      '<div class="mac-bar"><div class="mac-fill" style="width:'+pct+'%;background:'+col+'"></div></div></div>';
-  }
-  return proteinBar(p)+bar('Carbs',c,GOALS.carbs,'var(--accent)')+
-    bar('Fat',f,GOALS.fat,'var(--accent)')+
-    (sf!==undefined?bar('Saturated fat',sf,GOALS.satfat,'var(--good)',true):'')+
-    bar('Calories',kcal,GOALS.kcal,'var(--bone)');
-}
-
-/* Protein is now a floor to defend, not a ceiling to approach.
-   Under the floor is the failure mode that costs muscle on a GLP-1. */
-function proteinBar(p){
-  var floor=num(GOALS.pfloor)||125, tgt=num(GOALS.protein)||190;
-  var pct=Math.min(100,tgt?p/tgt*100:0), fpct=tgt?Math.min(100,floor/tgt*100):0;
-  var col = p<floor ? 'var(--bad)' : (p<tgt ? 'var(--warn)' : 'var(--good)');
-  var msg = p<floor ? Math.round(floor-p)+'g under floor'
-          : p<tgt   ? Math.round(tgt-p)+'g to target'
-                    : 'target met';
-  return '<div class="mac"><div class="mac-top"><span class="n">Protein</span>'+
-    '<span style="color:'+col+'">'+Math.round(p)+' / '+tgt+' \u00b7 '+msg+'</span></div>'+
-    '<div class="mac-bar" style="position:relative">'+
-      '<div class="mac-fill" style="width:'+pct+'%;background:'+col+'"></div>'+
-      '<div style="position:absolute;top:-2px;bottom:-2px;left:'+fpct+'%;width:2px;background:var(--bone);opacity:.85"></div>'+
-    '</div>'+
-    '<div class="cap" style="margin-top:3px;font-size:9px">floor '+floor+'g \u00b7 target '+tgt+'g</div></div>';
-}
-
 /* ---------- OBJECTIVES ---------- */
 function renderObjectives(){
   var out='', labs=load(K.labs), scans=load(K.scans);
@@ -1327,17 +1128,13 @@ RENDER.today=function(){
   $('plan-focus').textContent=p.focus;
   $('plan-detail').innerHTML=planBlocks(p);
 
-  var a=[], labs=load(K.labs), meals=load(K.meals);
+  var a=[], labs=load(K.labs);
   if(!labs.length||num(labs[labs.length-1].trig)>=500)
     a.push(['bad','Triglycerides above 500 mg/dL','This is the threshold where pancreatitis risk becomes real. See a doctor — and if you get abdominal pain, do not wait for August.']);
   var dIn=daysBetween(t,PROF.draw);
   if(dIn>0&&dIn<=14)a.push(['calm','Blood draw in '+dIn+' days','Fast 12 hours. Bring the checklist on the Labs tab.']);
   var xIn=daysBetween(t,PROF.dexa);
   if(xIn>0&&xIn<=14)a.push(['calm','DEXA in '+xIn+' days','Ask them to run CoreScan this time. You qualify.']);
-
-  var wk=meals.filter(function(m){return daysBetween(m.date,t)<7;});
-  var alc=wk.reduce(function(s,m){return s+num(m.alc);},0);
-  if(alc>0)a.push(['bad',alc+' drink'+(alc>1?'s':'')+' this week','Alcohol is the fastest driver of triglycerides there is. Target is zero until your next panel.']);
 
   var rate=lossRate();
   if(rate){
@@ -1349,25 +1146,14 @@ RENDER.today=function(){
       a.push(['calm','Trend weight is rising','Up '+Math.abs(rate.perWeek).toFixed(1)+' lbs/week. Look at the two highest-calorie days first.']);
     else a.push(['ok','On pace',rate.perWeek.toFixed(1)+' lbs/week, '+rate.pct.toFixed(2)+'% of bodyweight. That is the range where fat leaves and muscle stays.']);
   }
-  var dates={}; meals.forEach(function(m){dates[m.date]=1;});
+  // Logging consistency now measured off weigh-ins, not meals.
+  var dates={}; load(K.body).forEach(function(b){dates[b.date]=1;});
   var logged=Object.keys(dates).length, elapsed=Math.max(1,daysBetween(PROF.start,t)+1);
-  if(elapsed>=5&&logged/elapsed<0.7)
-    a.push(['calm','Logging gaps',"You've logged "+logged+' of '+elapsed+' days. Below about 70% and the averages stop meaning anything.']);
+  if(elapsed>=7&&logged/elapsed<0.5)
+    a.push(['calm','Weigh-in gaps',"You've logged "+logged+' of '+elapsed+' days. The trend line needs about half the days to mean anything.']);
   $('today-alerts').innerHTML=milestoneRibbons()+a.map(function(x){
     var cls = x[0]==='calm'?'calm':(x[0]==='ok'?'ok':'');
     return '<div class="note '+cls+'"><strong>'+x[1]+'</strong>'+x[2]+'</div>';}).join('');
-
-  var tm=meals.filter(function(m){return m.date===t;});
-  function sum(f){return tm.reduce(function(s,m){return s+num(m[f]);},0);}
-  $('today-macros').innerHTML=macroBars(sum('p'),sum('c'),sum('f'));
-  var sf=sum('sf'); $('t-satfat').textContent=Math.round(sf)+'g';
-  $('t-satfat').className='v '+(sf<=GOALS.satfat?'good':'bad');
-  $('t-satfat-s').textContent='cap '+GOALS.satfat+'g';
-  var al=sum('alc'); $('t-alc').textContent=Math.round(al); $('t-alc').className='v '+(al===0?'good':'bad');
-  var sw=wk.reduce(function(s,m){return s+num(m.sard);},0);
-  if($('w-sard-week')){$('w-sard-week').textContent=Math.round(sw);$('w-sard-week').className='v '+(sw>=GOALS.sardines?'good':'amb');}
-  var pm=tm.filter(function(m){return num(m.p)>=30;}).length;
-  $('t-pmeals').textContent=pm; $('t-pmeals').className='v '+(pm>=4?'good':'amb');
 
   var sess=load(K.sessions).filter(function(s){return daysBetween(s.date,t)<7;});
   var rec=load(K.rec).filter(function(r){return daysBetween(r.date,t)<7;});
@@ -1406,351 +1192,9 @@ RENDER.today=function(){
     $('w-pct').className='v '+(rate.pct>GOALS.maxrate?'bad':'good');
   }else{$('w-rate').textContent='—';$('w-pct').textContent='—';}
 
-  renderWater(); renderFast(); renderTZToday(); renderNiggleToday(); renderWeekReview(); renderReadinessStrip(); applyCollapseState();
+  renderNiggleToday(); renderWeekReview(); renderReadinessStrip(); applyCollapseState();
 };
 
-/* ---------- WATER ---------- */
-function waterToday(){
-  var w=load(K.water).filter(function(x){return x.date===today();})[0];
-  return w?num(w.count):0;
-}
-function addWater(delta){
-  var d=load(K.water), t=today(), rec=null;
-  for(var i=0;i<d.length;i++)if(d[i].date===t){rec=d[i];break;}
-  if(!rec){rec={date:t,count:0};d.push(rec);}
-  rec.count=Math.max(0,num(rec.count)+delta);
-  save(K.water,d); renderWater();
-}
-var FEDUP=[
- {n:'Mediterranean Pasta Salad',d:'FedUp LEAN · 180g · 293mg sodium',p:38,c:25,f:8,sf:1,sard:0,g:'rough'},
- {n:'Hot Honey Chicken Tacos',d:'FedUp LEAN · 215g · 451mg sodium',p:36,c:36,f:6,sf:1,sard:0,g:'rough'},
- {n:'Sweet Orange Chicken',d:'FedUp LEAN · 249g · 399mg sodium',p:36,c:34,f:3,sf:1,sard:0,g:'rough'},
- {n:'Creamy Chicken Taco Soup',d:'FedUp LEAN · 263g · 495mg sodium',p:39,c:16,f:3,sf:1,sard:0,g:'rough'},
- {n:'Chicken Tinga Tacos',d:'FedUp LEAN · 265g · 353mg sodium',p:29,c:35,f:5,sf:2,sard:0,g:'rough'},
- {n:'Southwest Chicken Wrap',d:'FedUp LEAN · 269g · 722mg sodium',p:44,c:27,f:5,sf:1,sard:0,g:'rough'},
- {n:'Creamy Lemon Chicken Pasta',d:'FedUp LEAN · 274g · 399mg sodium',p:39,c:38,f:6,sf:2,sard:0,g:'rough'},
- {n:'Spicy Chicken Queso Wrap',d:'FedUp LEAN · 283g · 780mg sodium',p:40,c:36,f:6,sf:2,sard:0,g:'rough'},
- {n:'Buffalo Chicken Salad',d:'FedUp ACTIVE · 486g · 757mg sodium',p:67,c:42,f:8,sf:3,sard:0,g:'steady'},
- {n:'Grilled Chicken w/ Cheesy Rice & Green Beans',d:'FedUp ACTIVE · 419g · 670mg sodium',p:65,c:42,f:8,sf:3,sard:0,g:'steady'},
- {n:'Chicken Bacon Avocado Crepe',d:'FedUp ACTIVE · 360g · 537mg sodium',p:65,c:24,f:12,sf:3,sard:0,g:'steady'},
- {n:'Grilled Chicken Alfredo',d:'FedUp ACTIVE · 442g · 675mg sodium',p:64,c:47,f:10,sf:3,sard:0,g:'steady'},
- {n:'Grilled Chicken Asparagus Rice Bowl',d:'FedUp ACTIVE · 416g · 432mg sodium',p:62,c:39,f:6,sf:2,sard:0,g:'steady'},
- {n:'Grilled Chicken Taco Salad',d:'FedUp ACTIVE · 495g · 449mg sodium',p:60,c:55,f:5,sf:1,sard:0,g:'steady'},
- {n:'Raspberry Mandarin Coconut Chicken Salad',d:'FedUp ACTIVE · 398g · 206mg sodium',p:59,c:33,f:12,sf:3,sard:0,g:'steady'},
- {n:'Sweet BBQ Chicken Wrap with Grilled Peppers',d:'FedUp ACTIVE · 334g · 721mg sodium',p:58,c:39,f:6,sf:1,sard:0,g:'steady'},
- {n:'Watermelon Grape Salad',d:'FedUp ACTIVE · 376g · 165mg sodium',p:58,c:28,f:10,sf:3,sard:0,g:'steady'},
- {n:'Berry Balsamic & Grilled Chicken Salad',d:'FedUp ACTIVE · 326g · 159mg sodium',p:58,c:24,f:11,sf:2,sard:0,g:'steady'},
- {n:'BBQ Chicken with Rice & Vegetables',d:'FedUp ACTIVE · 467g · 480mg sodium',p:57,c:49,f:4,sf:1,sard:0,g:'steady'},
- {n:'Vegetable Medley With Grilled Chicken & Rose',d:'FedUp ACTIVE · 419g · 272mg sodium',p:57,c:37,f:6,sf:3,sard:0,g:'steady'},
- {n:'Harvest Grain Bowl',d:'FedUp ACTIVE · 371g · 208mg sodium',p:57,c:44,f:10,sf:2,sard:0,g:'steady'},
- {n:'Mediterranean Pasta Salad',d:'FedUp ACTIVE · 244g · 353mg sodium',p:56,c:33,f:10,sf:2,sard:0,g:'steady'},
- {n:'Hot Honey Chicken Bowl',d:'FedUp ACTIVE · 384g · 315mg sodium',p:57,c:43,f:17,sf:3,sard:0,g:'anchor'},
- {n:'Balsamic Chicken w/ Tomato Salad and Brown R',d:'FedUp ACTIVE · 412g · 372mg sodium',p:56,c:46,f:16,sf:3,sard:0,g:'anchor'},
- {n:'Balsamic Chicken w/ Peach Salsa and Brown Ri',d:'FedUp ACTIVE · 427g · 352mg sodium',p:51,c:51,f:15,sf:3,sard:0,g:'anchor'},
- {n:'Teriyaki Chicken Crispy Rice Salad',d:'FedUp ACTIVE · 419g · 1078mg sodium',p:54,c:34,f:19,sf:3,sard:0,g:'anchor'},
- {n:'Chicken Spring Roll Bowl',d:'FedUp ACTIVE · 356g · 942mg sodium',p:48,c:40,f:15,sf:3,sard:0,g:'anchor'},
- {n:'Chimichurri Chicken  w/ Cuban Black Beans & ',d:'FedUp ACTIVE · 380g · 205mg sodium',p:58,c:35,f:20,sf:3,sard:0,g:'anchor'}
-];
-
-/* ================= Weekly portion-tier advice =================
-   Buy weekly, not monthly: on a GLP-1 the constraint changes faster than a
-   month. The question each week is not "what should I eat" but "what will I
-   actually finish" — a LEAN meal eaten beats an ACTIVE meal half-abandoned. */
-var TIERS={
-  lean:  {n:'LEAN',   p:38,f:9, kcal:357,g:332},
-  active:{n:'ACTIVE', p:50,f:10,kcal:463,g:414},
-  bulk:  {n:'BULK',   p:52,f:12,kcal:518,g:449}
-};
-/* Protein performance over the trailing week. */
-function weekProtein(){
-  var d=load(K.meals), floor=num(GOALS.pfloor)||125, days={}, i;
-  for(i=0;i<7;i++)days[shiftDate(today(),-i)]=0;
-  d.forEach(function(m){if(days.hasOwnProperty(m.date))days[m.date]+=num(m.p);});
-  var vals=Object.keys(days).map(function(k){return days[k];}).filter(function(v,ix){
-    return ix>0||v>0; });               // ignore an unfinished today
-  if(!vals.length)return null;
-  var avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
-  var under=vals.filter(function(v){return v<floor;}).length;
-  return {avg:avg, under:under, n:vals.length, floor:floor};
-}
-/* Tolerance over the trailing week: 0 none .. 3 rough. */
-function weekSide(){
-  var cut=shiftDate(today(),-7);
-  var d=load(K.side).filter(function(x){return x.date>cut;});
-  if(!d.length)return null;
-  var mean=function(k){return d.reduce(function(a,b){return a+num(b[k]);},0)/d.length;};
-  return {n:d.length, nausea:mean('nausea'), gi:mean('gi'), appetite:mean('appetite')};
-}
-/* Priority order matters: what you can finish outranks what you'd like to eat. */
-function tierAdvice(){
-  var wp=weekProtein(), ws=weekSide(), rg=rateGuard(), esc=escalation();
-  var why=[], tier='active', conf='steady';
-  if(esc){
-    tier='lean'; conf='escalating';
-    why.push('You stepped up to '+esc.to+' mg '+esc.since+' day'+(esc.since===1?'':'s')+' ago. '+
-      'Appetite drops hardest right after a bump \u2014 smaller portions get finished.');
-  } else if(ws&&(ws.appetite>=2||ws.nausea>=2)){
-    tier='lean'; conf='low tolerance';
-    why.push('Appetite loss averaged '+ws.appetite.toFixed(1)+'/3 and nausea '+ws.nausea.toFixed(1)+'/3 this week. '+
-      'A LEAN meal you finish beats an ACTIVE meal you abandon halfway.');
-  } else if(wp&&wp.under>=3&&(!ws||ws.appetite<1)){
-    tier='bulk'; conf='under-eating';
-    why.push('Protein came in under your '+wp.floor+'g floor on '+wp.under+' of '+wp.n+' days, '+
-      'but appetite has been fine. Bigger portions are the simplest fix.');
-  } else if(rg&&rg.over){
-    tier='bulk'; conf='losing too fast';
-    why.push('You are dropping '+rg.pct.toFixed(1)+'% per week against a '+rg.cap+'% cap. '+
-      'More food, not less \u2014 past that rate more of what comes off is lean.');
-  } else if(wp&&wp.avg>=num(GOALS.protein)*0.95){
-    tier='active'; conf='dialed in';
-    why.push('Protein averaged '+Math.round(wp.avg)+'g against a '+GOALS.protein+'g target. '+
-      'Nothing to fix \u2014 hold the portion you are on.');
-  } else {
-    why.push(wp?('Protein averaged '+Math.round(wp.avg)+'g. ACTIVE is the efficient tier \u2014 '+
-      'BULK costs 55 more calories for 2 more grams.')
-      :'Not enough logged yet to tune this. ACTIVE is the sensible starting portion.');
-  }
-  // How many to order: cover two meals a day, adjusted for what the tier delivers.
-  var t=TIERS[tier], tgt=num(GOALS.protein)||190;
-  var perDay=Math.max(1,Math.min(3,Math.round((tgt*0.55)/t.p)));
-  var count=perDay*7;
-  return {tier:tier, T:t, why:why, conf:conf, count:count, perDay:perDay,
-          wp:wp, ws:ws, rg:rg, esc:esc};
-}
-function renderTierAdvice(){
-  var el=$('tier-advice'); if(!el)return;
-  var a=tierAdvice(), t=a.T;
-  var col=a.tier==='lean'?'var(--warn)':a.tier==='bulk'?'var(--accent)':'var(--good)';
-  var h='<div style="text-align:center;padding:14px 0 10px">'+
-    '<div class="cap">Order this week</div>'+
-    '<div style="font-family:var(--disp);font-size:40px;line-height:1.05;color:'+col+'">'+t.n+'</div>'+
-    '<div class="cap">'+a.count+' meals \u00b7 about '+a.perDay+' a day</div></div>';
-  h+='<div class="grid">'+
-    '<div class="stat"><div class="k">Per meal</div><div class="v">'+t.p+'g</div><div class="s">protein</div></div>'+
-    '<div class="stat"><div class="k">Fat</div><div class="v">'+t.f+'g</div><div class="s">median</div></div>'+
-    '<div class="stat"><div class="k">Portion</div><div class="v">'+t.g+'</div><div class="s">grams</div></div></div>';
-  a.why.forEach(function(w){h+='<div class="note"><strong>Why '+t.n+'</strong>'+w+'</div>';});
-  h+='<div class="cap" style="margin-top:10px;line-height:1.7">'+
-    (a.wp?'Last '+a.wp.n+' days: '+Math.round(a.wp.avg)+'g protein average, '+a.wp.under+' under floor. ':'')+
-    (a.ws?'Tolerance logged '+a.ws.n+' day'+(a.ws.n===1?'':'s')+'. ':'No tolerance check-ins this week. ')+
-    (a.rg?'Losing '+a.rg.pct.toFixed(1)+'%/wk.':'Not enough weigh-ins for a rate yet.')+
-    '</div>';
-  el.innerHTML=h;
-}
-
-/* ================= Custom meal templates =================
-   Built-in templates are mine; these are yours. Menus rotate, so anything
-   hardcoded goes stale — this is the part that keeps working. */
-function customTpls(){return load(K.tpl);}
-/* Built-ins plus yours, in one list. Custom entries carry an id. */
-function allTpls(){
-  return TEMPLATES.map(function(t,i){return {t:t,key:'b'+i};})
-    .concat(customTpls().map(function(t){return {t:t,key:'c'+t.id};}));
-}
-function tplByKey(k){
-  if(k.charAt(0)==='b')return TEMPLATES[num(k.slice(1))];
-  var c=customTpls().filter(function(x){return String(x.id)===k.slice(1);})[0];
-  return c||null;
-}
-function editTpl(key){
-  var t=key?tplByKey(key):null;
-  var groups=TGROUPS.map(function(g){
-    return '<option value="'+g[0]+'"'+(t&&t.g===g[0]?' selected':'')+'>'+g[1]+'</option>';}).join('');
-  $('modal-box').innerHTML='<h3>'+(t?'Edit meal':'New meal')+'</h3>'+
-    '<div class="row"><div><label>Name</label><input id="tp-n" value="'+(t?String(t.n).replace(/"/g,'&quot;'):'')+'"></div></div>'+
-    '<div class="row"><div><label>Description</label><input id="tp-d" value="'+(t?String(t.d).replace(/"/g,'&quot;'):'')+'"></div></div>'+
-    '<div class="row c2"><div><label>Group</label><select id="tp-g">'+groups+'</select></div>'+
-      '<div><label>Protein g</label><input type="number" id="tp-p" value="'+(t?t.p:'')+'"></div></div>'+
-    '<div class="row c3">'+
-      '<div><label>Carbs g</label><input type="number" id="tp-c" value="'+(t?t.c:'')+'"></div>'+
-      '<div><label>Fat g</label><input type="number" id="tp-f" value="'+(t?t.f:'')+'"></div>'+
-      '<div><label>Sat fat g</label><input type="number" id="tp-sf" value="'+(t?t.sf:'')+'"></div></div>'+
-    '<div class="cap" id="tp-note" style="margin:0 0 14px;text-align:center">\u2014</div>'+
-    '<button class="btn" onclick="saveTpl('+(key&&key.charAt(0)==='c'?"'"+key+"'":'null')+')">Save</button>'+
-    (key&&key.charAt(0)==='c'?'<button class="btn ghost" style="margin-top:6px" onclick="delTpl(\''+key+'\')">Delete</button>':'')+
-    '<button class="btn ghost" onclick="closeModal()" style="margin-top:6px">Cancel</button>';
-  ['tp-p','tp-c','tp-f','tp-sf'].forEach(function(id){
-    var e=$(id); if(e)e.addEventListener('input',tplNote);});
-  $('modal').classList.add('on'); tplNote();
-}
-function tplNote(){
-  var el=$('tp-note'); if(!el)return;
-  var pr=num($('tp-p').value),c=num($('tp-c').value),f=num($('tp-f').value),sf=num($('tp-sf').value);
-  var kcal=pr*4+c*4+f*9;
-  var flag = f>=20?'<span style="color:var(--bad)">heavy \u2014 rough after an injection</span>'
-           : f>=15?'<span style="color:var(--warn)">moderate fat</span>'
-           : '<span style="color:var(--good)">easy on the gut</span>';
-  el.innerHTML=Math.round(kcal)+' kcal \u00b7 '+(kcal?Math.round(pr*4/kcal*100):0)+'% protein \u00b7 '+
-    sf+'g sat ('+Math.round(sf/(num(GOALS.satfat)||25)*100)+'% of cap) \u00b7 '+flag;
-}
-function saveTpl(key){
-  var nme=$('tp-n').value.trim();
-  if(!nme){toast('Name it','var(--warn)');return;}
-  var rec={n:nme,d:$('tp-d').value.trim(),g:$('tp-g').value,
-    p:num($('tp-p').value),c:num($('tp-c').value),f:num($('tp-f').value),sf:num($('tp-sf').value),sard:0};
-  var d=customTpls();
-  if(key){
-    var ex=d.filter(function(x){return String(x.id)===key.slice(1);})[0];
-    if(ex){for(var k in rec)ex[k]=rec[k];}
-  }else{ rec.id=uid(); d.push(rec); }
-  save(K.tpl,d); closeModal(); RENDER.fuel(); toast('Saved');
-}
-function delTpl(key){
-  save(K.tpl,customTpls().filter(function(x){return String(x.id)!==key.slice(1);}));
-  closeModal(); RENDER.fuel(); toast('Deleted');
-}
-/* One-tap load of the meals that scored best against your fat, sat-fat and protein limits. */
-function loadFedUp(){
-  var d=customTpls(), have={};
-  d.forEach(function(x){have[x.n]=1;});
-  var added=0;
-  FEDUP.forEach(function(t){
-    if(have[t.n])return;
-    var c={}; for(var k in t)c[k]=t[k];
-    c.id=uid(); d.push(c); added++;
-  });
-  save(K.tpl,d); RENDER.fuel();
-  toast(added?added+' meals added':'Already loaded');
-}
-function clearCustomTpls(){
-  save(K.tpl,[]); RENDER.fuel(); toast('Custom meals cleared');
-}
-
-/* ================= Tirzepatide — injections, escalation, tolerance =================
-   Weekly dose. Side effects cluster in the 48h after, and spike after every step up.
-   The app's job: keep protein defended, hold training expectations during escalation,
-   and flag weight coming off faster than muscle can survive. */
-var TZ_DOSES=[2.5,5,7.5,10,12.5,15];
-var TZ_SITES=['Abdomen L','Abdomen R','Thigh L','Thigh R'];
-
-function injections(){return load(K.inject).sort(function(a,b){return b.date.localeCompare(a.date);});}
-function lastInjection(){return injections()[0]||null;}
-function nextSite(){
-  var l=lastInjection(); if(!l)return TZ_SITES[0];
-  var i=TZ_SITES.indexOf(l.site);
-  return TZ_SITES[(i+1)%TZ_SITES.length];
-}
-/* Days since the most recent dose, and days until the next weekly one. */
-function injectStatus(){
-  var l=lastInjection(); if(!l)return null;
-  var since=daysBetween(l.date,today());
-  return {last:l, since:since, due:7-since};
-}
-/* An escalation is a dose higher than the one before it. The week after is the rough one. */
-function escalation(){
-  var d=injections();
-  if(d.length<2)return null;
-  if(num(d[0].dose)<=num(d[1].dose))return null;
-  var since=daysBetween(d[0].date,today());
-  return since<=7?{from:num(d[1].dose),to:num(d[0].dose),since:since}:null;
-}
-function logInjection(){
-  var dose=num($('tz-dose').value), site=$('tz-site').value, date=$('tz-date').value||today();
-  if(!dose){toast('Pick a dose','var(--warn)');return;}
-  var d=load(K.inject);
-  if(d.some(function(x){return x.date===date;})){toast('Already logged for that date','var(--warn)');return;}
-  var prev=d.sort(function(a,b){return b.date.localeCompare(a.date);})[0];
-  if(prev&&daysBetween(prev.date,date)<3&&daysBetween(prev.date,date)>=0){
-    toast('Less than 72h since the last dose','var(--bad)');return;
-  }
-  d.push({id:uid(),date:date,dose:dose,site:site,note:$('tz-note').value.trim()});
-  d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.inject,d);
-  $('tz-note').value='';
-  RENDER.recover(); renderTZToday(); toast(dose+' mg logged');
-}
-function delInjection(id){
-  save(K.inject,load(K.inject).filter(function(x){return x.id!==id;}));
-  RENDER.recover(); renderTZToday(); toast('Deleted');
-}
-/* Daily tolerance check-in: 0 none, 1 mild, 2 moderate, 3 rough. */
-function logSide(){
-  var d=load(K.side).filter(function(x){return x.date!==today();});
-  d.push({id:uid(),date:today(),nausea:num($('sd-nausea').value),
-    gi:num($('sd-gi').value),appetite:num($('sd-appetite').value)});
-  d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.side,d);
-  renderSideLog(); toast('Logged');
-}
-function sideToday(){return load(K.side).filter(function(x){return x.date===today();})[0]||null;}
-
-/* Weight falling faster than the cap means the ratio of fat to lean is getting worse. */
-function rateGuard(){
-  var r=lossRate(); if(!r)return null;
-  var cap=num(GOALS.maxrate)||1.0;
-  return {pct:r.pct, perWeek:r.perWeek, cap:cap, over:r.pct>cap};
-}
-function renderTZToday(){
-  var el=$('card-tz'); if(!el)return;
-  var st=injectStatus(), esc=escalation(), rg=rateGuard();
-  if(!st&&!rg){el.style.display='none';return;}
-  el.style.display='';
-  var h='';
-  if(st){
-    var dueTxt = st.due>0 ? 'Next dose in '+st.due+' day'+(st.due===1?'':'s')
-               : st.due===0 ? 'Dose due today' : Math.abs(st.due)+' day'+(Math.abs(st.due)===1?'':'s')+' overdue';
-    h+='<div class="grid">'+
-      '<div class="stat"><div class="k">Current dose</div><div class="v">'+st.last.dose+'</div><div class="s">mg weekly</div></div>'+
-      '<div class="stat"><div class="k">Day</div><div class="v">'+st.since+'</div><div class="s">since injection</div></div>'+
-      '<div class="stat"><div class="k">Next site</div><div class="v" style="font-size:15px">'+nextSite().split(' ')[0]+'</div><div class="s">'+nextSite()+'</div></div></div>'+
-      '<div class="cap" style="text-align:center;margin-top:8px">'+dueTxt+'</div>';
-  }
-  if(esc){
-    h+='<div class="note"><strong>Escalation week \u2014 '+esc.from+' \u2192 '+esc.to+' mg</strong>'+
-      'Side effects spike after a step up. Protein floor first, training loads held, window widened. '+
-      'Expect strength to dip for a few days \u2014 that is food intake, not detraining.</div>';
-  }
-  if(st&&st.since<=2&&!esc){
-    h+='<div class="note ok"><strong>Injection window</strong>The next 48 hours are usually the roughest. '+
-      'Lean on the rough-day meals, keep fluids up, and skip the sauna.</div>';
-  }
-  if(rg&&rg.over){
-    h+='<div class="note"><strong>Losing '+rg.pct.toFixed(1)+'% per week</strong>'+
-      'Above your '+rg.cap+'% cap ('+rg.perWeek.toFixed(1)+' lbs/wk). Faster is not better \u2014 past this rate '+
-      'more of what comes off is lean. Eat to the protein floor and add calories before cutting further.</div>';
-  }
-  $('tz-today').innerHTML=h;
-}
-function renderSideLog(){
-  var box=$('side-list'); if(!box)return;
-  var t=sideToday();
-  ['nausea','gi','appetite'].forEach(function(k){
-    var e=$('sd-'+k); if(e)e.value=t?String(t[k]):'0';
-  });
-  var d=load(K.side).slice(0,10);
-  box.innerHTML=d.length?d.map(function(r){
-    var worst=Math.max(r.nausea,r.gi,r.appetite);
-    var col=worst>=3?'var(--bad)':worst===2?'var(--warn)':'var(--good)';
-    return '<div class="item"><div class="item-hd"><div style="flex:1">'+
-      '<div class="item-t" style="color:'+col+'">'+fmtShort(r.date)+'</div>'+
-      '<div class="item-m">nausea '+r.nausea+' \u00b7 gut '+r.gi+' \u00b7 appetite loss '+r.appetite+'</div></div></div></div>';
-  }).join(''):'<div class="cap" style="text-align:center;padding:10px 0">No check-ins yet.</div>';
-}
-function renderInjections(){
-  var box=$('tz-list'); if(!box)return;
-  var sel=$('tz-dose');
-  if(sel&&!sel.options.length){
-    sel.innerHTML=TZ_DOSES.map(function(d){return '<option value="'+d+'">'+d+' mg</option>';}).join('');
-    var l=lastInjection(); if(l)sel.value=String(l.dose);
-  }
-  var ss=$('tz-site');
-  if(ss&&!ss.options.length){
-    ss.innerHTML=TZ_SITES.map(function(x){return '<option value="'+x+'">'+x+'</option>';}).join('');
-    ss.value=nextSite();
-  }
-  if($('tz-date')&&!$('tz-date').value)$('tz-date').value=today();
-  var d=injections();
-  box.innerHTML=d.length?d.map(function(r,i){
-    var prev=d[i+1], up=prev&&num(r.dose)>num(prev.dose);
-    return '<div class="item"><div class="item-hd"><div style="flex:1">'+
-      '<div class="item-t">'+r.dose+' mg'+(up?' <span class="core" style="color:var(--warn)">STEP UP</span>':'')+'</div>'+
-      '<div class="item-m">'+fmtShort(r.date)+' \u00b7 '+r.site+(r.note?' \u00b7 '+r.note:'')+'</div></div>'+
-      '<div class="acts"><button onclick="delInjection('+r.id+')">\u2715</button></div></div></div>';
-  }).join(''):'<div class="cap" style="text-align:center;padding:10px 0">No injections logged yet.</div>';
-}
-
-/* ================= Niggles — training around a flagged body area =================
-   A flagged area suppresses progression on the movement patterns that load it.
-   The point is not to stop training; it's to stop the runner cheerfully
-   suggesting +10 lbs on the exact thing that's angry. */
 var NIGGLE_AREAS={
   knee:{n:'Knee',pat:['squat','lunge','quad_iso','calf'],
     safe:'Hinge patterns, upper body, and machine work that keeps the knee out of loaded flexion.'},
@@ -1839,216 +1283,6 @@ function renderNiggles(){
 }
 
 /* ================= Fasting / eating window ================= */
-function nowHM(){
-  try{var v=new Intl.DateTimeFormat('en-GB',{timeZone:'America/Denver',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
-    if(/^\d{2}:\d{2}$/.test(v))return v;}catch(e){}
-  var d=new Date(),z=function(n){return String(n).padStart(2,'0');};
-  return z(d.getHours())+':'+z(d.getMinutes());
-}
-function hmToMin(hm){if(!hm)return null;var q=String(hm).split(':');return num(q[0])*60+num(q[1]);}
-function minToHM(m){m=((m%1440)+1440)%1440;var z=function(n){return String(n).padStart(2,'0');};return z(Math.floor(m/60))+':'+z(m%60);}
-function fmtHM12(hm){var m=hmToMin(hm);if(m==null)return '\u2014';
-  var h=Math.floor(m/60),mi=m%60,ap=h<12?'AM':'PM',h12=(h%12===0)?12:h%12;
-  return h12+':'+String(mi).padStart(2,'0')+' '+ap;}
-function shiftDate(d,n){var x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);
-  var z=function(v){return String(v).padStart(2,'0');};
-  return x.getFullYear()+'-'+z(x.getMonth()+1)+'-'+z(x.getDate());}
-
-/* Is this date a lifting day in the program? */
-function isLiftDay(date){
-  var idx=(new Date(date+'T12:00:00').getDay()+6)%7, day=PROGRAM[idx];
-  return !!(day&&day.ex.some(function(e){return !e.cardio&&e.blk!=='pm';}));
-}
-/* Window length in hours: Sunday reset < rest day < training day */
-function fastLenFor(date){
-  var dow=new Date(date+'T12:00:00').getDay();
-  var base = dow===0 ? (num(FAST.sun)||6)
-           : isLiftDay(date)?(num(FAST.train)||10):(num(FAST.rest)||8);
-  // During an escalation week appetite suppression does the window's job for you.
-  // Compressing on top of it is how protein gets missed.
-  if(date===today()&&escalation())base=Math.max(base,12);
-  return base;
-}
-function fastLabelFor(date){
-  if(date===today()&&escalation())return 'Escalation week \u2014 widened';
-  var dow=new Date(date+'T12:00:00').getDay();
-  if(dow===0)return 'Sunday reset';
-  return isLiftDay(date)?'Training day':'Rest day';
-}
-function fastRec(date){return load(K.fast).filter(function(x){return x.date===date;})[0]||null;}
-function fastSet(date,fields){
-  var d=load(K.fast), r=d.filter(function(x){return x.date===date;})[0];
-  if(!r){r={date:date,open:'',last:''};d.push(r);}
-  for(var k in fields)if(fields.hasOwnProperty(k))r[k]=fields[k];
-  d.sort(function(a,b){return b.date.localeCompare(a.date);});
-  save(K.fast,d); return r;
-}
-/* Called on every meal log: opens the window if needed, always moves the last-meal mark. */
-function fastTouch(){
-  if(!FAST.on)return;
-  var t=nowHM(), r=fastRec(today());
-  fastSet(today(), (r&&r.open)?{last:t}:{open:t,last:t});
-}
-function fastOpen(){fastSet(today(),{open:nowHM(),last:nowHM()});renderFast();toast('Window open');}
-function fastClose(){
-  var r=fastRec(today());
-  if(!r||!r.open){toast('Window isn\'t open yet','var(--warn)');return;}
-  fastSet(today(),{last:nowHM()});renderFast();toast('Kitchen closed');
-}
-/* Hours since the last recorded meal on any prior day. */
-function fastedHours(){
-  var d=load(K.fast).filter(function(x){return x.date<today()&&x.last;})
-    .sort(function(a,b){return b.date.localeCompare(a.date);});
-  if(!d.length)return null;
-  var mins=daysBetween(d[0].date,today())*1440+hmToMin(nowHM())-hmToMin(d[0].last);
-  return mins>0?mins/60:null;
-}
-/* Consecutive days the actual window fit inside the planned one (30 min grace). */
-function fastStreak(){
-  var n=0, cur=today(), i;
-  for(i=0;i<400;i++){
-    var r=fastRec(cur);
-    if(!r||!r.open||!r.last){if(cur===today()){cur=shiftDate(cur,-1);continue;}break;}
-    var actual=(hmToMin(r.last)-hmToMin(r.open))/60;
-    if(actual<=fastLenFor(cur)+0.5)n++;else break;
-    cur=shiftDate(cur,-1);
-  }
-  return n;
-}
-function fastFeedings(len){return Math.max(2,Math.round(len/2.5));}
-
-function clearMeals(){
-  var nMeals=load(K.meals).length;
-  if(!nMeals){toast('Nothing to clear');return;}
-  $('modal-box').innerHTML='<h3>Clear '+nMeals+' logged meal'+(nMeals===1?'':'s')+'?</h3>'+
-    '<div class="obj-eta" style="margin-bottom:14px">This wipes your meal log only. '+
-    'Saved foods, templates, labs, scans, and training stay. There is no undo.</div>'+
-    '<button class="btn" onclick="doClearMeals()">Yes, clear them</button>'+
-    '<button class="btn ghost" onclick="closeModal()" style="margin-top:6px">Cancel</button>';
-  $('modal').classList.add('on');
-}
-function doClearMeals(){
-  save(K.meals,[]); closeModal(); cache.clear();
-  RENDER.fuel(); toast('Meal log cleared');
-}
-function toggleFast(){
-  FAST.on=!FAST.on; saveO('ap8_fastcfg',FAST);
-  renderFastSettings(); renderFast();
-  toast(FAST.on?'Eating window on':'Eating window off');
-}
-function saveFast(){
-  var tr=num($('f-train').value), rs=num($('f-rest').value), su=num($('f-sun').value);
-  if(tr<4||rs<4||su<4){toast('Windows under 4h aren\'t safe with your meds','var(--bad)');return;}
-  FAST.train=tr||10; FAST.rest=rs||8; FAST.sun=su||6;
-  saveO('ap8_fastcfg',FAST); renderFastSettings(); renderFast(); toast('Window saved');
-}
-function renderFastSettings(){
-  var b=$('fast-toggle'); if(!b)return;
-  b.textContent=FAST.on?'On':'Off';
-  b.style.color=FAST.on?'var(--good)':'';
-  $('f-train').value=FAST.train; $('f-rest').value=FAST.rest; $('f-sun').value=FAST.sun;
-}
-/* Manual correction for a missed tap. Any date, either end of the window. */
-function editFastTimes(date){
-  date=date||today();
-  var r=fastRec(date)||{open:'',last:''};
-  $('modal-box').innerHTML='<h3>Eating window</h3>'+
-    '<div class="obj-eta" style="margin-bottom:12px">Fix a missed tap. Clear a field to unset it.</div>'+
-    '<div class="row"><div><label>Date</label>'+
-      '<input type="date" id="fx-date" value="'+date+'" onchange="editFastTimes(this.value)"></div></div>'+
-    '<div class="row c2">'+
-      '<div><label>Opened</label><input type="time" id="fx-open" value="'+(r.open||'')+'" onchange="fxNote()"></div>'+
-      '<div><label>Last meal</label><input type="time" id="fx-last" value="'+(r.last||'')+'" onchange="fxNote()"></div>'+
-    '</div>'+
-    '<div class="cap" id="fx-note" style="margin:0 0 14px;text-align:center">\u2014</div>'+
-    '<button class="btn" onclick="saveFastTimes()">Save</button>'+
-    '<button class="btn ghost" onclick="closeModal()" style="margin-top:6px">Cancel</button>';
-  $('modal').classList.add('on');
-  fxNote();
-}
-function fxNote(){
-  var el=$('fx-note'); if(!el)return;
-  var d=$('fx-date').value||today(), o=$('fx-open').value, l=$('fx-last').value;
-  var plan=fastLenFor(d), head=fastLabelFor(d)+' \u00b7 '+plan+'h planned';
-  if(!o||!l){el.innerHTML=head;return;}
-  var h=(hmToMin(l)-hmToMin(o))/60;
-  el.innerHTML=head+' \u00b7 '+h.toFixed(1)+'h actual '+
-    (h<0?'<span style="color:var(--bad)">\u2014 last meal is before the open</span>'
-     :h<=plan+0.5?'<span style="color:var(--good)">\u2713 within</span>'
-     :'<span style="color:var(--bad)">over by '+(h-plan).toFixed(1)+'h</span>');
-}
-function saveFastTimes(){
-  var d=$('fx-date').value||today(), o=$('fx-open').value, l=$('fx-last').value;
-  if(l&&!o){toast('Set an open time first','var(--warn)');return;}
-  if(o&&l&&hmToMin(l)<hmToMin(o)){toast('Last meal is before the window opened','var(--bad)');return;}
-  fastSet(d,{open:o,last:l});
-  closeModal(); renderFast();
-  toast(d===today()?'Window updated':'Updated '+fmtShort(d));
-}
-function renderFast(){
-  var card=$('card-fast'); if(!card)return;
-  if(!FAST.on){card.style.display='none';return;}
-  card.style.display='';
-  var t=today(), len=fastLenFor(t), r=fastRec(t), nowM=hmToMin(nowHM());
-  $('fast-plan').textContent=fastLabelFor(t)+' \u00b7 '+len+'-hour window';
-  var h='';
-  if(!r||!r.open){
-    var fh=fastedHours();
-    h+='<div class="fast-clock"><div class="fk">Fasting</div>'+
-       '<div class="fv">'+(fh!=null?fh.toFixed(1)+'h':'\u2014')+'</div>'+
-       '<div class="fs">'+(fh!=null?'since your last meal':'no prior meal recorded')+'</div></div>';
-    h+='<button class="btn" onclick="fastOpen()">Open window now</button>'+
-       '<button class="btn ghost" onclick="editFastTimes()" style="margin-top:6px">Edit times</button>'+
-       '<div class="cap" style="margin-top:10px;text-align:center">Logging any meal opens it automatically.</div>';
-  }else{
-    var openM=hmToMin(r.open), closeM=openM+len*60, left=closeM-nowM;
-    var pct=Math.max(0,Math.min(100,((nowM-openM)/(len*60))*100));
-    if(left>0){
-      h+='<div class="fast-clock"><div class="fk">Window open</div>'+
-         '<div class="fv">'+Math.floor(left/60)+'h '+(left%60)+'m</div>'+
-         '<div class="fs">until '+fmtHM12(minToHM(closeM))+'</div></div>';
-    }else{
-      var over=-left;
-      h+='<div class="fast-clock"><div class="fk" style="color:var(--bad)">Window closed</div>'+
-         '<div class="fv" style="color:var(--bad)">'+Math.floor(over/60)+'h '+(over%60)+'m</div>'+
-         '<div class="fs">past '+fmtHM12(minToHM(closeM))+'</div></div>';
-    }
-    h+='<div class="fast-bar"><div class="fast-fill" style="width:'+pct.toFixed(1)+'%;background:'+
-       (left>0?'var(--accent)':'var(--bad)')+'"></div></div>'+
-       '<div class="fast-ends"><span>Opened '+fmtHM12(r.open)+'</span><span>Closes '+fmtHM12(minToHM(closeM))+'</span></div>';
-    if(left>0&&left<=90)
-      h+='<div class="note"><strong>'+left+' min left</strong>Last call. Take anything that needs food with this meal.</div>';
-    h+='<button class="btn ghost" onclick="fastClose()">Close window now</button>'+
-       '<button class="btn ghost" onclick="editFastTimes()" style="margin-top:6px">Edit times</button>';
-  }
-  var feeds=fastFeedings(len), tgt=num(GOALS.protein)||190, per=Math.round(tgt/feeds);
-  var col=per>60?'var(--bad)':(per>50?'var(--warn)':'var(--good)');
-  h+='<div class="grid" style="margin-top:14px">'+
-    '<div class="stat"><div class="k">Feedings</div><div class="v">'+feeds+'</div><div class="s">in '+len+'h</div></div>'+
-    '<div class="stat"><div class="k">Protein each</div><div class="v" style="color:'+col+'">'+per+'g</div><div class="s">of '+tgt+'g</div></div>'+
-    '<div class="stat"><div class="k">Streak</div><div class="v">'+fastStreak()+'</div><div class="s">days on window</div></div></div>';
-  if(per>60)
-    h+='<div class="note"><strong>Doses are getting large</strong>'+per+'g per feeding is past the range that absorbs well at your age. Widen the window or accept a slightly lower total.</div>';
-  $('fast-body').innerHTML=h;
-}
-
-function renderWater(){
-  var n=waterToday(), goal=GOALS.water||10;
-  $('water-count').textContent=n+' / '+goal;
-  $('water-count').style.color = n>=goal?'var(--good)':'var(--bone)';
-  var dots='';
-  for(var i=0;i<Math.max(goal,n);i++){
-    var on=i<n;
-    dots+='<div style="width:16px;height:22px;border-radius:2px 2px 4px 4px;border:1px solid '+
-      (on?'var(--accent)':'var(--line)')+';background:'+(on?'var(--accent-dim)':'transparent')+'"></div>';
-  }
-  $('water-dots').innerHTML=dots;
-  var sauna=load(K.rec).filter(function(r){return r.kind==='sauna'&&r.date===today();}).length;
-  $('water-note').textContent = n>=goal ? 'Goal hit — nicely done.'
-    : sauna>0 ? 'You sauna\'d today — add 2–3 extra glasses to replace what you sweat.'
-    : 'High protein pulls water. Keep sipping.';
-}
-
 /* ---------- MILESTONES (off real data) ---------- */
 function milestoneRibbons(){
   var hits=[], scans=load(K.scans), labs=load(K.labs), body=load(K.body);
@@ -2085,8 +1319,9 @@ function milestoneRibbons(){
     return '<div class="note ok" style="border-left-width:3px"><strong>Milestone</strong>'+hm+'</div>';}).join('');
 }
 // consecutive days (ending today or yesterday) with at least one meal logged
+/* Streak now runs on weigh-ins, since meals are no longer tracked here. */
 function loggingStreak(){
-  var dates={}; load(K.meals).forEach(function(m){dates[m.date]=1;});
+  var dates={}; load(K.body).forEach(function(b){dates[b.date]=1;});
   var streak=0, d=new Date(today()+'T12:00:00');
   // allow today to be unlogged yet without breaking streak
   if(!dates[today()])d.setDate(d.getDate()-1);
@@ -2097,14 +1332,6 @@ function loggingStreak(){
   return streak;
 }
 // consecutive days with zero alcohol, counting only logged days
-function alcoholFreeStreak(){
-  var byDate={}; load(K.meals).forEach(function(m){byDate[m.date]=byDate[m.date]||0;byDate[m.date]+=num(m.alc);});
-  var keys=Object.keys(byDate).sort().reverse();
-  if(!keys.length)return 0;
-  var streak=0;
-  for(var i=0;i<keys.length;i++){ if(byDate[keys[i]]===0)streak++; else break; }
-  return streak;
-}
 // morning readiness: sleep + recent RPE load + days since rest
 function readiness(){
   var body=load(K.body), sess=load(K.sessions), t=today();
@@ -2138,7 +1365,10 @@ function readiness(){
 }
 function renderReadinessStrip(){
   var el=$('readiness-strip'); if(!el)return;
-  var r=readiness(), logS=loggingStreak(), alcS=alcoholFreeStreak();
+  var r=readiness(), logS=loggingStreak();
+  // Second tile was the alcohol-free streak; with meals gone it shows lifts instead.
+  var liftS=load(K.sessions).filter(function(x){
+    return daysBetween(x.date,today())<7 && !/walk|zone|rest|cook|weigh/i.test(x.type);}).length;
   var col='var(--'+r.band+')';
   el.innerHTML='<div class="card" style="padding:14px 16px">'+
     '<div style="display:flex;align-items:center;gap:14px">'+
@@ -2154,10 +1384,10 @@ function renderReadinessStrip(){
     '<div style="display:flex;gap:8px;margin-top:12px">'+
       '<div style="flex:1;background:var(--raise);border:1px solid var(--line);border-radius:2px;padding:8px;text-align:center">'+
         '<div style="font-family:var(--data);font-size:16px;font-weight:500;color:'+(logS>=3?'var(--accent)':'var(--bone)')+'">'+logS+(logS>0?' 🔥':'')+'</div>'+
-        '<div style="font-family:var(--data);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-top:2px">Day log streak</div></div>'+
+        '<div style="font-family:var(--data);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-top:2px">Weigh-in streak</div></div>'+
       '<div style="flex:1;background:var(--raise);border:1px solid var(--line);border-radius:2px;padding:8px;text-align:center">'+
-        '<div style="font-family:var(--data);font-size:16px;font-weight:500;color:'+(alcS>=3?'var(--good)':'var(--bone)')+'">'+alcS+'</div>'+
-        '<div style="font-family:var(--data);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-top:2px">Alcohol-free days</div></div>'+
+        '<div style="font-family:var(--data);font-size:16px;font-weight:500;color:'+(liftS>=4?'var(--good)':'var(--bone)')+'">'+liftS+'</div>'+
+        '<div style="font-family:var(--data);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-top:2px">Lifts this week</div></div>'+
     '</div></div>';
 }
 
@@ -2165,13 +1395,6 @@ function renderReadinessStrip(){
 function renderWeekReview(){
   var t=today();
   function within(d){return daysBetween(d,t)>=0 && daysBetween(d,t)<7;}
-  var meals=load(K.meals).filter(function(m){return within(m.date);});
-  var days={}; meals.forEach(function(m){days[m.date]=days[m.date]||{p:0,sf:0};days[m.date].p+=num(m.p);days[m.date].sf+=num(m.sf);});
-  var dayKeys=Object.keys(days), loggedDays=dayKeys.length;
-  var avgP = loggedDays? Math.round(dayKeys.reduce(function(s,k){return s+days[k].p;},0)/loggedDays):0;
-  var sfDaysOk = dayKeys.filter(function(k){return days[k].sf<=GOALS.satfat;}).length;
-  var alcDays = new Set(meals.filter(function(m){return num(m.alc)>0;}).map(function(m){return m.date;})).size;
-
   var sess=load(K.sessions).filter(function(s){return within(s.date)&&!/walk|zone|rest|cook|weigh/i.test(s.type);}).length;
   var rec=load(K.rec).filter(function(r){return within(r.date);});
   var z2=rec.filter(function(r){return r.kind==='zone2';}).reduce(function(s,r){return s+num(r.min);},0);
@@ -2181,18 +1404,16 @@ function renderWeekReview(){
   var stDays=body.filter(function(b){return within(b.date)&&b.steps;});
   var avgSteps=stDays.length?Math.round(stDays.reduce(function(s,b){return s+num(b.steps);},0)/stDays.length):null;
   var rate=lossRate();
+  var weighed=body.filter(function(b){return within(b.date)&&b.weight;}).length;
 
   var rows=[
     ['Trend weight', rate?((rate.perWeek>=0?'−':'+')+Math.abs(rate.perWeek).toFixed(1)+' lb/wk'):'—',
        rate?(rate.pct<=GOALS.maxrate&&rate.perWeek>0.2?'good':(rate.pct>GOALS.maxrate?'bad':'amb')):'mute'],
-    ['Protein avg', avgP?avgP+'g / '+GOALS.protein+'g':'—', avgP>=GOALS.protein-15?'good':(avgP?'amb':'mute')],
-    ['Sat-fat days on target', loggedDays?sfDaysOk+' / '+loggedDays:'—', loggedDays&&sfDaysOk===loggedDays?'good':(loggedDays?'amb':'mute')],
-    ['Alcohol-free days', (7-alcDays)+' / 7', alcDays===0?'good':'bad'],
     ['Lifts', sess+' / 4', sess>=4?'good':(sess>=3?'amb':'bad')],
     ['Zone 2', z2+' / '+GOALS.z2+' min', z2>=GOALS.z2?'good':'amb'],
     ['Sauna', sauna+' sessions', sauna>=2?'good':'amb'],
     ['Steps avg', avgSteps?avgSteps.toLocaleString():'—', avgSteps&&avgSteps>=GOALS.steps?'good':(avgSteps?'amb':'mute')],
-    ['Days logged', loggedDays+' / 7', loggedDays>=5?'good':(loggedDays>=3?'amb':'bad')]
+    ['Days weighed', weighed+' / 7', weighed>=5?'good':(weighed>=3?'amb':'bad')]
   ];
   var html=rows.map(function(r){
     var col=r[2]==='good'?'var(--good)':r[2]==='bad'?'var(--bad)':r[2]==='amb'?'var(--warn)':'var(--mute)';
@@ -2200,11 +1421,10 @@ function renderWeekReview(){
       '<div class="exs" style="color:'+col+';font-weight:500">'+r[1]+'</div></div>';}).join('');
   // one honest headline
   var wins=rows.filter(function(r){return r[2]==='good';}).length;
-  var head = loggedDays<3 ? 'Not enough logged yet this week to call it — keep going.'
-    : alcDays>0 ? 'Alcohol showed up this week. That\'s the one to zero out first.'
-    : wins>=6 ? 'Strong week. This is exactly the pattern that moves the labs.'
+  var head = weighed<3 ? 'Not enough logged yet this week to call it — keep going.'
+    : wins>=5 ? 'Strong week. This is exactly the pattern that moves the labs.'
     : 'Solid effort. The amber rows are where next week\'s gains are.';
-  $('week-review').innerHTML='<div class="note '+(loggedDays<3||alcDays>0?'calm':'ok')+'" style="margin-bottom:12px"><strong>The week</strong>'+head+'</div>'+html;
+  $('week-review').innerHTML='<div class="note '+(weighed<3?'calm':'ok')+'" style="margin-bottom:12px"><strong>The week</strong>'+head+'</div>'+html;
 }
 var activeCore=CORE[0];
 function pickCore(c){activeCore=c;RENDER.train();}
@@ -2322,14 +1542,11 @@ function startWorkout(){
   var deload=(Math.floor(daysBetween(PROF.start,today())/7)+1)%6===0;
   var offDay = idx!==todayIdx();
   var lay = deload ? null : layoffPlan(daysSinceLift());
-  var esc = deload ? null : escalation();
   var flags = flaggedPatterns();
-  WK={day:day.day,focus:day.focus,deload:deload,offDay:offDay,lay:lay,esc:esc,started:Date.now(),ex:strength.map(function(e){
+  WK={day:day.day,focus:day.focus,deload:deload,offDay:offDay,lay:lay,started:Date.now(),ex:strength.map(function(e){
     var last=e.bw?null:lastWeightFor(e.n);
     var rec = (deload||e.bw) ? null : overloadRec(e.n,e.p,e.reps,last);
     if(!e.bw&&lay)rec=applyLayoff(rec,last,lay);
-    if(!e.bw&&esc&&last&&last.w&&rec&&num(rec.w)>num(last.w))
-      rec={w:num(last.w),up:false,why:'Escalation week \u2014 holding at '+num(last.w)+'. Push again once intake is back.'};
     var flg=flags[e.p]||null;
     if(!e.bw&&flg)rec=applyNiggle(rec,last,flg);
     var w = e.bw ? '' : (deload ? (last?Math.round(last.w*0.6):'') : (rec?rec.w:(last?last.w:'')));
@@ -2418,11 +1635,8 @@ function renderRunner(){
   var html='<div class="run-bar"><div><div class="rn" style="font-family:var(--disp);font-size:var(--h2)">'+WK.day+'</div>'+
     '<div class="rp">'+doneSets+' / '+totalSets+' sets'+(remaining>0?' · ~'+remaining+' min left':'')+
     (WK.deload?' · DELOAD 60%':'')+(WK.offDay?' · make-up':'')+
-    (WK.lay?' · RETURNING':'')+(WK.esc?' · ESCALATION':'')+'</div></div>'+
+    (WK.lay?' · RETURNING':'')+'</div></div>'+
     '<button class="btn ghost" style="width:auto;padding:9px 14px" onclick="finishWorkout()">Finish</button></div>';
-  if(WK.esc)html+='<div class="note"><strong>Escalation week \u2014 '+WK.esc.from+' \u2192 '+WK.esc.to+' mg</strong>'+
-    'Loads are held, not progressed. Strength tracks food intake, and yours is down this week. '+
-    'Hit the sets, skip the ego.</div>';
   if(WK.lay)html+='<div class="note"><strong>Coming back after '+WK.lay.label.replace(' off','')+' off</strong>'+
     WK.lay.why+' Stop at RIR '+WK.lay.rir+' today. If it moves clean, step back up next session.</div>';
 
@@ -2602,339 +1816,6 @@ function renderLiftList(){
     :empty('◈',"No lifts logged. Pick a core lift above and record today's top set.");
 }
 
-/* ---------- FOOD DATABASE (per unit, your foods) ---------- */
-/* macros are per the stated unit; qty multiplies them. sat = saturated fat */
-var FOODS=[
- // proteins — priced per ounce unless noted
- {k:'ribeye',      names:['ribeye','rib eye'],            unit:'oz',per:{p:7,c:0,f:7.5,sf:3}},
- {k:'sirloin',     names:['sirloin','top sirloin','steak'],unit:'oz',per:{p:6.5,c:0,f:2.8,sf:1.1}},
- {k:'groundbeef',  names:['ground beef','93/7','burger','hamburger'],unit:'oz',per:{p:6.3,c:0,f:3,sf:1}},
- {k:'chickthigh',  names:['chicken thigh','thigh','thighs'],unit:'oz',per:{p:5.8,c:0,f:3.3,sf:0.9}},
- {k:'chickbreast', names:['chicken breast','chicken','breast'],unit:'oz',per:{p:6.5,c:0,f:1.1,sf:0.3}},
- {k:'whitefish',   names:['cod','tilapia','white fish','whitefish','fish'],unit:'oz',per:{p:5.6,c:0,f:0.7,sf:0.1}},
- {k:'salmon',      names:['salmon'],                      unit:'oz',per:{p:6.3,c:0,f:4,sf:0.9}},
- {k:'shrimp',      names:['shrimp','prawns'],             unit:'oz',per:{p:6,c:0.2,f:0.3,sf:0.1}},
- {k:'sardines',    names:['sardine','sardines','tin of sardines'],unit:'tin',per:{p:23,c:0,f:11,sf:2},sard:1},
- {k:'egg',         names:['egg','eggs','whole egg'],      unit:'egg',per:{p:6,c:0.4,f:5,sf:1.6}},
- {k:'eggwhite',    names:['egg white','egg whites','white'],unit:'white',per:{p:3.6,c:0.2,f:0.1,sf:0}},
- {k:'steakshake',  names:['steak shake','protein powder','protein scoop','scoop','protein'],unit:'scoop',per:{p:27,c:3,f:2.5,sf:0.5}},
- {k:'wheyiso',     names:['whey','whey isolate','isolate'],unit:'scoop',per:{p:25,c:2,f:1,sf:0.3}},
- // fats
- {k:'oliveoil',    names:['olive oil','evoo','oil'],      unit:'tbsp',per:{p:0,c:0,f:14,sf:2}},
- {k:'almondbutter',names:['almond butter'],               unit:'tbsp',per:{p:3.5,c:3,f:9,sf:1}},
- {k:'avocado',     names:['avocado'],                     unit:'whole',per:{p:2,c:9,f:15,sf:2.1}},
- {k:'flax',        names:['flax','flaxseed','ground flax'],unit:'tbsp',per:{p:1.3,c:2,f:3,sf:0.3}},
- {k:'chia',        names:['chia','chia seeds'],           unit:'tbsp',per:{p:2,c:5,f:4,sf:0.4}},
- // veg / greens — negligible-ish, per cup
- {k:'spinach',     names:['spinach'],                     unit:'cup',per:{p:1,c:1,f:0,sf:0}},
- {k:'broccoli',    names:['broccoli'],                    unit:'cup',per:{p:2.6,c:6,f:0.3,sf:0}},
- {k:'asparagus',   names:['asparagus'],                   unit:'cup',per:{p:3,c:5,f:0.2,sf:0}},
- {k:'greens',      names:['greens','salad','mixed greens','lettuce'],unit:'cup',per:{p:0.5,c:1,f:0,sf:0}},
- {k:'zucchini',    names:['zucchini','courgette'],        unit:'cup',per:{p:1.5,c:4,f:0.3,sf:0}},
- {k:'peppers',     names:['pepper','peppers','bell pepper'],unit:'cup',per:{p:1,c:6,f:0.3,sf:0}},
- {k:'cabbage',     names:['cabbage'],                     unit:'cup',per:{p:1,c:5,f:0,sf:0}},
- {k:'brussels',    names:['brussels','brussel sprouts','brussels sprouts'],unit:'cup',per:{p:3,c:8,f:0.3,sf:0}},
- // fruit / misc
- {k:'blueberries', names:['blueberries','blueberry','berries','mixed berries'],unit:'cup',per:{p:1,c:21,f:0.5,sf:0}},
- {k:'almondmilk',  names:['almond milk','almondmilk'],    unit:'cup',per:{p:1,c:1,f:2.5,sf:0}},
- {k:'fiberplus',   names:['fiber plus','fiber+','fiber','momentous fiber'],unit:'serving',per:{p:1,c:5,f:0,sf:0}},
- // common eating-out items — so real life parses without setup
- {k:'inn3x3',      names:['3x3','three by three','triple triple'],unit:'each',per:{p:48,c:41,f:52,sf:22}},
- {k:'inn2x2',      names:['double double','2x2','double-double'],unit:'each',per:{p:37,c:39,f:37,sf:16}},
- {k:'innfries',    names:['fries','french fries'],           unit:'serving',per:{p:7,c:54,f:19,sf:5}},
- {k:'burgerbun',   names:['bun','burger bun','hamburger bun'],unit:'each',per:{p:5,c:26,f:2,sf:0.5}},
- {k:'cheeseslice', names:['cheese','american cheese','cheese slice'],unit:'slice',per:{p:4,c:1,f:5,sf:3}},
- {k:'bacon',       names:['bacon'],                          unit:'slice',per:{p:3,c:0,f:3.5,sf:1.2}},
- {k:'rice',        names:['rice','white rice','brown rice'], unit:'cup',per:{p:4,c:45,f:0.4,sf:0}},
- {k:'potato',      names:['potato','baked potato'],          unit:'each',per:{p:4,c:37,f:0.2,sf:0}},
- {k:'bread',       names:['bread','toast','slice of bread'], unit:'slice',per:{p:4,c:15,f:1,sf:0.2}},
- {k:'banana',      names:['banana'],                         unit:'each',per:{p:1,c:27,f:0.4,sf:0.1}},
- {k:'apple',       names:['apple'],                          unit:'each',per:{p:0.5,c:25,f:0.3,sf:0}},
- {k:'almonds',     names:['almonds','handful of almonds'],   unit:'oz',per:{p:6,c:6,f:14,sf:1.1}}
-];
-// word->number for spoken quantities
-var NUMW={a:1,an:1,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,
-  half:0.5,'a half':0.5,quarter:0.25,couple:2,'few':3};
-// unit synonyms -> canonical
-var UNITW={oz:'oz',ounce:'oz',ounces:'oz',lb:'lb',lbs:'lb',pound:'lb',pounds:'lb',
-  cup:'cup',cups:'cup',tbsp:'tbsp',tablespoon:'tbsp',tablespoons:'tbsp',tsp:'tsp',teaspoon:'tsp',
-  scoop:'scoop',scoops:'scoop',tin:'tin',tins:'tin',can:'tin',cans:'tin',
-  handful:'handful',handfuls:'handful',serving:'serving',servings:'serving',
-  egg:'egg',eggs:'egg',white:'white',whites:'white',whole:'whole'};
-
-function findFood(phrase){
-  phrase=phrase.toLowerCase();
-  var best=null,bestLen=0;
-  var all=FOODS.concat(load(K.foods)); // built-ins + your saved foods
-  all.forEach(function(f){
-    f.names.forEach(function(nm){
-      if(phrase.indexOf(nm)>=0 && nm.length>bestLen){best=f;bestLen=nm.length;}
-    });
-  });
-  return best;
-}
-// convert a spoken qty+unit into a multiplier of the food's base unit
-function qtyToUnits(qty,unit,food){
-  var base=food.unit;
-  if(unit==='lb'&&base==='oz')return qty*16;
-  if(unit==='handful'&&(base==='cup'))return qty*0.6; // ~a handful of berries
-  if(unit===base||!unit)return qty;
-  // if they said "oz" for a per-egg/per-scoop food, just treat qty as count
-  return qty;
-}
-function parseText(text){
-  var items=[], warnings=[];
-  // split on commas, "and", "with", "plus", newlines
-  var parts=text.toLowerCase().replace(/\band\b|\bwith\b|\bplus\b/g,',').split(/[,\n]+/);
-  parts.forEach(function(seg){
-    seg=seg.trim(); if(!seg)return;
-    var food=findFood(seg);
-    if(!food){ if(seg.length>2)warnings.push(seg); return; }
-    // quantity: leading number (digit or word) + optional unit.
-    // Strip the matched food name first, so digits inside names like "3x3" aren't read as qty.
-    var matchedName='';
-    food.names.forEach(function(nm){if(seg.indexOf(nm)>=0&&nm.length>matchedName.length)matchedName=nm;});
-    var qtySeg=seg.replace(matchedName,' ');
-    var qty=1,unit='';
-    var mFrac=qtySeg.match(/(\d+)\s*\/\s*(\d+)/);
-    var mNum=qtySeg.match(/(\d+(?:\.\d+)?)/);
-    if(mFrac)qty=parseFloat(mFrac[1])/parseFloat(mFrac[2]);
-    else if(mNum)qty=parseFloat(mNum[1]);
-    else { for(var w in NUMW){ if(new RegExp('\\b'+w+'\\b').test(qtySeg)){qty=NUMW[w];break;} } }
-    for(var u in UNITW){ if(new RegExp('\\b'+u+'\\b').test(qtySeg)){unit=UNITW[u];break;} }
-    var units=qtyToUnits(qty,unit,food);
-    items.push({food:food,units:units,label:seg});
-  });
-  return {items:items,warnings:warnings};
-}
-function sumItems(items){
-  var t={p:0,c:0,f:0,sf:0,sard:0};
-  items.forEach(function(it){
-    t.p+=it.food.per.p*it.units; t.c+=it.food.per.c*it.units;
-    t.f+=it.food.per.f*it.units; t.sf+=it.food.per.sf*it.units;
-    if(it.food.sard)t.sard+=it.food.sard*it.units;
-  });
-  return t;
-}
-
-var lastParse=null;
-function parseQuick(){
-  var text=$('q-text').value.trim();
-  if(!text){toast('Say or type what you ate','var(--bad)');return;}
-  var r=parseText(text);
-  lastParse={text:text,items:r.items,unknown:r.warnings};
-  renderQuickResult();
-}
-function renderQuickResult(){
-  if(!lastParse){$('q-result').innerHTML='';return;}
-  var t=sumItems(lastParse.items);
-  lastParse.totals=t;
-  // recognized items — each removable
-  var rows=lastParse.items.map(function(it,i){
-    return '<div class="ex"><div class="exn">'+it.label+
-      '</div><div class="exs" style="display:flex;gap:8px;align-items:center">'+
-      Math.round(it.food.per.p*it.units)+'P · '+Math.round(it.food.per.f*it.units)+'F · '+
-      Math.round(it.food.per.sf*it.units)+'sat'+
-      '<button onclick="dropItem('+i+')" style="background:none;border:1px solid var(--line);border-radius:2px;color:var(--bad);width:24px;height:24px;cursor:pointer">✕</button>'+
-      '</div></div>';}).join('');
-  // unknown items — each gets an "add food" button
-  var unknownRows=lastParse.unknown.map(function(u,i){
-    return '<div class="ex"><div class="exn" style="color:var(--warn)">'+u+' — not in your foods</div>'+
-      '<div class="exs"><button class="btn sm" style="width:auto;padding:5px 10px" onclick="addUnknown('+i+')">+ Add it</button></div></div>';}).join('');
-  var fits=t.sf<=GOALS.satfat;
-  var totalsBlock = lastParse.items.length ? '<div class="grid" style="margin-top:12px">'+
-      '<div class="stat"><div class="k">Protein</div><div class="v good">'+Math.round(t.p)+'</div></div>'+
-      '<div class="stat"><div class="k">Carbs</div><div class="v">'+Math.round(t.c)+'</div></div>'+
-      '<div class="stat"><div class="k">Fat</div><div class="v">'+Math.round(t.f)+'</div></div>'+
-      '<div class="stat"><div class="k">Sat fat</div><div class="v '+(fits?'good':'bad')+'">'+Math.round(t.sf)+'</div></div></div>'+
-      '<button class="btn" style="margin-top:12px" onclick="confirmQuick()">Confirm & log</button>' : '';
-  var addLine = '<button class="btn ghost" style="margin-top:8px" onclick="addUnknownBlank()">+ Add another food by hand</button>';
-  $('q-result').innerHTML='<div style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px">'+
-    (rows||'<div class="obj-eta">No foods matched yet.</div>')+unknownRows+totalsBlock+addLine+
-    '<div class="obj-eta" style="text-align:center;margin-top:8px">Anything you add is saved to your foods — next time it\'s recognized automatically.</div></div>';
-}
-function dropItem(i){lastParse.items.splice(i,1);renderQuickResult();}
-
-// Add an unrecognized word from the parse as a permanent food
-function addUnknown(i){
-  var name=lastParse.unknown[i];
-  foodModal(name,function(saved){
-    lastParse.unknown.splice(i,1);
-    lastParse.items.push({food:saved.food,units:saved.units,label:saved.label});
-    renderQuickResult();
-  });
-}
-function addUnknownBlank(){
-  foodModal('',function(saved){
-    lastParse.items.push({food:saved.food,units:saved.units,label:saved.label});
-    renderQuickResult();
-  });
-}
-// Modal: capture a food's macros, save to library, return it added to the meal
-function foodModal(prefill,onAdd){
-  $('modal-box').innerHTML='<h3>Add a food</h3>'+
-    '<div class="row"><div><label>Name (what you\'ll say)</label><input id="nf-name" value="'+prefill+'" placeholder="3x3, bun, fries"></div></div>'+
-    '<div class="row c2"><div><label>Quantity</label><input id="nf-qty" type="number" value="1" step="0.5"></div>'+
-    '<div><label>Unit label</label><input id="nf-unit" placeholder="each, oz, cup"></div></div>'+
-    '<div class="obj-eta" style="margin:-4px 0 12px">Enter macros for the quantity above.</div>'+
-    '<div class="row c4">'+
-    '<div><label>Protein</label><input id="nf-p" type="number" placeholder="g"></div>'+
-    '<div><label>Carbs</label><input id="nf-c" type="number" placeholder="g"></div>'+
-    '<div><label>Fat</label><input id="nf-f" type="number" placeholder="g"></div>'+
-    '<div><label>Sat fat</label><input id="nf-sf" type="number" placeholder="g"></div></div>'+
-    '<button class="btn" id="nf-save" style="margin:10px 0 9px">Save to my foods & add</button>'+
-    '<button class="btn ghost" onclick="closeModal()">Cancel</button>';
-  $('modal').classList.add('on');
-  $('nf-save').onclick=function(){
-    var name=$('nf-name').value.trim().toLowerCase();
-    if(!name){toast('Name it','var(--bad)');return;}
-    var qty=num($('nf-qty').value)||1;
-    var per={p:num($('nf-p').value)/qty,c:num($('nf-c').value)/qty,f:num($('nf-f').value)/qty,sf:num($('nf-sf').value)/qty};
-    var unit=$('nf-unit').value.trim().toLowerCase()||'each';
-    var food={k:'u_'+uid(),names:[name],unit:unit,per:per,custom:1};
-    var lib=load(K.foods); lib.push(food); save(K.foods,lib); // remembered forever
-    closeModal();
-    onAdd({food:food,units:qty,label:qty+' '+name});
-    toast('"'+name+'" saved to your foods');
-  };
-}
-function confirmQuick(){
-  if(!lastParse||!lastParse.items.length)return;
-  var t=sumItems(lastParse.items), d=load(K.meals);
-  d.push({id:uid(),date:today(),desc:lastParse.text||lastParse.items.map(function(x){return x.label;}).join(', '),
-    p:Math.round(t.p),c:Math.round(t.c),f:Math.round(t.f),sf:Math.round(t.sf),sard:Math.round(t.sard||0),alc:0,t:nowHM()});
-  d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.meals,d);
-  $('q-text').value=''; $('q-result').innerHTML=''; lastParse=null;
-  fastTouch(); RENDER.fuel(); renderFast(); toast('Logged — edit with ✎ if needed');
-}
-function startVoice(){
-  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){toast('Voice not supported here — type it instead','var(--bad)');$('q-text').focus();return;}
-  var rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
-  var btn=$('q-mic'); btn.textContent='●'; btn.style.background='var(--bad)';
-  $('q-hint').textContent='Listening… say what you ate.';
-  rec.onresult=function(e){var text=e.results[0][0].transcript;$('q-text').value=text;parseQuick();};
-  rec.onerror=function(){toast('Didn\'t catch that — try again or type it','var(--warn)');};
-  rec.onend=function(){btn.textContent='🎙';btn.style.background='var(--accent)';
-    $('q-hint').textContent='Matches against your foods — no network, works offline. Say quantities like "8 oz", "2 eggs", "1 cup".';};
-  try{rec.start();}catch(e){}
-}
-
-/* ---------- FUEL ---------- */
-RENDER.fuel=function(){
-  $('fuel-date').textContent=fmtLong(today());
-  var tm=load(K.meals).filter(function(m){return m.date===today();});
-  function sum(f){return tm.reduce(function(s,m){return s+num(m[f]);},0);}
-  $('fuel-macros').innerHTML=macroBars(sum('p'),sum('c'),sum('f'),sum('sf'));
-
-  var sfUsed=sum('sf'), sfLeft=GOALS.satfat-sfUsed;
-  var sfCol=sfLeft<0?'var(--bad)':(sfLeft<4?'var(--warn)':'var(--good)');
-  var banner='<div class="note '+(sfLeft<0?'':'ok')+'" style="margin-bottom:14px">'+
-    '<strong style="color:'+sfCol+'">Saturated fat — '+
-    (sfLeft<0?Math.abs(sfLeft).toFixed(0)+'g over cap':sfLeft.toFixed(0)+'g of '+GOALS.satfat+'g left')+'</strong>'+
-    (sfLeft<0?'Over for the day. Finish on a lean closer with 0–1g and you\'ll still land close.'
-      :sfLeft<4?'Tight. Stick to lean closers from here — the heavy meals will push you over.'
-      :'Room for one more meal. A heavy anchor still fits, or keep it lean.')+'</div>';
-
-  var html=banner;
-
-  // Recent meals — quick relog. Distinct by description, most recent first, excluding today.
-  var all=load(K.meals).filter(function(m){return m.date!==today();})
-    .sort(function(a,b){return b.date.localeCompare(a.date);});
-  var seen={}, recent=[];
-  for(var ri=0;ri<all.length&&recent.length<5;ri++){
-    var key=all[ri].desc.toLowerCase().trim();
-    if(!seen[key]){seen[key]=1;recent.push(all[ri]);}
-  }
-  if(recent.length){
-    html+='<div class="eyebrow" style="margin:4px 0 10px">Recent — tap to relog</div>';
-    html+=recent.map(function(m){
-      var idx=all.indexOf(m); // not used; we relog by stored macros
-      var fits=num(m.sf)<=Math.max(0,sfLeft);
-      return '<div class="item" onclick="relogMeal('+m.id+')" style="cursor:pointer"><div class="item-hd">'+
-        '<div style="flex:1"><div class="item-t">'+m.desc+'</div>'+
-        '<div class="item-m">'+Math.round(m.p)+'P · '+Math.round(m.c)+'C · '+Math.round(m.f)+'F · '+
-        '<b style="color:'+(num(m.sf)<=2?'var(--good)':num(m.sf)>=7?'var(--warn)':'var(--bone)')+'">'+Math.round(m.sf)+'g sat</b> · '+
-        Math.round(m.p*4+m.c*4+m.f*9)+' kcal</div></div>'+
-        '<div class="acts"><button>↻</button></div></div></div>';}).join('');
-  }
-
-  TGROUPS.forEach(function(gr){
-    var items=allTpls().filter(function(x){return x.t.g===gr[0];});
-    if(!items.length)return;
-    html+='<div class="eyebrow" style="margin:18px 0 10px">'+gr[1]+'</div>'+
-      '<div class="obj-eta" style="margin:-6px 0 10px">'+gr[2]+'</div>';
-    html+=items.map(function(x){
-      var t=x.t, fits=t.sf<=Math.max(0,sfLeft);
-      var dot=t.g==='anchor'?(fits?'var(--warn)':'var(--bad)'):'var(--good)';
-      var mine=x.key.charAt(0)==='c';
-      return '<div class="item" style="cursor:pointer">'+
-        '<div class="item-hd"><div style="flex:1" onclick="logTemplate(\''+x.key+'\')">'+
-        '<div class="item-t"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+dot+';margin-right:7px;vertical-align:middle"></span>'+t.n+'</div>'+
-        '<div class="item-d">'+t.d+'</div>'+
-        '<div class="item-m">'+t.p+'P · '+t.c+'C · '+t.f+'F · <b style="color:'+(t.sf<=2?'var(--good)':t.sf>=7?'var(--warn)':'var(--bone)')+'">'+t.sf+'g sat</b> · '+(t.p*4+t.c*4+t.f*9)+' kcal</div></div>'+
-        '<div class="acts">'+(mine?'<button onclick="editTpl(\''+x.key+'\')">\u270e</button>':'')+
-        '<button onclick="logTemplate(\''+x.key+'\')">+</button></div></div></div>';}).join('');
-  });
-  renderTierAdvice();
-  html+='<div class="eyebrow" style="margin:20px 0 10px">Your meals</div>'+
-    '<button class="btn ghost" onclick="editTpl()">Add a meal</button>'+
-    '<button class="btn ghost" style="margin-top:6px" onclick="loadFedUp()">Load FedUp Kitchen picks ('+FEDUP.length+')</button>'+
-    '<div class="cap" style="margin:10px 0 0;line-height:1.7">Menus rotate. Add what you actually ordered '+
-    'and it stays until you change it. Tap \u270e on any of your own meals to edit.</div>';
-  $('templates').innerHTML=html;
-  renderMealList();
-};
-function logTemplate(key){
-  var t=tplByKey(key); if(!t)return;
-  var d=load(K.meals);
-  d.push({id:uid(),date:today(),desc:t.n,p:t.p,c:t.c,f:t.f,sf:t.sf,sard:t.sard||0,alc:0,t:nowHM()});
-  d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.meals,d);
-  fastTouch(); RENDER.fuel(); renderFast(); toast(t.n+' logged');
-}
-function relogMeal(id){
-  var src=load(K.meals).filter(function(m){return m.id===id;})[0];
-  if(!src)return;
-  var d=load(K.meals);
-  d.push({id:uid(),date:today(),desc:src.desc,p:num(src.p),c:num(src.c),f:num(src.f),
-    sf:num(src.sf),sard:num(src.sard),alc:num(src.alc),t:nowHM()});
-  d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.meals,d);
-  fastTouch(); RENDER.fuel(); renderFast(); toast(src.desc+' relogged');
-}
-function saveMeal(){
-  var desc=$('m-desc').value.trim();
-  if(!desc){toast('Describe the meal','var(--bad)');return;}
-  var d=load(K.meals);
-  d.push({id:uid(),date:$('m-date').value||today(),desc:desc,p:num($('m-p').value),c:num($('m-c').value),
-    f:num($('m-f').value),sf:num($('m-sf').value),sard:num($('m-sard').value),alc:num($('m-alc').value),t:nowHM()});
-  d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.meals,d);
-  ['m-desc','m-p','m-c','m-f','m-sf','m-sard','m-alc'].forEach(function(i){$(i).value='';});
-  if(($('m-date').value||today())===today())fastTouch();
-  RENDER.fuel(); renderFast(); toast('Meal logged');
-}
-var showAllMeals=false;
-function toggleAllMeals(){showAllMeals=!showAllMeals;renderMealList();}
-function renderMealList(){
-  var d=load(K.meals), t=today();
-  var todayMeals=d.filter(function(m){return m.date===t;});
-  var earlier=d.filter(function(m){return m.date!==t;});
-  var list = showAllMeals ? d : todayMeals;
-  var head = '<div class="eyebrow" style="margin:0 0 10px">'+(showAllMeals?'All meals':'Today')+
-    (earlier.length?' <button class="btn ghost" style="width:auto;padding:4px 10px;margin-left:8px;font-size:8px" onclick="toggleAllMeals()">'+(showAllMeals?'today only':'show earlier ('+earlier.length+')')+'</button>':'')+'</div>';
-  var rows = list.length ? list.map(function(m){
-    var meta=Math.round(m.p)+'P · '+Math.round(m.c)+'C · '+Math.round(m.f)+'F · '+
-      Math.round(m.p*4+m.c*4+m.f*9)+' kcal'+(num(m.alc)?'  ·  '+m.alc+' drink'+(m.alc>1?'s':''):'');
-    // extra relog button for non-today rows
-    var relog = m.date!==t ? '<button onclick="relogMeal('+m.id+')" title="Relog today" style="background:none;border:1px solid var(--line);border-radius:2px;color:var(--accent);width:30px;height:30px;font-size:12px;cursor:pointer">↻</button>' : '';
-    return '<div class="item"><div class="item-hd"><div style="flex:1;min-width:0">'+
-      '<div class="item-t">'+m.desc+'</div><div class="item-d">'+fmtLong(m.date)+'</div>'+
-      '<div class="item-m">'+meta+'</div></div><div class="acts">'+relog+
-      '<button onclick="editMeal('+m.id+')" aria-label="Edit">✎</button>'+
-      '<button class="del" onclick="delItem(\''+K.meals+'\','+m.id+')" aria-label="Delete">✕</button></div></div></div>';
-  }).join('') : empty('●', showAllMeals?'No meals logged yet.':'Nothing logged today. Tap a template or say what you ate.');
-  $('meal-list').innerHTML=head+rows;
-}
-
 /* ---------- BODY ---------- */
 RENDER.body=function(){
   var d=load(K.body);
@@ -3099,7 +1980,7 @@ RENDER.scans=function(){
   if(num(l.android)>=35) n.push(['bad','Android fat at '+num(l.android).toFixed(1)+'%','Central adiposity drains straight into the portal vein. This is the mechanism behind your triglycerides and HOMA-IR — and it is the first fat to leave in a deficit.']);
   if(s.length>1){
     var prev=s[s.length-2], dl=num(l.lean)-num(prev.lean);
-    if(dl<-1) n.push(['bad','Lean mass down '+Math.abs(dl).toFixed(1)+' lbs','The deficit is too aggressive or protein is too low. Add 200–300 kcal and hold protein at '+GOALS.protein+'g.']);
+    if(dl<-1) n.push(['bad','Lean mass down '+Math.abs(dl).toFixed(1)+' lbs','The deficit is too aggressive or protein is too low. Add 200–300 kcal and keep protein high.']);
     else n.push(['ok','Lean mass holding',(dl>=0?'+':'')+dl.toFixed(1)+' lbs since the last scan. Objective 3 is on track.']);
   }
   if(num(l.tscore)>=2) n.push(['ok','Bone density T-score '+l.tscore,'Well above the young-adult mean. Your skeleton handles heavy compound loading without concern.']);
@@ -3268,7 +2149,7 @@ function saveZone2(){
   $('z-min').value=''; RENDER.recover(); toast('Zone 2 logged');
 }
 RENDER.recover=function(){
-  renderInjections(); renderSideLog(); renderNiggles();
+  renderNiggles();
   highlightMob();
   var age=Math.floor(daysBetween(PROF.dob,today())/365.25), maxHR=220-age;
   $('z2-hr').textContent='Zone 2 is roughly '+Math.round(maxHR*.6)+'–'+Math.round(maxHR*.7)+' bpm. Conversational pace — you should be able to speak a full sentence.';
@@ -3292,23 +2173,8 @@ RENDER.setup=function(){
   Object.keys(DEF_GOALS).forEach(function(k){var e=$('g-'+k); if(e)e.value=GOALS[k];});
   $('p-dob').value=PROF.dob; $('p-draw').value=PROF.draw; $('p-dexa').value=PROF.dexa;
   $('p-start').value=PROF.start; $('p-goalbf').value=PROF.goalbf; $('p-stretchbf').value=PROF.stretchbf;
-  tdeeNote(); checkGoals(); leanNote(); markTheme(); renderMyFoods(); renderFastSettings();
+  tdeeNote(); checkGoals(); leanNote(); markTheme();
 };
-function renderMyFoods(){
-  var lib=load(K.foods);
-  $('myfoods').innerHTML = lib.length ? lib.map(function(f){
-    return '<div class="item"><div class="item-hd"><div style="flex:1">'+
-      '<div class="item-t">'+f.names[0]+'</div>'+
-      '<div class="item-m">per '+f.unit+': '+Math.round(f.per.p)+'P · '+Math.round(f.per.c)+'C · '+
-      Math.round(f.per.f)+'F · '+(f.per.sf).toFixed(1)+'g sat</div></div>'+
-      '<div class="acts"><button class="del" onclick="delFood(\''+f.k+'\')" aria-label="Delete">✕</button></div>'+
-      '</div></div>';}).join('')
-    : '<div class="obj-eta" style="text-align:center">Nothing yet. When the voice logger hits a food it doesn\'t know, add it once and it lands here — recognized automatically from then on.</div>';
-}
-function delFood(k){
-  save(K.foods,load(K.foods).filter(function(f){return f.k!==k;}));
-  renderMyFoods(); toast('Food removed','var(--bad)');
-}
 function tdee(){return Math.round(GOALS.rmr*GOALS.af);}
 function tdeeNote(){
   $('tdee-note').textContent='RMR '+GOALS.rmr+' × '+GOALS.af+' = TDEE '+tdee()+
@@ -3324,10 +2190,9 @@ function autoCalc(){
   saveO(K.goals,GOALS); tdeeNote(); checkGoals(); toast('Calorie target set to '+GOALS.kcal);
 }
 function checkGoals(){
-  var kcal=GOALS.protein*4+GOALS.carbs*4+GOALS.fat*9, diff=kcal-GOALS.kcal;
-  $('goal-check').textContent=Math.abs(diff)<=40
-    ? 'Macros total '+kcal+' kcal — matches your target.'
-    : 'Macros total '+kcal+' kcal, which is '+Math.abs(diff)+' '+(diff>0?'over':'under')+' your calorie target.';
+  var e=$('goal-check'); if(!e)return;
+  e.textContent='Step floor '+GOALS.steps.toLocaleString()+' \u00b7 zone 2 '+GOALS.z2+
+    ' min/wk \u00b7 loss cap '+GOALS.maxrate+'% of bodyweight per week.';
 }
 function leanNote(){
   var ffm=ffmLbs(), kg=ffm/2.205;
@@ -3351,7 +2216,6 @@ function exportData(){
   Object.keys(K).forEach(function(n){
     if(n==='photos')return; // photos excluded — large; export separately
     try{out[n]=JSON.parse(localStorage.getItem(K[n])||'null');}catch(e){out[n]=null;}});
-  try{out.fastcfg=JSON.parse(localStorage.getItem('ap8_fastcfg')||'null');}catch(e){out.fastcfg=null;}
   var url=URL.createObjectURL(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}));
   var a=document.createElement('a');a.href=url;a.download='acepeak-v8-'+today()+'.json';a.click();
   URL.revokeObjectURL(url);
@@ -3372,15 +2236,13 @@ function importData(input){
   r.onload=function(e){try{
     var d=JSON.parse(e.target.result), n=0;
     Object.keys(K).forEach(function(name){if(d[name]!=null){localStorage.setItem(K[name],JSON.stringify(d[name]));n++;}});
-    if(d.fastcfg!=null){localStorage.setItem('ap8_fastcfg',JSON.stringify(d.fastcfg));n++;}
     cache.clear(); GOALS=loadO(K.goals,DEF_GOALS); PROF=loadO(K.prof,DEF_PROF);
-    FAST=loadO('ap8_fastcfg',DEF_FAST);
     showTab('today'); toast('Restored '+n+' data sets');
   }catch(err){toast('That file could not be read','var(--bad)');}};
   r.readAsText(f); input.value='';
 }
 function wipeAll(){
-  confirmModal('Erase everything?','This deletes every session, meal, measurement, scan, and lab panel on this device. Export a backup first if you want to keep it. This cannot be undone.',
+  confirmModal('Erase everything?','This deletes every session, lift, measurement, scan, and lab panel on this device. Export a backup first if you want to keep it. This cannot be undone.',
     function(){Object.keys(K).forEach(function(k){localStorage.removeItem(K[k]);});cache.clear();
       GOALS=Object.assign({},DEF_GOALS);PROF=Object.assign({},DEF_PROF);showTab('today');toast('All data erased','var(--bad)');});
 }
@@ -3424,13 +2286,6 @@ function findAndPatch(key,id,patch){
   if(i<0)return; d[i]=Object.assign({},d[i],patch); save(key,d);
 }
 function findById(key,id){return load(key).filter(function(x){return x.id===id;})[0];}
-
-function editMeal(id){var m=findById(K.meals,id); if(!m)return;
-  editModal('Edit meal',[{k:'desc',label:'Description',val:m.desc},{k:'date',label:'Date',type:'date',val:m.date},
-    {k:'p',label:'Protein (g)',type:'number',val:m.p},{k:'c',label:'Carbs (g)',type:'number',val:m.c},
-    {k:'f',label:'Fat (g)',type:'number',val:m.f},{k:'sf',label:'Saturated fat (g)',type:'number',val:m.sf},
-    {k:'sard',label:'Sardine tins',type:'number',val:m.sard},{k:'alc',label:'Alcoholic drinks',type:'number',val:m.alc}],
-    function(o){findAndPatch(K.meals,id,{desc:o.desc,date:o.date,p:num(o.p),c:num(o.c),f:num(o.f),sf:num(o.sf),sard:num(o.sard),alc:num(o.alc)});});}
 
 function editSession(id){var s=findById(K.sessions,id); if(!s)return;
   editModal('Edit session',[{k:'type',label:'Session',val:s.type},{k:'date',label:'Date',type:'date',val:s.date},
@@ -3484,6 +2339,7 @@ function editScan(id){var s=findById(K.scans,id); if(!s)return;
 /* ---------- THEME ---------- */
 var THEME_KEY='ap8_theme';
 var THEME_NOTE={
+  nation:'Nation colours \u2014 red first, camo green second, white type on a black camo header. Same palette as the softball app.',
   ignition:'Cold steel and ignition cyan. Built for a 5 AM room with the lights off.',
   pulse:'Same drive, violet-forward. Pick whichever one gets you out the door.',
   oldmoney:'Charcoal, amber, Cormorant. The one you came in with — waiting for you at 15%.'
@@ -3497,7 +2353,7 @@ function setTheme(t){
   if(currentTab()==='today'&&RENDER.today)RENDER.today();
 }
 function markTheme(){
-  var t=document.documentElement.getAttribute('data-theme')||'ignition';
+  var t=document.documentElement.getAttribute('data-theme')||'nation';
   var els=document.querySelectorAll('.theme');
   for(var i=0;i<els.length;i++)els[i].classList.toggle('on',els[i].dataset.t===t);
   var n=$('theme-note'); if(n)n.textContent=THEME_NOTE[t]||'';
@@ -3505,8 +2361,8 @@ function markTheme(){
 
 /* ---------- BOOT ---------- */
 (function init(){
-  var saved='ignition';
-  try{saved=localStorage.getItem(THEME_KEY)||'ignition';}catch(e){}
+  var saved='nation';
+  try{saved=localStorage.getItem(THEME_KEY)||'nation';}catch(e){}
   document.documentElement.setAttribute('data-theme',saved);
   var t=today();
   ['s-date','l-date','m-date','b-date','bl-date','z-date','d-date'].forEach(function(id){var e=$(id);if(e)e.value=t;});
@@ -3520,7 +2376,6 @@ function markTheme(){
   }
   renderStrip(); showTab('today');
   // keep the window clock honest without a full re-render
-  setInterval(function(){if(FAST.on&&currentTab()==='today')renderFast();},30000);
 })();
 </script>
 </body>
