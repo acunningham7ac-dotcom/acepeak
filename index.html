@@ -312,6 +312,28 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 .theme.on .tn{color:var(--accent);}
 .theme .td{font-size:10px;color:var(--mute);margin-top:4px;line-height:1.35;}
 .legend i{display:inline-block;width:9px;height:2px;margin-right:4px;vertical-align:middle;}
+
+.prep-row{display:grid;grid-template-columns:30px 1fr 34px;gap:10px;align-items:center;
+  padding:9px 0;border-bottom:1px solid var(--line)}
+.prep-row:last-child{border-bottom:none}
+.prep-row.on .pt{color:var(--mute);text-decoration:line-through}
+.pchk{width:26px;height:26px;border:1.5px solid var(--line);border-radius:4px;display:grid;
+  place-items:center;cursor:pointer;color:var(--ink);font-size:14px;font-weight:700}
+.prep-row.on .pchk{background:var(--good);border-color:var(--good)}
+.pn{min-width:0;cursor:pointer}
+.pt{font-weight:600;font-size:14.5px;line-height:1.3}
+.ps{font-family:var(--data);font-size:10.5px;color:var(--mute);line-height:1.6;margin-top:2px}
+.pvid{background:transparent;border:1px solid var(--line);border-radius:4px;color:var(--accent);
+  width:32px;height:32px;display:grid;place-items:center;font-size:11px;cursor:pointer;padding:0}
+.pvid:active{opacity:.6}
+
+.set-head.uni,.set-row.uni{grid-template-columns:26px 1fr 1fr 1fr 42px}
+.set-row.uni input.wk{border-color:var(--accent)}
+.side-note{font-family:var(--data);font-size:10.5px;color:var(--mute);line-height:1.6;
+  padding:7px 2px 0;border-top:1px solid var(--line);margin-top:6px}
+
+.flow-step{display:flex;align-items:center;gap:10px}
+.flow-step .flow-b{flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -331,6 +353,12 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
   <div id="today-alerts"></div>
 
   <div id="readiness-strip"></div>
+
+  <div class="card" id="card-prep">
+    <h2>Prep</h2>
+    <div class="cap">Before the first working set &middot; <span id="prep-count">&mdash;</span></div>
+    <div id="prep-body"></div>
+  </div>
 
   <div class="card">
     <h2 id="plan-day">—</h2>
@@ -756,6 +784,21 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
     <div class="cap" style="text-align:center;line-height:1.7" id="tdee-note">—</div>
   </div>
 
+  <div class="eyebrow">Demo videos</div>
+  <div class="card">
+    <div class="cap" style="margin:0 0 12px;line-height:1.7">
+      Every move links to a YouTube search by default, so nothing goes dead on you.
+      Found a demo you like? Save it here and that move opens your link instead.
+    </div>
+    <div class="row"><div><label>Move</label>
+      <input id="vid-name" list="vid-names" placeholder="start typing a move name"></div></div>
+    <datalist id="vid-names"></datalist>
+    <div class="row"><div><label>Link (blank clears it)</label>
+      <input id="vid-url" placeholder="https://..."></div></div>
+    <button class="btn ghost" onclick="saveVidLink()">Save link</button>
+    <div id="vid-list" style="margin-top:14px"></div>
+  </div>
+
   <div class="eyebrow">Activity targets</div>
   <div class="card">
     <div class="row c3">
@@ -875,60 +918,94 @@ var CORE=['Back Squat','Deadlift','Bench Press','Overhead Press','Bent-Over Row'
    Core work is placed LAST on lifting days: a pre-fatigued trunk before heavy
    squats or deadlifts is an injury risk, not a benefit. */
 var PROGRAM=[
- {day:'Monday',focus:'Push — chest, shoulders, triceps',lift:1,ex:[
-  {n:'Bench Press',s:'4 × 6 @ RIR 2',core:1,p:'horiz_push',sets:4,reps:6,rest:150,blk:'am'},
-  {n:'Incline Dumbbell Press',s:'4 × 10',p:'horiz_push',sets:4,reps:10,rest:90,blk:'am'},
-  {n:'Overhead Press',s:'3 × 8 @ RIR 2',core:1,p:'vert_push',sets:3,reps:8,rest:150,blk:'am'},
+ /* ===== CORRECTIVE BLOCK — built on the 14 Nov movement screen =====
+    Findings: both quads tight and overactive; L hamstring far tighter than R;
+    both lats tight with the L weak; both ankles tight; L knee locks out into
+    hyperextension; core and glutes uncoordinated.
+
+    Four rules shape every day below.
+    1. Unilateral first. Nearly every finding is a left/right gap, and bilateral
+       work lets the strong side carry the weak one. Anything marked uni logs
+       each side on its own and progresses off the WEAKER side.
+    2. Nothing that loads a passive knee lockout. Barbell back squat and leg
+       press are out of this block — leg press in particular is the classic way
+       to drive a knee into the hyperextension that may have started all this.
+       Split squats, step-ups and lateral lunges keep the knee in a controlled
+       mid-range with the hip doing the work.
+    3. Active control before length. The tight L hamstring is likely bracing
+       against a range the quad is not holding, so terminal-knee-extension work
+       and eccentric hamstring work come first; stretching chases it, not leads.
+    4. Kettlebell pressing 1-2x/week heavy, half-kneeling, so the lumbar spine
+       cannot arch its way out of a tight-lat overhead position. */
+ {day:'Monday',focus:'Push — kettlebell press is the anchor',lift:1,ex:[
+  {n:'Half-Kneeling KB Press',s:'4 × 6 / side @ RIR 2',core:1,uni:1,p:'vert_push',sets:4,reps:6,rest:120,blk:'am'},
+  {n:'Bench Press',s:'3 × 8 @ RIR 2',core:1,p:'horiz_push',sets:3,reps:8,rest:150,blk:'am'},
+  {n:'Single-Arm DB Bench Press',s:'3 × 10 / side',uni:1,p:'horiz_push',sets:3,reps:10,rest:90,blk:'am'},
   {n:'Cable Lateral Raise',s:'3 × 15',p:'lateral',sets:3,reps:15,rest:60,blk:'am'},
-  {n:'Overhead Cable Extension',s:'3 × 12',p:'triceps',sets:3,reps:12,rest:60,blk:'am'},
-  {n:'Rope Pushdown',s:'3 × 15',p:'triceps',sets:3,reps:15,rest:60,blk:'am'},
+  {n:'Seated Overhead Cable Extension',s:'3 × 12',p:'triceps',sets:3,reps:12,rest:60,blk:'am'},
   {n:'Dead Bug',s:'3 × 10 / side',p:'anti_ext',sets:3,reps:10,rest:45,bw:1,abs:1,blk:'am'},
-  {n:'Pallof Press',s:'3 × 12 / side',p:'anti_rot',sets:3,reps:12,rest:45,abs:1,blk:'am'},
+  {n:'Pallof Press',s:'3 × 12 / side',uni:1,p:'anti_rot',sets:3,reps:12,rest:45,abs:1,blk:'am'},
   {n:'Zone 2 walk',s:'30 min after work',cardio:1,blk:'pm'}]},
- {day:'Tuesday',focus:'Lower A — quads',lift:1,ex:[
-  {n:'Back Squat',s:'4 × 6 @ RIR 2',core:1,p:'squat',sets:4,reps:6,rest:180,blk:'am'},
-  {n:'Leg Press',s:'3 × 10',core:1,p:'squat',sets:3,reps:10,rest:120,blk:'am'},
-  {n:'Bulgarian Split Squat',s:'3 × 10 / leg',p:'lunge',sets:3,reps:10,rest:90,blk:'am'},
-  {n:'Leg Extension',s:'3 × 15',p:'quad_iso',sets:3,reps:15,rest:60,blk:'am'},
-  {n:'Standing Calf Raise',s:'4 × 12',p:'calf',sets:4,reps:12,rest:60,blk:'am'},
-  {n:'Suitcase Carry',s:'3 × 40 yd / side',p:'carry',sets:3,reps:40,rest:60,abs:1,blk:'am'},
-  {n:'Zone 2 — bike',s:'25 min after work',cardio:1,blk:'pm'}]},
- {day:'Wednesday',focus:'Recovery — the day that lowers triglycerides',ex:[
-  {n:'Easy walk',s:'15 min, optional',cardio:1,blk:'am'},
-  {n:'Zone 2 walk or bike',s:'50 min',cardio:1,blk:'pm'},
-  {n:'Mobility flow',s:'10 min',cardio:1,blk:'pm'},
-  {n:'Sauna',s:'20 min',cardio:1,blk:'pm'}]},
- {day:'Thursday',focus:'Pull — back, rear delts, biceps',lift:1,ex:[
-  {n:'Bent-Over Row',s:'4 × 6 @ RIR 2',core:1,p:'horiz_pull',sets:4,reps:6,rest:150,blk:'am'},
-  {n:'Lat Pulldown',s:'3 × 10',p:'vert_pull',sets:3,reps:10,rest:90,blk:'am'},
-  {n:'Chest-Supported Row',s:'3 × 12',p:'horiz_pull',sets:3,reps:12,rest:90,blk:'am'},
+ {day:'Tuesday',focus:'Lower A — single-leg, knee in mid-range',lift:1,ex:[
+  {n:'Rear-Foot-Elevated Split Squat',s:'4 × 8 / side @ RIR 2',core:1,uni:1,p:'lunge',sets:4,reps:8,rest:120,blk:'am'},
+  {n:'Lateral KB Lunge',s:'3 × 10 / side',uni:1,p:'lunge',sets:3,reps:10,rest:90,blk:'am'},
+  {n:'Step-Up',s:'3 × 10 / side · no lockout at the top',uni:1,p:'lunge',sets:3,reps:10,rest:90,blk:'am'},
+  {n:'Single-Leg Glute Bridge',s:'3 × 12 / side',uni:1,p:'glute',sets:3,reps:12,rest:60,bw:1,blk:'am'},
+  {n:'Standing Calf Raise',s:'4 × 12 · full stretch at the bottom',p:'calf',sets:4,reps:12,rest:60,blk:'am'},
+  {n:'Suitcase Carry',s:'3 × 40 yd / side',uni:1,p:'carry',sets:3,reps:40,rest:60,abs:1,blk:'am'},
+  {n:'Zone 2 walk',s:'25 min after work',cardio:1,blk:'pm'}]},
+ {day:'Wednesday',focus:'Mobility and zone 2 — no load',ex:[
+  {n:'Full prep protocol, twice through',s:'about 20 min',cardio:1,blk:'am'},
+  {n:'Zone 2',s:'40 min after work',cardio:1,blk:'pm'}]},
+ {day:'Thursday',focus:'Pull — building the left lat',lift:1,ex:[
+  {n:'Single-Arm Lat Pulldown',s:'4 × 10 / side @ RIR 2',core:1,uni:1,p:'vert_pull',sets:4,reps:10,rest:120,blk:'am'},
+  {n:'Chest-Supported Row',s:'3 × 10',core:1,p:'horiz_pull',sets:3,reps:10,rest:120,blk:'am'},
+  {n:'Single-Arm DB Row',s:'3 × 10 / side',uni:1,p:'horiz_pull',sets:3,reps:10,rest:90,blk:'am'},
   {n:'Face Pull',s:'3 × 15',p:'rear_delt',sets:3,reps:15,rest:60,blk:'am'},
-  {n:'EZ Bar Curl',s:'3 × 10',p:'biceps',sets:3,reps:10,rest:60,blk:'am'},
   {n:'Hammer Curl',s:'3 × 12',p:'biceps',sets:3,reps:12,rest:60,blk:'am'},
-  {n:'Side Plank',s:'3 × 40s / side',p:'anti_lat',sets:3,reps:40,rest:45,bw:1,abs:1,blk:'am'},
+  {n:'Side Plank',s:'3 × 30 sec / side',uni:1,p:'anti_lat',sets:3,reps:30,rest:45,bw:1,abs:1,blk:'am'},
   {n:'Hanging Knee Raise',s:'3 × 12',p:'flexion',sets:3,reps:12,rest:60,bw:1,abs:1,blk:'am'},
   {n:'Zone 2 walk',s:'30 min after work',cardio:1,blk:'pm'}]},
- {day:'Friday',focus:'Lower B — posterior chain',lift:1,ex:[
-  {n:'Deadlift',s:'3 × 5 @ RIR 2',core:1,p:'hinge',sets:3,reps:5,rest:180,blk:'am'},
-  {n:'Romanian Deadlift',s:'3 × 8',p:'hinge',sets:3,reps:8,rest:120,blk:'am'},
-  {n:'Seated Leg Curl',s:'3 × 12',p:'ham_iso',sets:3,reps:12,rest:60,blk:'am'},
-  {n:'Hip Thrust',s:'3 × 10',p:'hinge',sets:3,reps:10,rest:90,blk:'am'},
-  {n:'Farmer Carry',s:'3 × 50 yd',p:'carry',sets:3,reps:50,rest:60,abs:1,blk:'am'},
-  {n:'HIIT — bike or rower',s:'8 × 30s / 90s',cardio:1,blk:'pm'},
-  {n:'Sauna',s:'20 min, optional',cardio:1,blk:'pm'}]},
- {day:'Saturday',focus:'Long zone 2 — the biggest lever you have',ex:[
-  {n:'Zone 2 walk or bike',s:'70 min',cardio:1,blk:'am'},
-  {n:'Mobility flow',s:'10 min',cardio:1,blk:'pm'},
-  {n:'Sauna',s:'20 min',cardio:1,blk:'pm'}]},
- {day:'Sunday',focus:'Full rest — cook the week, weigh in',ex:[
-  {n:'Weekly weigh-in',s:'Morning, fasted',cardio:1,blk:'am'},
-  {n:'No training',s:'—',cardio:1,blk:'am'},
-  {n:'Batch cook',s:'4 meals × 5 days',cardio:1,blk:'pm'}]}
+ {day:'Friday',focus:'Lower B — posterior chain and the left hamstring',lift:1,ex:[
+  {n:'Romanian Deadlift',s:'4 × 8 @ RIR 2',core:1,p:'hinge',sets:4,reps:8,rest:150,blk:'am'},
+  {n:'Single-Leg RDL',s:'3 × 10 / side',core:1,uni:1,p:'hinge',sets:3,reps:10,rest:90,blk:'am'},
+  {n:'Nordic Curl',s:'3 × 6 · lower slow, 4 sec',p:'ham_iso',sets:3,reps:6,rest:90,bw:1,blk:'am'},
+  {n:'Hip Thrust',s:'3 × 12',p:'glute',sets:3,reps:12,rest:90,blk:'am'},
+  {n:'Hip Airplane',s:'2 × 8 / side · slow',uni:1,p:'glute',sets:2,reps:8,rest:60,bw:1,blk:'am'},
+  {n:'Farmer Carry',s:'3 × 40 yd',p:'carry',sets:3,reps:40,rest:60,abs:1,blk:'am'},
+  {n:'Zone 2 walk',s:'25 min after work',cardio:1,blk:'pm'}]},
+ {day:'Saturday',focus:'Corrective and carries — the patient day',lift:1,ex:[
+  {n:'Turkish Get-Up',s:'2 × 3 / side · slow',core:1,uni:1,p:'vert_push',sets:2,reps:3,rest:120,blk:'am'},
+  {n:'Band Terminal Knee Extension',s:'3 × 20 / left',uni:1,p:'quad_iso',sets:3,reps:20,rest:45,bw:1,blk:'am'},
+  {n:'Copenhagen Plank',s:'3 × 20 sec / side',uni:1,p:'anti_lat',sets:3,reps:20,rest:45,bw:1,abs:1,blk:'am'},
+  {n:'Bird Dog',s:'3 × 10 / side · pause 2 sec',uni:1,p:'anti_ext',sets:3,reps:10,rest:45,bw:1,abs:1,blk:'am'},
+  {n:'Long zone 2',s:'45–60 min',cardio:1,blk:'pm'}]},
+ {day:'Sunday',focus:'Full rest — weigh in, prep the week',ex:[
+  {n:'Weigh in',s:'same time, same conditions',cardio:1,blk:'am'}]}
 ];
+
+/* The trainer's warm-up, run before every loaded day. Two changes from the
+   sheet he sent: pigeon is replaced by a supine figure-4, because pigeon drives
+   deep flexion plus rotation through a knee with meniscus history, and the
+   figure-4 reaches the same hip capsule with no knee torque; and an ankle drill
+   is added, since both ankles screened tight and tight ankles push load forward
+   onto the knee. */
+var PREP=[
+ {n:'Foam roll — lats, quads, hip flexors, glutes',s:'4 min',why:'All four screened tight. Lats first: they gate the overhead position you are about to press from.'},
+ {n:'Ankle rock',s:'45 sec / side',why:'Tight ankles shift squat and lunge load forward onto the knee.'},
+ {n:'Supine figure-4',s:'45 sec / side',why:'Replaces pigeon. Same hip capsule, no rotation through the knee.'},
+ {n:'Lateral KB lunge',s:'2 × 8 / side',why:'Frontal plane, adductors and ankle, knee stays in mid-range.'},
+ {n:'Band terminal knee extension — left',s:'2 × 15',why:'Teaches the quad to hold the last few degrees actively, so the joint is not hanging on ligaments at lockout.'},
+ {n:'Light KB press',s:'2 × 8 / side',why:'Grooves the pattern before the heavy sets. Half-kneeling if the low back wants to arch.'}
+];
+
 
 /* Swap suggestions by movement pattern — full gym, dumbbell-only, and
    no-equipment fallbacks so a busy rack or a hotel room never stops you. */
 var ALTS={
+ glute:['Hip Thrust','Barbell Hip Thrust','Single-Leg Glute Bridge','Glute Bridge',
+   'Hip Airplane','Cable Pull-Through','Frog Pump','Band Seated Abduction',
+   'Reverse Hyper','Single-Leg Hip Thrust','Bird Dog','90/90 Hip Lift'],
  horiz_push:['Bench Press','Incline Barbell Press','Incline Dumbbell Press','Flat Dumbbell Press','Machine Chest Press',
    'Dumbbell Floor Press','Smith Machine Bench','Cable Chest Press','Pec Deck','Dumbbell Fly','Push-Up','Weighted Push-Up','Deficit Push-Up'],
  vert_push:['Overhead Press','Seated Barbell Press','Dumbbell Shoulder Press','Seated Dumbbell Press','Machine Shoulder Press',
@@ -961,9 +1038,15 @@ var ALTS={
  carry:['Farmer Carry','Suitcase Carry','Front-Rack Carry','Overhead Carry','Trap-Bar Carry','Sandbag Carry']
 };
 
-var MOBILITY=[{n:'Cat–cow',s:45},{n:'90/90 hip switch',s:60},{n:'Couch stretch — left',s:45},
- {n:'Couch stretch — right',s:45},{n:'Thoracic opener',s:60},{n:'Ankle rock',s:45},
- {n:'Dead hang',s:45},{n:'Deep squat hold',s:60}];
+/* Ordered against the screen: ankles and lats first because they gate the
+   positions everything else is trained in. Couch stretch is held longer on the
+   left. No pigeon — supine figure-4 instead, for the knee. */
+var MOBILITY=[{n:'Ankle rock — left',s:45},{n:'Ankle rock — right',s:45},
+ {n:'Lat stretch on a bench',s:60},{n:'Dead hang',s:45},
+ {n:'Supine figure-4 — left',s:45},{n:'Supine figure-4 — right',s:45},
+ {n:'Couch stretch — left',s:60},{n:'Couch stretch — right',s:45},
+ {n:'90/90 hip switch',s:60},{n:'Hip airplane — slow',s:60},
+ {n:'Cat–cow',s:45},{n:'Thoracic opener',s:60}];
 
 
 var MARKERS=[
@@ -1062,6 +1145,106 @@ function lineChart(elId,series,label){
   });
   el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+svg+
     '<text x="4" y="12" class="chart-lbl">'+label+'</text></svg>';
+}
+
+/* ---------- PREP ----------
+   Checked items are kept per day so the list resets itself every morning and
+   you can leave it half-done while you roll out. */
+function prepState(){
+  var m=loadO('ap8_prep',{});
+  return (m.date===today()&&m.done)?m.done:[];
+}
+function prepToggle(i){
+  var cur=prepState(), ix=cur.indexOf(i);
+  if(ix>=0)cur.splice(ix,1); else cur.push(i);
+  saveO('ap8_prep',{date:today(),done:cur});
+  renderPrep(); renderPrepRunner();
+}
+function prepDone(){return prepState().length>=PREP.length;}
+function prepRows(compact){
+  var done=prepState();
+  return PREP.map(function(x,i){
+    var on=done.indexOf(i)>=0;
+    return '<div class="prep-row'+(on?' on':'')+'">'+
+      '<div class="pchk" onclick="prepToggle('+i+')">'+(on?'\u2713':'')+'</div>'+
+      '<div class="pn" onclick="prepToggle('+i+')"><div class="pt">'+x.n+'</div>'+
+        '<div class="ps">'+x.s+(compact?'':' \u00b7 '+x.why)+'</div></div>'+
+      '<button class="pvid" onclick="openVid(\''+x.n.replace(/'/g,"\\'")+'\')" title="Demo">\u25b6</button>'+
+    '</div>';
+  }).join('');
+}
+function renderPrep(){
+  var el=$('prep-body'); if(!el)return;
+  var done=prepState().length;
+  $('prep-count').textContent=done+' / '+PREP.length+(done>=PREP.length?' \u00b7 done':'');
+  $('prep-count').style.color=done>=PREP.length?'var(--good)':'var(--mute)';
+  el.innerHTML=prepRows(false);
+}
+function renderPrepRunner(){
+  var el=$('run-prep'); if(!el)return;
+  var done=prepState().length;
+  el.innerHTML='<div class="run-hd" style="margin-bottom:6px"><div><div class="rn">Prep'+
+      (done>=PREP.length?'<span class="core" style="color:var(--good)">DONE</span>':'')+'</div>'+
+      '<div class="rt">'+done+' / '+PREP.length+' \u00b7 about 10 min before the first working set</div></div></div>'+
+    prepRows(true);
+}
+
+/* ---------- DEMO VIDEO LINKS ----------
+   These are YouTube SEARCH links, not links to one specific clip. A hardcoded
+   video id is a promise that breaks the first time a channel takes it down,
+   and a dead link in a gym is worse than no link. A search lands on current
+   results every time. If you find a demo you want to keep, save it against the
+   move in Setup and that link is used instead. */
+function vidKey(n){return String(n).toLowerCase().replace(/[^a-z0-9]/g,'');}
+function vidOverride(n){
+  var m=loadO('ap8_vid',{});
+  return m[vidKey(n)]||'';
+}
+function vidUrl(n){
+  var own=vidOverride(n); if(own)return own;
+  // the "how to" wording keeps results on instruction rather than compilations
+  return 'https://www.youtube.com/results?search_query='+
+    encodeURIComponent('how to '+n+' proper form');
+}
+function openVid(n){
+  try{window.open(vidUrl(n),'_blank','noopener');}
+  catch(e){toast('Could not open the link','var(--bad)');}
+}
+function saveVidLink(){
+  var nm=$('vid-name').value.trim(), url=$('vid-url').value.trim();
+  if(!nm){toast('Name the move','var(--warn)');return;}
+  var m=loadO('ap8_vid',{});
+  if(!url){ delete m[vidKey(nm)]; saveO('ap8_vid',m); renderVidLinks(); toast('Cleared'); return; }
+  if(!/^https?:\/\//i.test(url)){toast('Needs to start with https://','var(--bad)');return;}
+  m[vidKey(nm)]=url;
+  saveO('ap8_vid',m); $('vid-url').value=''; $('vid-name').value='';
+  renderVidLinks(); toast('Saved for '+nm);
+}
+function renderVidLinks(){
+  var box=$('vid-list'); if(!box)return;
+  var m=loadO('ap8_vid',{}), keys=Object.keys(m);
+  // offer every move in the block as a datalist so names match what the runner uses
+  var dl=$('vid-names');
+  if(dl&&!dl.children.length){
+    var names={};
+    PREP.forEach(function(x){names[x.n]=1;});
+    PROGRAM.forEach(function(d){d.ex.forEach(function(e){if(!e.cardio)names[e.n]=1;});});
+    MOBILITY.forEach(function(x){names[x.n.replace(/ — (left|right)$/,'')]=1;});
+    dl.innerHTML=Object.keys(names).sort().map(function(x){
+      return '<option value="'+x.replace(/"/g,'&quot;')+'">';}).join('');
+  }
+  box.innerHTML=keys.length
+    ? keys.map(function(k){
+        return '<div class="item"><div class="item-hd"><div style="flex:1;min-width:0">'+
+          '<div class="item-t">'+k+'</div>'+
+          '<div class="item-m" style="overflow:hidden;text-overflow:ellipsis">'+m[k]+'</div></div>'+
+          '<div class="acts"><button onclick="clearVid(\''+k.replace(/'/g,"\\'")+'\')">\u2715</button></div></div></div>';
+      }).join('')
+    : '<div class="cap" style="text-align:center;padding:10px 0">No saved links. Every move falls back to a search.</div>';
+}
+function clearVid(k){
+  var m=loadO('ap8_vid',{}); delete m[k]; saveO('ap8_vid',m);
+  renderVidLinks(); toast('Cleared');
 }
 
 /* ---------- OBJECTIVES ---------- */
@@ -1192,12 +1375,12 @@ RENDER.today=function(){
     $('w-pct').className='v '+(rate.pct>GOALS.maxrate?'bad':'good');
   }else{$('w-rate').textContent='—';$('w-pct').textContent='—';}
 
-  renderNiggleToday(); renderWeekReview(); renderReadinessStrip(); applyCollapseState();
+  renderPrep(); renderNiggleToday(); renderWeekReview(); renderReadinessStrip(); applyCollapseState();
 };
 
 var NIGGLE_AREAS={
-  knee:{n:'Knee',pat:['squat','lunge','quad_iso','calf'],
-    safe:'Hinge patterns, upper body, and machine work that keeps the knee out of loaded flexion.'},
+  knee:{n:'Knee',pat:['squat','lunge','calf'],
+    safe:'Hinge patterns, glute work, upper body, and anything that keeps the knee out of loaded flexion. Terminal-knee-extension work is deliberately NOT held back \u2014 it is the drill that settles this joint down.'},
   lowback:{n:'Lower back',pat:['hinge','squat','carry','ham_iso'],
     safe:'Seated and supported pressing. Keep anti-extension core work \u2014 it helps here.'},
   shoulder:{n:'Shoulder',pat:['vert_push','horiz_push','lateral'],
@@ -1551,7 +1734,7 @@ function startWorkout(){
     if(!e.bw&&flg)rec=applyNiggle(rec,last,flg);
     var w = e.bw ? '' : (deload ? (last?Math.round(last.w*0.6):'') : (rec?rec.w:(last?last.w:'')));
     var sets=[]; for(var i=0;i<(e.sets||3);i++)sets.push({w:w,r:e.reps||'',done:false});
-    return {n:e.n,p:e.p,core:e.core,abs:e.abs,bw:e.bw,flag:flg,target:e.s,rest:e.rest||90,sets:sets,last:last,rec:rec};
+    return {n:e.n,p:e.p,core:e.core,abs:e.abs,bw:e.bw,uni:e.uni,flag:flg,target:e.s,rest:e.rest||90,sets:sets,last:last,rec:rec};
   })};
   renderRunner();
 }
@@ -1637,6 +1820,7 @@ function renderRunner(){
     (WK.deload?' · DELOAD 60%':'')+(WK.offDay?' · make-up':'')+
     (WK.lay?' · RETURNING':'')+'</div></div>'+
     '<button class="btn ghost" style="width:auto;padding:9px 14px" onclick="finishWorkout()">Finish</button></div>';
+  html+='<div class="run-ex" id="run-prep"></div>';
   if(WK.lay)html+='<div class="note"><strong>Coming back after '+WK.lay.label.replace(' off','')+' off</strong>'+
     WK.lay.why+' Stop at RIR '+WK.lay.rir+' today. If it moves clean, step back up next session.</div>';
 
@@ -1647,9 +1831,11 @@ function renderRunner(){
     html+='<div class="run-ex'+(exDone?' done':'')+'">'+
       '<div class="run-hd"><div><div class="rn">'+e.n+badge+'</div>'+
       '<div class="rt">'+e.target+
-      (e.bw?'  ·  bodyweight':(e.last?'  ·  last '+e.last.w+'×'+e.last.r:'  ·  first time'))+
+      (e.bw?'  ·  bodyweight':(e.last?'  ·  last '+e.last.w+'×'+e.last.r+
+        (e.uni&&e.last.rl!=null&&e.last.rr!=null?' (L'+e.last.rl+'/R'+e.last.rr+')':''):'  ·  first time'))+
       (e.rec&&e.rec.up?'  ·  <span style="color:var(--good)">▲ '+e.rec.why+'</span>':(e.rec?'  ·  <span style="color:var(--warn)">'+e.rec.why+'</span>':''))+
       '</div></div>'+
+      '<button class="run-swap" onclick="openVid(\''+e.n.replace(/'/g,"\\'")+'\')" title="Demo">\u25b6</button>'+
       '<button class="run-swap" onclick="swapMove('+ei+')">Swap</button>'+
       (e.flag&&!exDone?'<button class="run-swap" onclick="skipEx('+ei+')">Skip</button>':'')+'</div>'+
       '<div class="run-sets">';
@@ -1660,30 +1846,63 @@ function renderRunner(){
         wu.map(function(s){return '<button class="wchip" onclick="showPlates('+s.w+')">'+s.w+' × '+s.r+'</button>';}).join('')+
         '</div>';
     }
-    html+='<div class="set-head"><span></span><span>'+(e.bw?'Load (opt)':'Weight')+'</span><span>'+
-      (e.p==='carry'?'Yards':(e.p==='anti_lat'||e.p==='anti_ext'?'Reps/sec':'Reps'))+'</span><span>Done</span></div>';
+    var unitLbl = e.p==='carry'?'Yards':(e.p==='anti_lat'||e.p==='anti_ext'?'Sec':'Reps');
+    html+='<div class="set-head'+(e.uni?' uni':'')+'"><span></span><span>'+(e.bw?'Load (opt)':'Weight')+'</span>'+
+      (e.uni?'<span>L '+unitLbl+'</span><span>R '+unitLbl+'</span>':'<span>'+unitLbl+'</span>')+
+      '<span>Done</span></div>';
     e.sets.forEach(function(s,si){
-      html+='<div class="set-row'+(s.done?' done':'')+'">'+
+      html+='<div class="set-row'+(e.uni?' uni':'')+(s.done?' done':'')+'">'+
         '<div class="sl">'+(si+1)+'</div>'+
-        '<input type="number" inputmode="decimal" value="'+(s.w===''?'':s.w)+'" onchange="setField('+ei+','+si+',\'w\',this.value)" placeholder="lbs">'+
-        '<input type="number" inputmode="numeric" value="'+(s.r===''?'':s.r)+'" onchange="setField('+ei+','+si+',\'r\',this.value)" placeholder="reps">'+
-        '<div class="chk'+(s.done?' on':'')+'" onclick="toggleSet('+ei+','+si+')">'+(s.done?'✓':'')+'</div>'+
+        '<input type="number" inputmode="decimal" value="'+(s.w===''?'':s.w)+'" onchange="setField('+ei+','+si+',\'w\',this.value)" placeholder="lbs">';
+      if(e.uni){
+        // Left first, always. The weak side sets the standard and the strong
+        // side matches it — that is the only way a gap actually closes.
+        html+='<input type="number" inputmode="numeric" class="wk" value="'+(s.rl===''||s.rl==null?'':s.rl)+'" onchange="setField('+ei+','+si+',\'rl\',this.value)" placeholder="L">'+
+              '<input type="number" inputmode="numeric" value="'+(s.rr===''||s.rr==null?'':s.rr)+'" onchange="setField('+ei+','+si+',\'rr\',this.value)" placeholder="R">';
+      }else{
+        html+='<input type="number" inputmode="numeric" value="'+(s.r===''?'':s.r)+'" onchange="setField('+ei+','+si+',\'r\',this.value)" placeholder="reps">';
+      }
+      html+='<div class="chk'+(s.done?' on':'')+'" onclick="toggleSet('+ei+','+si+')">'+(s.done?'✓':'')+'</div>'+
         '</div>';
     });
+    if(e.uni){
+      var gap=sideGap(e);
+      html+='<div class="side-note">'+(gap==null
+        ? 'Left first. Cap the right at whatever the left managed.'
+        : (gap===0 ? '<span style="color:var(--good)">Even today.</span>'
+           : '<span style="color:'+(gap>=3?'var(--bad)':'var(--warn)')+'">Right is '+gap+' rep'+(gap===1?'':'s')+' ahead.</span> Hold the right back until the left catches up.'))+
+        '</div>';
+    }
     html+='</div></div>';
   });
   $('runner').innerHTML=html;
+  renderPrepRunner();
 }
-function setField(ei,si,f,v){WK.ex[ei].sets[si][f]=v;}
+function setField(ei,si,f,v){
+  WK.ex[ei].sets[si][f]=v;
+  if(f==='rl'||f==='rr')renderRunner();
+}
+/* How far the strong side is running ahead, across completed sets today. */
+function sideGap(e){
+  var done=e.sets.filter(function(s){return s.done&&s.rl!==''&&s.rl!=null&&s.rr!==''&&s.rr!=null;});
+  if(!done.length)return null;
+  var l=0,r=0;
+  done.forEach(function(s){l+=num(s.rl);r+=num(s.rr);});
+  return Math.max(0,Math.round((r-l)/done.length));
+}
 function toggleSet(ei,si){
   var e=WK.ex[ei], s=e.sets[si];
   s.done=!s.done;
   if(s.done){
     // bodyweight/time moves don't need a load — reps (or seconds) is enough
     if(!e.bw && (s.w===''||s.w==null)){toast('Enter the weight first','var(--warn)');s.done=false;renderRunner();return;}
+    if(e.uni && (s.rl===''||s.rl==null)){toast('Log the left side first','var(--warn)');s.done=false;renderRunner();return;}
     // auto-advance to next set if blank
     var nx=e.sets[si+1];
-    if(nx&&(nx.w===''||nx.w==null)){nx.w=s.w;nx.r=s.r;}
+    if(nx&&(nx.w===''||nx.w==null)){
+      nx.w=s.w;
+      if(e.uni){nx.rl=s.rl;nx.rr=s.rr;} else nx.r=s.r;
+    }
     startRunnerRest(e.rest);
   }
   renderRunner();
@@ -1745,9 +1964,19 @@ function finishWorkout(){
   WK.ex.forEach(function(e){
     var doneSets=e.sets.filter(function(s){return s.done&&s.w!==''&&s.w!=null;});
     if(!doneSets.length)return;
-    // top set = heaviest completed
-    var top=doneSets.reduce(function(a,b){return num(b.w)>num(a.w)?b:a;});
-    d.push({id:uid(),date:today(),lift:e.n,weight:top.w,sets:doneSets.length,reps:top.r,rir:'2'});
+    // Top set = heaviest completed. For unilateral work, ties on weight are
+    // broken by the best WEAK-side effort rather than by set order, so the
+    // number that drives progression is never an accident of which set came
+    // first — and the weak side is what the next load is built on.
+    var weak=function(x){ return e.uni ? Math.min(num(x.rl), num(x.rr)||num(x.rl)) : num(x.r); };
+    var top=doneSets.reduce(function(a,b){
+      if(num(b.w)!==num(a.w))return num(b.w)>num(a.w)?b:a;
+      return weak(b)>weak(a)?b:a;
+    });
+    var reps = e.uni ? weak(top) : top.r;
+    var rec={id:uid(),date:today(),lift:e.n,weight:top.w,sets:doneSets.length,reps:reps,rir:'2'};
+    if(e.uni){rec.rl=top.rl;rec.rr=top.rr;}
+    d.push(rec);
     logged++;
   });
   d.sort(function(a,b){return b.date.localeCompare(a.date);}); save(K.lifts,d);
@@ -2133,7 +2362,8 @@ function highlightMob(){
   $('mob-list').innerHTML=MOBILITY.map(function(m,i){
     return '<div class="flow-step" style="opacity:'+((mIv&&i===mStep)?1:.45)+'">'+
       '<div class="flow-n">'+String(i+1).padStart(2,'0')+'</div>'+
-      '<div class="flow-b"><strong>'+m.n+'</strong><span>'+m.s+' seconds</span></div></div>';}).join('');
+      '<div class="flow-b"><strong>'+m.n+'</strong><span>'+m.s+' seconds</span></div>'+
+      '<button class="pvid" onclick="openVid(\''+m.n.replace(/ \u2014 (left|right)$/,'').replace(/'/g,"\\'")+'\')" title="Demo">\u25b6</button></div>';}).join('');
 }
 function logRec(kind,detail){
   var d=load(K.rec);
@@ -2173,7 +2403,7 @@ RENDER.setup=function(){
   Object.keys(DEF_GOALS).forEach(function(k){var e=$('g-'+k); if(e)e.value=GOALS[k];});
   $('p-dob').value=PROF.dob; $('p-draw').value=PROF.draw; $('p-dexa').value=PROF.dexa;
   $('p-start').value=PROF.start; $('p-goalbf').value=PROF.goalbf; $('p-stretchbf').value=PROF.stretchbf;
-  tdeeNote(); checkGoals(); leanNote(); markTheme();
+  tdeeNote(); checkGoals(); leanNote(); markTheme(); renderVidLinks();
 };
 function tdee(){return Math.round(GOALS.rmr*GOALS.af);}
 function tdeeNote(){
