@@ -334,6 +334,17 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 
 .flow-step{display:flex;align-items:center;gap:10px}
 .flow-step .flow-b{flex:1;min-width:0}
+
+.proto-h{font-family:var(--data);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin:16px 0 7px}
+.proto-h:first-child{margin-top:14px}
+.proto{font-size:13.5px;line-height:1.65;color:#c9d2c2;padding:0 0 10px;
+  border-bottom:1px solid var(--line)}
+.proto:last-child{border-bottom:none;padding-bottom:0}
+.proto strong{color:var(--bone);font-weight:600}
+.proto em{font-style:normal;color:var(--bone)}
+.proto.off strong{color:var(--mute)}
+.proto.off{color:var(--mute)}
 </style>
 </head>
 <body>
@@ -660,6 +671,80 @@ input,select{width:100%;background:var(--raise);border:1px solid var(--line);bor
 
 <!-- RECOVER -->
 <section class="tab" id="t-recover">
+  <div class="eyebrow">Daily protocol</div>
+  <div class="card collapsible collapsed" id="card-protocol">
+    <div class="card-head" onclick="toggleCard('card-protocol')">
+      <div><h2>The daily protocol</h2>
+        <div class="cap" style="margin-bottom:0">Reference only &mdash; nothing here is tracked</div></div>
+      <span class="chev">&#9662;</span>
+    </div>
+    <div class="card-body">
+
+      <div class="proto-h">Morning</div>
+      <div class="proto">
+        <strong>Sunlight &mdash; 5&ndash;10 min clear, 15&ndash;20 overcast.</strong>
+        The usual advice is "within an hour of waking," which you cannot do: you train at
+        5 AM and the sun does not clear the Wasatch until past 7. So anchor it to
+        <em>sunrise</em>, not your alarm &mdash; the commute or the first break. No sunglasses,
+        and not through a window.
+      </div>
+      <div class="proto">
+        <strong>Hard thinking in 90-minute blocks.</strong>
+        Morning or early afternoon, uninterrupted. Screen at or slightly above eye level.
+        Coursework is the obvious place to spend these.
+      </div>
+
+      <div class="proto-h">Right after training</div>
+      <div class="proto">
+        <strong>3&ndash;5 min of physiological sighs.</strong>
+        Two inhales through the nose, one long exhale through the mouth. You go straight
+        from a fasted 5 AM session into a workday &mdash; this is the switch out of that.
+      </div>
+
+      <div class="proto-h">Afternoon</div>
+      <div class="proto">
+        <strong>NSDR, 10&ndash;30 min, on short-sleep days.</strong>
+        Restores baseline without the grogginess a nap leaves.
+      </div>
+
+      <div class="proto-h">Evening</div>
+      <div class="proto">
+        <strong>Dim the overheads 1&ndash;2 hours before bed.</strong>
+        Catch low-angle light near sunset when the day allows. This one feeds your
+        readiness score the next morning more than anything else on the list.
+      </div>
+
+      <div class="proto-h">Across the week</div>
+      <div class="proto">
+        <strong>Zone 2: 180&ndash;200 min.</strong> Already your target &mdash; no change.
+      </div>
+      <div class="proto">
+        <strong>Static holds, 30&ndash;60 sec, 3&times; a week.</strong>
+        <em>After</em> sessions or on Wednesday, never before lifting &mdash; long holds
+        blunt force output for a while afterward. Your pre-lift prep is dynamic on purpose.
+      </div>
+      <div class="proto">
+        <strong>Sauna.</strong> Already in Recover. Of the heat/cold pair, heat is the
+        half with the stronger outcome data behind it.
+      </div>
+
+      <div class="proto-h">Deliberately not doing</div>
+      <div class="proto off">
+        <strong>Cold plunge &mdash; shelved.</strong>
+        Four lipid drugs plus aspirin puts you outside the healthy-population these
+        protocols assume, and cold shock spikes systolic pressure hard in the first
+        seconds. Separately, cold within 6&ndash;8 hours of lifting blunts the adaptation
+        you are training for. Revisit only if your cardiologist says so.
+      </div>
+      <div class="proto off">
+        <strong>Sprint intervals &mdash; not this block.</strong>
+        Max-effort sprinting drives fast terminal knee extension, which is the mechanism
+        behind the knee in the first place. After it has been looked at.
+      </div>
+
+    </div>
+  </div>
+
   <div class="eyebrow">Niggles — flag what hurts</div>
   <div class="card">
     <div class="row">
@@ -945,6 +1030,7 @@ var PROGRAM=[
   {n:'Seated Overhead Cable Extension',s:'3 × 12',p:'triceps',sets:3,reps:12,rest:60,blk:'am'},
   {n:'Dead Bug',s:'3 × 10 / side',p:'anti_ext',sets:3,reps:10,rest:45,bw:1,abs:1,blk:'am'},
   {n:'Pallof Press',s:'3 × 12 / side',uni:1,p:'anti_rot',sets:3,reps:12,rest:45,abs:1,blk:'am'},
+  {n:'Harness Neck Extension',s:'2 × 20 · 3 sec down, no jerking',p:'neck',sets:2,reps:20,rest:60,blk:'am'},
   {n:'Zone 2 walk',s:'30 min after work',cardio:1,blk:'pm'}]},
  {day:'Tuesday',focus:'Lower A — single-leg, knee in mid-range',lift:1,ex:[
   {n:'Rear-Foot-Elevated Split Squat',s:'4 × 8 / side @ RIR 2',core:1,uni:1,p:'lunge',sets:4,reps:8,rest:120,blk:'am'},
@@ -965,6 +1051,7 @@ var PROGRAM=[
   {n:'Hammer Curl',s:'3 × 12',p:'biceps',sets:3,reps:12,rest:60,blk:'am'},
   {n:'Side Plank',s:'3 × 30 sec / side',uni:1,p:'anti_lat',sets:3,reps:30,rest:45,bw:1,abs:1,blk:'am'},
   {n:'Hanging Knee Raise',s:'3 × 12',p:'flexion',sets:3,reps:12,rest:60,bw:1,abs:1,blk:'am'},
+  {n:'Harness Neck Flexion',s:'2 × 20 · 3 sec down, chin tucked',p:'neck',sets:2,reps:20,rest:60,blk:'am'},
   {n:'Zone 2 walk',s:'30 min after work',cardio:1,blk:'pm'}]},
  {day:'Friday',focus:'Lower B — posterior chain and the left hamstring',lift:1,ex:[
   {n:'Romanian Deadlift',s:'4 × 8 @ RIR 2',core:1,p:'hinge',sets:4,reps:8,rest:150,blk:'am'},
@@ -979,6 +1066,7 @@ var PROGRAM=[
   {n:'Band Terminal Knee Extension',s:'3 × 20 / left',uni:1,p:'quad_iso',sets:3,reps:20,rest:45,bw:1,blk:'am'},
   {n:'Copenhagen Plank',s:'3 × 20 sec / side',uni:1,p:'anti_lat',sets:3,reps:20,rest:45,bw:1,abs:1,blk:'am'},
   {n:'Bird Dog',s:'3 × 10 / side · pause 2 sec',uni:1,p:'anti_ext',sets:3,reps:10,rest:45,bw:1,abs:1,blk:'am'},
+  {n:'Neck Lateral Flexion',s:'2 × 15 / side · slow',uni:1,p:'neck',sets:2,reps:15,rest:60,blk:'am'},
   {n:'Long zone 2',s:'45–60 min',cardio:1,blk:'pm'}]},
  {day:'Sunday',focus:'Full rest — weigh in, prep the week',ex:[
   {n:'Weigh in',s:'same time, same conditions',cardio:1,blk:'am'}]}
@@ -1003,6 +1091,10 @@ var PREP=[
 /* Swap suggestions by movement pattern — full gym, dumbbell-only, and
    no-equipment fallbacks so a busy rack or a hotel room never stops you. */
 var ALTS={
+ neck:['Harness Neck Extension','Harness Neck Flexion','Neck Lateral Flexion',
+   'Supine Plate Neck Flexion','Prone Plate Neck Extension','Cable Neck Extension',
+   'Cable Neck Flexion','Side-Lying Neck Raise','Band 4-Way Neck Isometric',
+   'Towel Isometric Hold','Chin Tuck','Seated Neck Isometric'],
  glute:['Hip Thrust','Barbell Hip Thrust','Single-Leg Glute Bridge','Glute Bridge',
    'Hip Airplane','Cable Pull-Through','Frog Pump','Band Seated Abduction',
    'Reverse Hyper','Single-Leg Hip Thrust','Bird Dog','90/90 Hip Lift'],
@@ -1389,7 +1481,7 @@ var NIGGLE_AREAS={
     safe:'Lower body and machine work. Straps let you keep pulling.'},
   hip:{n:'Hip / groin',pat:['squat','lunge','hinge','ham_iso'],
     safe:'Upper body is untouched. Keep walking if it is painless.'},
-  upback:{n:'Neck / upper back',pat:['vert_push','rear_delt','carry'],
+  upback:{n:'Neck / upper back',pat:['vert_push','rear_delt','carry','neck'],
     safe:'Horizontal pressing and lower body, as long as bracing is comfortable.'}
 };
 function activeNiggles(){return load(K.niggle).filter(function(x){return !x.cleared;});}
@@ -1686,6 +1778,9 @@ function overloadRec(exName,pattern,targetReps,last){
   // increment by pattern
   var bigLower={squat:10,hinge:10,lunge:5}, midPush={horiz_push:5,vert_push:5,horiz_pull:5,vert_pull:5};
   var inc = bigLower[pattern] || midPush[pattern] || 5; // isolation & small muscles default 5
+  // The neck moves a fraction of the load the rest of the body does, and it is
+  // the one place a 5 lb jump is genuinely large. Creep it.
+  if(pattern==='neck')inc=2.5;
   if(pattern==='lateral'||pattern==='rear_delt'||pattern==='biceps'||pattern==='triceps')inc=5;
   // did they hit target reps last time? (reps stored is the top set's reps)
   var hit = last.r && targetReps && last.r>=targetReps;
